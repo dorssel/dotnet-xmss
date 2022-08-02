@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2022 Frans van Dorsselaer
+
+SPDX-License-Identifier: MIT
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Dorssel.Security.Cryptography</RootNamespace>
+    <AssemblyName>Dorssel.Security.Cryptography.Xmss</AssemblyName>
+
+    <IsPackable>true</IsPackable>
+    <PackageId>Dorssel.Security.Cryptography.Xmss</PackageId>
+  </PropertyGroup>
+
+</Project>
