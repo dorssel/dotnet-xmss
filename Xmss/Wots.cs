@@ -47,22 +47,31 @@ class Wots
     /// <see href="https://datatracker.ietf.org/doc/html/rfc8391#section-5.1">RFC 8391, Section 5.1</see>
     /// </summary>
     /// <param name="KEY">key</param>
-    /// <param name="ADRS">address</param>
-    /// <returns>SHA2-256(toByte(3, 32) || KEY || ADRS)</returns>
-    public static byte[] PRF(byte[] KEY, Address ADRS)
+    /// <param name="M">32-byte message ("index")</param>
+    /// <returns>SHA2-256(toByte(3, 32) || KEY || M)</returns>
+    public static byte[] PRF(byte[] KEY, byte[] M)
     {
         Debug.Assert(KEY.Length == n);
-
-        var index = ADRS.ToBytes();
-
-        Debug.Assert(index.Length == 32);
+        Debug.Assert(M.Length == n);
 
         using var hash = SHA256.Create();
         hash.TransformBlock(toByte_3_32);
         hash.TransformBlock(KEY);
-        hash.TransformFinalBlock(index);
+        hash.TransformFinalBlock(M);
         return hash.Hash;
     }
+
+    /// <summary>
+    /// Pseudo-Random Function
+    /// <para/>
+    /// NOTE: Specialization for strongly typed ADRS.
+    /// <para/>
+    /// <see href="https://datatracker.ietf.org/doc/html/rfc8391#section-5.1">RFC 8391, Section 5.1</see>
+    /// </summary>
+    /// <param name="KEY">key</param>
+    /// <param name="ADRS">address</param>
+    /// <returns>SHA2-256(toByte(3, 32) || KEY || ADRS)</returns>
+    public static byte[] PRF(byte[] KEY, Address ADRS) => PRF(KEY, ADRS.ToBytes());
 
     /// <summary>
     /// Algorithm 1: base_w
@@ -190,12 +199,12 @@ class Wots
     /// NOTE: The order of the parameters listed in the text is different from the order
     /// used in the pseudocode; we use the order of the pseudocode.
     /// </summary>
-    /// <param name="M">Message</param>
     /// <param name="sk">WOTS+ private key</param>
+    /// <param name="M">Message</param>
     /// <param name="ADDR">address</param>
     /// <param name="SEED">seed</param>
     /// <returns>WOTS+ signature sig</returns>
-    public static byte[][] WOTS_sign(byte[] M, byte[][] sk, byte[] SEED, Address ADRS)
+    public static byte[][] WOTS_sign(byte[][] sk, byte[] M, byte[] SEED, Address ADRS)
     {
         Debug.Assert(M.Length == n);
         Debug.Assert(sk.Length == len);
@@ -226,7 +235,7 @@ class Wots
     /// <param name="ADDR">address</param>
     /// <param name="SEED">seed</param>
     /// <returns>'Temporary' WOTS+ public key tmp_pk</returns>
-    public static byte[][] WOTS_pkFromSig(byte[] M, byte[][] sig, byte[] SEED, Address ADRS)
+    public static byte[][] WOTS_pkFromSig(byte[][] sig, byte[] M, byte[] SEED, Address ADRS)
     {
         Debug.Assert(M.Length == n);
         Debug.Assert(sig.Length == len);
