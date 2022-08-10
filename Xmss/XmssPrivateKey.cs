@@ -15,9 +15,13 @@ class XmssPrivateKey
 
     public int idx_sig { get; set; }
 
-    public byte[][] getWOTS_SK(int i)
+    byte[] _S_XMSS = null!;
+    public byte[] getS_XMSS() => (byte[])_S_XMSS.Clone();
+    public void setS_XMSS(byte[] S_XMSS)
     {
-        return _WOTS_SK[i];
+        Debug.Assert(S_XMSS.Length == n);
+
+        _S_XMSS = S_XMSS;
     }
 
     byte[] _SK_PRF = null!;
@@ -39,6 +43,10 @@ class XmssPrivateKey
     }
 
     byte[][][] _WOTS_SK = null!;
+    public byte[][] getWOTS_SK(int i)
+    {
+        return _WOTS_SK[i];
+    }
     public void setWOTS_SK(byte[][][] wots_sk)
     {
         _WOTS_SK = wots_sk;

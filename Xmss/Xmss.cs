@@ -52,12 +52,11 @@ class Xmss
     /// </summary>
     /// <param name="KEY">key (array of 3 instances of n-byte keys)</param>
     /// <param name="M">message (possibly in segments)</param>
-    /// <returns>SHA2-256(toByte(0, 32) || KEY || M)</returns>
+    /// <returns>SHA2-256(toByte(2, 32) || KEY || M)</returns>
     static byte[] H_msg(byte[][] KEY, params byte[][] M)
     {
         Debug.Assert(KEY.Length == 3);
         Debug.Assert(KEY.All(k => k.Length == n));
-        Debug.Assert(M.Length == 3 * n);
 
         using var hash = SHA256.Create();
         hash.TransformBlock(toByte_2_32);
@@ -146,7 +145,7 @@ class Xmss
     /// <param name="t">target node height</param>
     /// <param name="ADRS">address</param>
     /// <returns>n-byte root node - top node on Stack</returns>
-    static byte[] treeHash(XmssPrivateKey SK, int s, int t, Address ADRS)
+    internal static byte[] treeHash(XmssPrivateKey SK, int s, int t, Address ADRS)
     {
         Debug.Assert(s >= 0);
         Debug.Assert(t >= 0);
@@ -186,32 +185,9 @@ class Xmss
     /// <returns>XMSS private key SK, XMSS public key PK</returns>
     public static (XmssPrivateKey, XmssPublicKey) XMSS_keyGen()
     {
-        var SK = new XmssPrivateKey();
-
-        var wots_sk = new byte[1 << h][][];
-        for (var i = 0; i < (1 << h); i++)
-        {
-            wots_sk[i] = Wots.WOTS_genSK();
-        }
-
-        using var rng = RandomNumberGenerator.Create();
-
-        var SK_PRF = new byte[n];
-        rng.GetBytes(SK_PRF);
-        SK.setSK_PRF(SK_PRF);
-
-        // Initialization for common contents
-        var SEED = new byte[n];
-        rng.GetBytes(SEED);
-        SK.setSEED(SEED);
-
-        SK.setWOTS_SK(wots_sk);
-
-        var ADRS = new Address();
-        var root = treeHash(SK, 0, h, ADRS);
-
-        SK.setRoot(root);
-        return (SK, new XmssPublicKey(XmssOid.XMSS_SHA2_10_256, root, SEED));
+        // This gets relayed to the Algorithm 10' from NIST SP 800-208, Section 7.2.1,
+        // as required by Section 6.2.
+        return XmssMT.XMSS_keyGen(0, 0, null);
     }
 
     /// <summary>
