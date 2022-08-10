@@ -52,12 +52,11 @@ class Xmss
     /// </summary>
     /// <param name="KEY">key (array of 3 instances of n-byte keys)</param>
     /// <param name="M">message (possibly in segments)</param>
-    /// <returns>SHA2-256(toByte(0, 32) || KEY || M)</returns>
+    /// <returns>SHA2-256(toByte(2, 32) || KEY || M)</returns>
     static byte[] H_msg(byte[][] KEY, params byte[][] M)
     {
         Debug.Assert(KEY.Length == 3);
         Debug.Assert(KEY.All(k => k.Length == n));
-        Debug.Assert(M.Length == 3 * n);
 
         using var hash = SHA256.Create();
         hash.TransformBlock(toByte_2_32);
@@ -146,7 +145,7 @@ class Xmss
     /// <param name="t">target node height</param>
     /// <param name="ADRS">address</param>
     /// <returns>n-byte root node - top node on Stack</returns>
-    static byte[] treeHash(XmssPrivateKey SK, int s, int t, Address ADRS)
+    internal static byte[] treeHash(XmssPrivateKey SK, int s, int t, Address ADRS)
     {
         Debug.Assert(s >= 0);
         Debug.Assert(t >= 0);
@@ -182,19 +181,32 @@ class Xmss
     /// Algorithm 10: XMSS Key Generation
     /// <para/>
     /// <see href="https://datatracker.ietf.org/doc/html/rfc8391#section-4.1.7">RFC 8391, Section 4.1.7</see>
+    /// <para/>
+    /// NOTE: This uses the default .NET <see cref="RandomNumberGenerator"/>, which may not be NIST approved.
     /// </summary>
     /// <returns>XMSS private key SK, XMSS public key PK</returns>
     public static (XmssPrivateKey, XmssPublicKey) XMSS_keyGen()
     {
+        using var rng = RandomNumberGenerator.Create();
+        return XMSS_keyGen(rng);
+    }
+
+    /// <summary>
+    /// Algorithm 10: XMSS Key Generation
+    /// <para/>
+    /// <see href="https://datatracker.ietf.org/doc/html/rfc8391#section-4.1.7">RFC 8391, Section 4.1.7</see>
+    /// </summary>
+    /// <param name="rng">An approved random bit generator, see NIST SP 800-208, Secton 6.2.</param>
+    /// <returns>XMSS private key SK, XMSS public key PK</returns>
+    public static (XmssPrivateKey, XmssPublicKey) XMSS_keyGen(RandomNumberGenerator rng)
+    {
         var SK = new XmssPrivateKey();
 
-        var wots_sk = new byte[1 << h][][];
-        for (var i = 0; i < (1 << h); i++)
-        {
-            wots_sk[i] = Wots.WOTS_genSK();
-        }
-
-        using var rng = RandomNumberGenerator.Create();
+        // WOTS key generation as required by NIST SP 800-208, Section 6.2.
+        // See also NIST SP 800-208, Algorithm 10'.
+        var S_XMSS = new byte[n];
+        rng.GetBytes(S_XMSS);
+        SK.setS_XMSS(S_XMSS);
 
         var SK_PRF = new byte[n];
         rng.GetBytes(SK_PRF);
@@ -205,12 +217,10 @@ class Xmss
         rng.GetBytes(SEED);
         SK.setSEED(SEED);
 
-        SK.setWOTS_SK(wots_sk);
-
         var ADRS = new Address();
         var root = treeHash(SK, 0, h, ADRS);
-
         SK.setRoot(root);
+
         return (SK, new XmssPublicKey(XmssOid.XMSS_SHA2_10_256, root, SEED));
     }
 
