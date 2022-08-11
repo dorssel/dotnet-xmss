@@ -43,7 +43,6 @@ class XmssPrivateKey
     public int idx_sig { get; set; }
 
     byte[] _S_XMSS = null!;
-    public byte[] getS_XMSS() => (byte[])_S_XMSS.Clone();
     public void setS_XMSS(byte[] S_XMSS)
     {
         Debug.Assert(S_XMSS.Length == n);
