@@ -151,15 +151,20 @@ class Wots
     /// Algorithm 3: Generating a WOTS+ Private Key
     /// <para/>
     /// <see href="https://datatracker.ietf.org/doc/html/rfc8391#section-3.1.3">RFC 8391, Section 3.1.3</see>
+    /// <para/>
+    /// NOTE: This function is defined for completeness. It is never actually used, as XMSS instead
+    /// uses the WOTS key generation required by NIST SP 800-208, Section 6.2.
     /// </summary>
     /// <returns>WOTS+ private key sk</returns>
     public static byte[][] WOTS_genSK()
     {
+        using var rng = RandomNumberGenerator.Create();
+
         var sk = new byte[len][];
         for (var i = 0; i < len; i++)
         {
-            // TODO: use NIST apprioved method
-            sk[i] = Enumerable.Range(i, n).Select(i => (byte)i).ToArray();
+            sk[i] = new byte[n];
+            rng.GetBytes(sk[i]);
         }
         return sk;
     }
