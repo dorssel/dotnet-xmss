@@ -21,6 +21,32 @@ class XmssMT
     const int h = 10;
     const int d = 1;
 
+    static readonly byte[] toByte_4_32 = 4.toByte(32);
+
+    /// <summary>
+    /// Pseudo-Random Function
+    /// <para/>
+    /// NOTE: We use M = SEED || ADRS
+    /// <para/>
+    /// <see href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-208.pdf">NIST SP 800-208, Section 5.1</see>
+    /// </summary>
+    /// <param name="KEY">key</param>
+    /// <param name="SEED">seed</param>
+    /// <param name="ADRS">address</param>
+    /// <returns>SHA2-256(toByte(4, 32) || KEY || SEED || ADRS)</returns>
+    static byte[] PRF_keygen(byte[] KEY, byte[] SEED, Address ADRS)
+    {
+        Debug.Assert(KEY.Length == n);
+        Debug.Assert(SEED.Length == n);
+
+        using var hash = SHA256.Create();
+        hash.TransformBlock(toByte_4_32);
+        hash.TransformBlock(KEY);
+        hash.TransformBlock(SEED);
+        hash.TransformFinalBlock(ADRS.ToBytes());
+        return hash.Hash;
+    }
+
     /// <summary>
     /// Algorithm 10': Modified XMSS Key Generation Algorithm
     /// <para/>
