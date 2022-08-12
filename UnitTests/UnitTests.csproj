@@ -16,6 +16,7 @@ SPDX-License-Identifier: MIT
     <PackageReference Include="MSTest.TestAdapter" />
     <PackageReference Include="MSTest.TestFramework" />
     <PackageReference Include="System.IO.Pipelines" />
+    <PackageReference Include="Waher.Security.SHA3" />
     <PackageReference Include="coverlet.collector" />
   </ItemGroup>
 

@@ -112,7 +112,7 @@ class Xmss
     /// <param name="ADRS">address</param>
     /// <param name="SEED">seed</param>
     /// <returns>n-byte compressed public key value</returns>
-    static byte[] ltree(byte[][] pk, byte[] SEED, Address ADRS)
+    internal static byte[] ltree(byte[][] pk, byte[] SEED, Address ADRS)
     {
         Debug.Assert(SEED.Length == n);
 
