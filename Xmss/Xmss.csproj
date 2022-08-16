@@ -15,4 +15,8 @@ SPDX-License-Identifier: MIT
     <PackageId>Dorssel.Security.Cryptography.Xmss</PackageId>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Waher.Security.SHA3" />
+  </ItemGroup>
+
 </Project>

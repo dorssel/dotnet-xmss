@@ -18,13 +18,15 @@ class Xmss
     const int len = 67;
     const int h = 10;
 
+    static readonly Wots Wots = new(WotsOid.WOTSP_SHA2_256);
+
     static readonly byte[] toByte_1_32 = 1.toByte(32);
     static readonly byte[] toByte_2_32 = 2.toByte(32);
 
     /// <summary>
     /// Hash function
     /// <para/>
-    /// <see href="https://datatracker.ietf.org/doc/html/rfc8391#section-5.1">RFC 8391, Section 5.1</see>
+    /// <see href="https://doi.org/10.17487/RFC8391">RFC 8391, Section 5.1</see>
     /// </summary>
     /// <param name="KEY">key</param>
     /// <param name="M">message</param>
@@ -48,7 +50,7 @@ class Xmss
     /// <summary>
     /// Hash function
     /// <para/>
-    /// <see href="https://datatracker.ietf.org/doc/html/rfc8391#section-5.1">RFC 8391, Section 5.1</see>
+    /// <see href="https://doi.org/10.17487/RFC8391">RFC 8391, Section 5.1</see>
     /// </summary>
     /// <param name="KEY">key (array of 3 instances of n-byte keys)</param>
     /// <param name="M">message (possibly in segments)</param>
@@ -74,7 +76,7 @@ class Xmss
     /// <summary>
     /// Algorithm 7: Randomized Tree Hashing
     /// <para/>
-    /// <see href="https://datatracker.ietf.org/doc/html/rfc8391#section-4.1.4">RFC 8391, Section 4.1.4</see>
+    /// <see href="https://doi.org/10.17487/RFC8391">RFC 8391, Section 4.1.4</see>
     /// </summary>
     /// <param name="LEFT">n-byte value</param>
     /// <param name="RIGHT">n-byte value</param>
@@ -103,7 +105,7 @@ class Xmss
     /// <summary>
     /// Algorithm 8: L-Trees
     /// <para/>
-    /// <see href="https://datatracker.ietf.org/doc/html/rfc8391#section-4.1.5">RFC 8391, Section 4.1.5</see>
+    /// <see href="https://doi.org/10.17487/RFC8391">RFC 8391, Section 4.1.5</see>
     /// <para/>
     /// NOTE: The order of the parameters listed in the text is different from the order
     /// used in the pseudocode; we use the order of the pseudocode.
@@ -138,7 +140,7 @@ class Xmss
     /// <summary>
     /// Algorithm 9: TreeHash
     /// <para/>
-    /// <see href="https://datatracker.ietf.org/doc/html/rfc8391#section-4.1.6">RFC 8391, Section 4.1.6</see>
+    /// <see href="https://doi.org/10.17487/RFC8391">RFC 8391, Section 4.1.6</see>
     /// </summary>
     /// <param name="SK">XMSS private key</param>
     /// <param name="s">start index</param>
@@ -180,7 +182,7 @@ class Xmss
     /// <summary>
     /// Algorithm 10: XMSS Key Generation
     /// <para/>
-    /// <see href="https://datatracker.ietf.org/doc/html/rfc8391#section-4.1.7">RFC 8391, Section 4.1.7</see>
+    /// <see href="https://doi.org/10.17487/RFC8391">RFC 8391, Section 4.1.7</see>
     /// <para/>
     /// NOTE: This uses the default .NET <see cref="RandomNumberGenerator"/>, which may not be NIST approved.
     /// </summary>
@@ -194,13 +196,13 @@ class Xmss
     /// <summary>
     /// Algorithm 10: XMSS Key Generation
     /// <para/>
-    /// <see href="https://datatracker.ietf.org/doc/html/rfc8391#section-4.1.7">RFC 8391, Section 4.1.7</see>
+    /// <see href="https://doi.org/10.17487/RFC8391">RFC 8391, Section 4.1.7</see>
     /// </summary>
     /// <param name="rng">An approved random bit generator, see NIST SP 800-208, Secton 6.2.</param>
     /// <returns>XMSS private key SK, XMSS public key PK</returns>
     public static (XmssPrivateKey, XmssPublicKey) XMSS_keyGen(RandomNumberGenerator rng)
     {
-        var SK = new XmssPrivateKey();
+        var SK = new XmssPrivateKey(XmssOid.XMSS_SHA2_10_256);
 
         // WOTS key generation as required by NIST SP 800-208, Section 6.2.
         // See also NIST SP 800-208, Algorithm 10'.
@@ -217,8 +219,7 @@ class Xmss
         rng.GetBytes(SEED);
         SK.setSEED(SEED);
 
-        var ADRS = new Address();
-        var root = treeHash(SK, 0, h, ADRS);
+        var root = treeHash(SK, 0, h, new());
         SK.setRoot(root);
 
         return (SK, new XmssPublicKey(XmssOid.XMSS_SHA2_10_256, root, SEED));
@@ -227,7 +228,7 @@ class Xmss
     /// <summary>
     /// (Example) buildAuth
     /// <para/>
-    /// <see href="https://datatracker.ietf.org/doc/html/rfc8391#section-4.1.9">RFC 8391, Section 4.1.9</see>
+    /// <see href="https://doi.org/10.17487/RFC8391">RFC 8391, Section 4.1.9</see>
     /// </summary>
     /// <param name="SK">XMSS private key</param>
     /// <param name="i">WOTS+ key pair index</param>
@@ -247,7 +248,7 @@ class Xmss
     /// <summary>
     /// Algorithm 11: Generate a WOTS+ signature on a message with corresponding authentication path
     /// <para/>
-    /// <see href="https://datatracker.ietf.org/doc/html/rfc8391#section-4.1.9">RFC 8391, Section 4.1.9</see>
+    /// <see href="https://doi.org/10.17487/RFC8391">RFC 8391, Section 4.1.9</see>
     /// </summary>
     /// <param name="Mprime">n-byte message M'</param>
     /// <param name="SK">XMSS private key</param>
@@ -266,7 +267,7 @@ class Xmss
     /// <summary>
     /// Algorithm 12: Generate an XMSS signature and update the XMSS private key
     /// <para/>
-    /// <see href="https://datatracker.ietf.org/doc/html/rfc8391#section-4.1.9">RFC 8391, Section 4.1.9</see>
+    /// <see href="https://doi.org/10.17487/RFC8391">RFC 8391, Section 4.1.9</see>
     /// <para/>
     /// NOTE: The XMMS private key (SK) is modified in place instead of returned.
     /// It is the responsibility of the caller to <em>first</em> persist the updated
@@ -278,17 +279,16 @@ class Xmss
     public static XmssSignature XMSS_sign(byte[] M, XmssPrivateKey SK)
     {
         var idx_sig = SK.idx_sig++;
-        var ADRS = new Address();
         var r = Wots.PRF(SK.getSK_PRF(), idx_sig.toByte(32));
         var Mprime = H_msg(new byte[][] { r, SK.getRoot(), idx_sig.toByte(n) }, M);
-        var (sig_ots, auth) = treeSig(Mprime, SK, idx_sig, ADRS);
+        var (sig_ots, auth) = treeSig(Mprime, SK, idx_sig, new());
         return new(idx_sig, r, sig_ots, auth);
     }
 
     /// <summary>
     /// Algorithm 13: Compute a root node from a tree signature
     /// <para/>
-    /// <see href="https://datatracker.ietf.org/doc/html/rfc8391#section-4.1.10">RFC 8391, Section 4.1.10</see>
+    /// <see href="https://doi.org/10.17487/RFC8391">RFC 8391, Section 4.1.10</see>
     /// </summary>
     /// <param name="idx_sig">index</param>
     /// <param name="sig_ots">WOTS+ signature</param>
@@ -321,7 +321,7 @@ class Xmss
     /// <summary>
     /// Algorithm 14: Verify an XMSS signature using the corresponding XMSS public key and a message
     /// <para/>
-    /// <see href="https://datatracker.ietf.org/doc/html/rfc8391#section-4.1.10">RFC 8391, Section 4.1.10</see>
+    /// <see href="https://doi.org/10.17487/RFC8391">RFC 8391, Section 4.1.10</see>
     /// </summary>
     /// <param name="Sig">XMSS signature</param>
     /// <param name="M">message</param>
@@ -329,9 +329,8 @@ class Xmss
     /// <returns>Boolean</returns>
     public static bool XMSS_verify(XmssSignature Sig, byte[] M, XmssPublicKey PK)
     {
-        var ADRS = new Address();
         var Mprime = H_msg(new byte[][] { Sig.r, PK.getRoot(), Sig.idx_sig.toByte(n) }, M);
-        var node = XMSS_rootFromSig(Sig.idx_sig, Sig.sig_ots, Sig.auth, Mprime, PK.getSEED(), ADRS);
+        var node = XMSS_rootFromSig(Sig.idx_sig, Sig.sig_ots, Sig.auth, Mprime, PK.getSEED(), new());
         return CryptographicOperations.FixedTimeEquals(node, PK.getRoot());
     }
 }

@@ -36,7 +36,7 @@ static class ExtensionMethods
     }
 
     /// <summary>
-    /// <see href="https://datatracker.ietf.org/doc/html/rfc8391#section-2.4">RFC 8391, Section 2.4</see>
+    /// <see href="https://doi.org/10.17487/RFC8391">RFC 8391, Section 2.4</see>
     /// </summary>
     /// <param name="x">integer</param>
     /// <param name="y">number of bytes</param>
@@ -66,4 +66,6 @@ static class ExtensionMethods
             X[i] ^= Y[i];
         }
     }
+
+    public static WotsOid ToWotsOid(this XmssOid xmssOid) => (WotsOid)((((int)xmssOid) - 1) / 3 + 1);
 }

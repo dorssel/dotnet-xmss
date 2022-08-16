@@ -9,7 +9,7 @@ namespace Dorssel.Security.Cryptography;
 /// <summary>
 /// Hash Function Address Scheme
 /// <para/>
-/// See <see href="https://datatracker.ietf.org/doc/html/rfc8391#section-2.5">RFC 8391, Section 2.5</see>.
+/// See <see href="https://doi.org/10.17487/RFC8391">RFC 8391, Section 2.5</see>.
 /// </summary>
 class Address
 {
