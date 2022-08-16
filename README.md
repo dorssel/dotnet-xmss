@@ -14,7 +14,7 @@ SPDX-License-Identifier: MIT
 
 .NET Standard 2.0 implementation of XMSS and XMSS-MT, as defined by:
 
-- [NIST SP 800-208](https://csrc.nist.gov/publications/detail/sp/800-208/final)
-- [RFC 8391](https://datatracker.ietf.org/doc/html/rfc8391)
+- [NIST SP 800-208](https://doi.org/10.6028/NIST.SP.800-208)
+- [RFC 8391](https://doi.org/10.17487/RFC8391)
 
 The implementation is for AnyCPU, and works on all platforms.

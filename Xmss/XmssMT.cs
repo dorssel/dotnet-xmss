@@ -28,7 +28,7 @@ class XmssMT
     /// <para/>
     /// NOTE: We use M = SEED || ADRS
     /// <para/>
-    /// <see href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-208.pdf">NIST SP 800-208, Section 5.1</see>
+    /// <see href="https://doi.org/10.6028/NIST.SP.800-208">NIST SP 800-208, Section 5.1</see>
     /// </summary>
     /// <param name="KEY">key</param>
     /// <param name="SEED">seed</param>
@@ -52,7 +52,7 @@ class XmssMT
     /// <para/>
     /// NOTE: As with RFC 8391, we return both private and public keys.
     /// <para/>
-    /// <see href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-208.pdf">NIST SP 800-208, Section 4.1.7</see>
+    /// <see href="https://doi.org/10.6028/NIST.SP.800-208">NIST SP 800-208, Section 4.1.7</see>
     /// </summary>
     /// <param name="L">level</param>
     /// <param name="t">tree</param>
