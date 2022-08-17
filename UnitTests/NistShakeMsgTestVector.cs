@@ -6,13 +6,13 @@ using System.Text.RegularExpressions;
 
 namespace UnitTests;
 
-public partial record NistShakeMsgTestVector(int L, ReadOnlyMemory<byte> Msg, ReadOnlyMemory<byte> Output);
+sealed partial record NistShakeMsgTestVector(int L, ReadOnlyMemory<byte> Msg, ReadOnlyMemory<byte> Output);
 
 /// <summary>
 /// These Known-Answer-Test (KAT) vectors are from the
 /// <see href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/secure-hashing#Testing">NIST Cryptographic Algorithm Validation Program</see>.
 /// </summary>
-public partial record NistShakeMsgTestVector
+sealed partial record NistShakeMsgTestVector
 {
     public static IReadOnlyList<NistShakeMsgTestVector> All { get; }
 

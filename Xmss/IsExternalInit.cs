@@ -10,4 +10,4 @@ namespace System.Runtime.CompilerServices;
 /// Fix for using C# 9 feature in netstandard2.0.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
-record IsExternalInit;
+sealed record IsExternalInit;

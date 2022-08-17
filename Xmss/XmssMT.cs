@@ -12,7 +12,7 @@ using System.Security.Cryptography;
 
 namespace Dorssel.Security.Cryptography;
 
-class XmssMT
+sealed class XmssMT
 {
     // XMSS-SHA2_10_256
     const int n = 32;

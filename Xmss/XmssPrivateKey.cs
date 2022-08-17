@@ -2,26 +2,25 @@
 //
 // SPDX-License-Identifier: MIT
 
-using System;
 using System.Diagnostics;
 
 namespace Dorssel.Security.Cryptography;
 
-class XmssPrivateKey
+sealed class XmssPrivateKey
 {
     public XmssPrivateKey(XmssOid xmssOid)
     {
-        WotsParameters = WotsParameters.Lookup(xmssOid.ToWotsOid());
+        Parameters = XmssParameters.Lookup(xmssOid);
     }
 
-    WotsParameters WotsParameters { get; }
+    XmssParameters Parameters { get; }
 
     public int idx_sig { get; set; }
 
     byte[] _S_XMSS = null!;
     public void setS_XMSS(byte[] S_XMSS)
     {
-        Debug.Assert(S_XMSS.Length == WotsParameters.n);
+        Debug.Assert(S_XMSS.Length == Parameters.Wots.n);
 
         _S_XMSS = S_XMSS;
     }
@@ -30,7 +29,7 @@ class XmssPrivateKey
     public byte[] getSK_PRF() => (byte[])_SK_PRF.Clone();
     public void setSK_PRF(byte[] SK_PRF)
     {
-        Debug.Assert(SK_PRF.Length == WotsParameters.n);
+        Debug.Assert(SK_PRF.Length == Parameters.Wots.n);
 
         _SK_PRF = SK_PRF;
     }
@@ -39,7 +38,7 @@ class XmssPrivateKey
     public byte[] getSEED() => (byte[])_SEED.Clone();
     public void setSEED(byte[] SEED)
     {
-        Debug.Assert(SEED.Length == WotsParameters.n);
+        Debug.Assert(SEED.Length == Parameters.Wots.n);
 
         _SEED = SEED;
     }
@@ -54,7 +53,7 @@ class XmssPrivateKey
     /// <returns>the i^th WOTS+ private key</returns>
     public byte[][] getWOTS_SK(int i)
     {
-        using var wots = new Wots(WotsParameters.OID);
+        using var wots = new Wots(Parameters.Wots.OID);
         return wots.WOTS_genSK(_S_XMSS, _SEED, new() { OTS_address = i });
     }
 

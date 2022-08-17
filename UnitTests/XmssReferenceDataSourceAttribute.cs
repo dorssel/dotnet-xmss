@@ -7,7 +7,7 @@ using System.Reflection;
 namespace UnitTests;
 
 [AttributeUsage(AttributeTargets.Method)]
-internal sealed class XmssReferenceDataSourceAttribute
+sealed class XmssReferenceDataSourceAttribute
     : Attribute
     , ITestDataSource
 {

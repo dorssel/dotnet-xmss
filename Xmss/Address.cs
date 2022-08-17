@@ -11,7 +11,7 @@ namespace Dorssel.Security.Cryptography;
 /// <para/>
 /// See <see href="https://doi.org/10.17487/RFC8391">RFC 8391, Section 2.5</see>.
 /// </summary>
-class Address
+sealed record Address
 {
     public int layer_address { get; set; }
 
