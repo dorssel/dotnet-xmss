@@ -19,6 +19,6 @@ sealed class SHAKE_Tests
     {
         using var shake = new SHAKE(testVector.L, testVector.Output.Length * 8);
         var output = shake.ComputeHash(testVector.Msg.ToArray());
-        Assert.IsTrue(testVector.Output.Span.SequenceEqual(output));
+        CollectionAssert.AreEqual(testVector.Output.ToArray(), output);
     }
 }

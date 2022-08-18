@@ -17,13 +17,16 @@ sealed class Xmss
     {
         Parameters = XmssParameters.Lookup(xmssOid);
 
-        toByte_1 = 1.toByte(Parameters.Wots.toByteLength);
-        toByte_2 = 2.toByte(Parameters.Wots.toByteLength);
+        Wots = new(Parameters.WotsOID);
 
-        Wots = new(Parameters.Wots.OID);
+        toByte_1 = 1.toByte(WotsParameters.toByteLength);
+        toByte_2 = 2.toByte(WotsParameters.toByteLength);
     }
 
-    readonly XmssParameters Parameters;
+    public XmssParameters Parameters { get; }
+
+    public WotsParameters WotsParameters => Wots.Parameters;
+
     readonly Wots Wots;
     readonly byte[] toByte_1 = 1.toByte(32);
     readonly byte[] toByte_2 = 2.toByte(32);
@@ -53,8 +56,8 @@ sealed class Xmss
     /// <returns>HashAlgorithm(toByte(1, toBytesLength) || KEY || M)</returns>
     byte[] H(byte[] KEY, params byte[][] M)
     {
-        Debug.Assert(KEY.Length == Parameters.Wots.n);
-        Debug.Assert(M.Sum(m => m.Length) == 2 * Parameters.Wots.n);
+        Debug.Assert(KEY.Length == WotsParameters.n);
+        Debug.Assert(M.Sum(m => m.Length) == 2 * WotsParameters.n);
 
         Wots.HashAlgorithm.TransformBlock(toByte_1);
         Wots.HashAlgorithm.TransformBlock(KEY);
@@ -77,7 +80,7 @@ sealed class Xmss
     byte[] H_msg(byte[][] KEY, params byte[][] M)
     {
         Debug.Assert(KEY.Length == 3);
-        Debug.Assert(KEY.All(k => k.Length == Parameters.Wots.n));
+        Debug.Assert(KEY.All(k => k.Length == WotsParameters.n));
 
         Wots.HashAlgorithm.TransformBlock(toByte_2);
         Wots.HashAlgorithm.TransformBlock(KEY[0]);
@@ -103,9 +106,9 @@ sealed class Xmss
     /// <returns>n-byte randomized hash</returns>
     byte[] RAND_HASH(byte[] LEFT, byte[] RIGHT, byte[] SEED, Address ADRS)
     {
-        Debug.Assert(LEFT.Length == Parameters.Wots.n);
-        Debug.Assert(RIGHT.Length == Parameters.Wots.n);
-        Debug.Assert(SEED.Length == Parameters.Wots.n);
+        Debug.Assert(LEFT.Length == WotsParameters.n);
+        Debug.Assert(RIGHT.Length == WotsParameters.n);
+        Debug.Assert(SEED.Length == WotsParameters.n);
 
         ADRS.keyAndMask = 0;
         var KEY = Wots.PRF(SEED, ADRS);
@@ -134,9 +137,9 @@ sealed class Xmss
     /// <returns>n-byte compressed public key value</returns>
     byte[] ltree(byte[][] pk, byte[] SEED, Address ADRS)
     {
-        Debug.Assert(SEED.Length == Parameters.Wots.n);
+        Debug.Assert(SEED.Length == WotsParameters.n);
 
-        var lenPrime = Parameters.Wots.len;
+        var lenPrime = WotsParameters.len;
         ADRS.tree_height = 0;
         while (lenPrime > 1)
         {
@@ -226,9 +229,9 @@ sealed class Xmss
     {
         // WOTS key generation as required by NIST SP 800-208, Section 6.2.
         // See also NIST SP 800-208, Algorithm 10'.
-        var S_XMSS = new byte[Parameters.Wots.n];
-        var SK_PRF = new byte[Parameters.Wots.n];
-        var SEED = new byte[Parameters.Wots.n];
+        var S_XMSS = new byte[WotsParameters.n];
+        var SK_PRF = new byte[WotsParameters.n];
+        var SEED = new byte[WotsParameters.n];
 
         rng.GetBytes(S_XMSS);
         rng.GetBytes(SK_PRF);
@@ -300,7 +303,7 @@ sealed class Xmss
     {
         var idx_sig = SK.idx_sig++;
         var r = Wots.PRF(SK.getSK_PRF(), idx_sig.toByte(32));
-        var Mprime = H_msg(new byte[][] { r, SK.getRoot(), idx_sig.toByte(Parameters.Wots.n) }, M);
+        var Mprime = H_msg(new byte[][] { r, SK.getRoot(), idx_sig.toByte(WotsParameters.n) }, M);
         var (sig_ots, auth) = treeSig(Mprime, SK, idx_sig, new());
         return new(idx_sig, r, sig_ots, auth);
     }
@@ -350,7 +353,7 @@ sealed class Xmss
     /// <returns>Boolean</returns>
     public bool XMSS_verify(XmssSignature Sig, byte[] M, XmssPublicKey PK)
     {
-        var Mprime = H_msg(new byte[][] { Sig.r, PK.getRoot(), Sig.idx_sig.toByte(Parameters.Wots.n) }, M);
+        var Mprime = H_msg(new byte[][] { Sig.r, PK.getRoot(), Sig.idx_sig.toByte(WotsParameters.n) }, M);
         var node = XMSS_rootFromSig(Sig.idx_sig, Sig.sig_ots, Sig.auth, Mprime, PK.getSEED(), new());
         return CryptographicOperations.FixedTimeEquals(node, PK.getRoot());
     }
