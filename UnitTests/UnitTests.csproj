@@ -8,6 +8,8 @@ SPDX-License-Identifier: MIT
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Always check for overflow/underflow in the test code itself (even for Release builds) -->
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
   </PropertyGroup>
 
   <ItemGroup>

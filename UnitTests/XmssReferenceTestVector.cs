@@ -28,7 +28,7 @@ sealed record XmssReferenceTestVector
         Oid = int.Parse(parts[1]);
         Name = Type switch
         {
-            "WOTS+" => XmssParameters.Lookup((XmssOid)Oid).Wots.OID.ToString(),
+            "WOTS+" => XmssParameters.Lookup((XmssOid)Oid).WotsOID.ToString(),
             "XMSS" => ((XmssOid)Oid).ToString(),
             "XMSSMT" => ((XmssMTOid)Oid).ToString(),
             _ => throw new NotImplementedException(),

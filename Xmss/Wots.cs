@@ -23,8 +23,10 @@ sealed class Wots
         toByte_4 = 4.toByte(Parameters.toByteLength);
     }
 
-    readonly WotsParameters Parameters;
-    public HashAlgorithm HashAlgorithm { get; private init; }
+    public WotsParameters Parameters { get; }
+
+    internal HashAlgorithm HashAlgorithm { get; }
+
     readonly byte[] toByte_0;
     readonly byte[] toByte_3;
     readonly byte[] toByte_4;
