@@ -4,9 +4,15 @@
 
 namespace UnitTests;
 
-record XmssReferenceTestVector
+sealed record XmssReferenceTestVector
 {
     public static IReadOnlyList<XmssReferenceTestVector> All { get; }
+
+    public static byte[] computeHash(params byte[][] buf)
+    {
+        using var shake = new SHAKE(128, 80);
+        return shake.ComputeHash(buf.SelectMany(i => i).ToArray());
+    }
 
     public string Name { get; }
     public string Type { get; }
@@ -22,7 +28,7 @@ record XmssReferenceTestVector
         Oid = int.Parse(parts[1]);
         Name = Type switch
         {
-            "WOTS+" => ((XmssOid)Oid).ToWotsOid().ToString(),
+            "WOTS+" => XmssParameters.Lookup((XmssOid)Oid).Wots.OID.ToString(),
             "XMSS" => ((XmssOid)Oid).ToString(),
             "XMSSMT" => ((XmssMTOid)Oid).ToString(),
             _ => throw new NotImplementedException(),

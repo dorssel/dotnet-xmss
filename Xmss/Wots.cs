@@ -24,7 +24,7 @@ sealed class Wots
     }
 
     readonly WotsParameters Parameters;
-    readonly HashAlgorithm HashAlgorithm;
+    public HashAlgorithm HashAlgorithm { get; private init; }
     readonly byte[] toByte_0;
     readonly byte[] toByte_3;
     readonly byte[] toByte_4;
@@ -44,7 +44,7 @@ sealed class Wots
 
     #endregion
 
-    byte[] T(byte[] hashValue)
+    public byte[] T(byte[] hashValue)
     {
         Debug.Assert(Parameters.n <= hashValue.Length);
 
@@ -58,7 +58,7 @@ sealed class Wots
     /// </summary>
     /// <param name="KEY">key</param>
     /// <param name="M">message</param>
-    /// <returns>BaseHashAlgorithm(toByte(0, n_base) || KEY || M)</returns>
+    /// <returns>HashAlgorithm(toByte((0, toByteLength) || KEY || M)</returns>
     byte[] F(byte[] KEY, byte[] M)
     {
         Debug.Assert(KEY.Length == Parameters.n);
@@ -77,7 +77,7 @@ sealed class Wots
     /// </summary>
     /// <param name="KEY">key</param>
     /// <param name="M">32-byte message ("index")</param>
-    /// <returns>BaseHashAlgorithm(toByte(3, n_base) || KEY || M)</returns>
+    /// <returns>HashAlgorithm(toByte(3, toByteLength) || KEY || M)</returns>
     public byte[] PRF(byte[] KEY, byte[] M)
     {
         Debug.Assert(KEY.Length == Parameters.n);
@@ -98,7 +98,7 @@ sealed class Wots
     /// </summary>
     /// <param name="KEY">key</param>
     /// <param name="ADRS">address</param>
-    /// <returns>BaseHashAlgorithm-256(toByte(3, n_base) || KEY || ADRS)</returns>
+    /// <returns>HashAlgorithm(toByte(3, toByteLength) || KEY || ADRS)</returns>
     public byte[] PRF(byte[] KEY, Address ADRS) => PRF(KEY, ADRS.ToBytes());
 
     /// <summary>
@@ -111,8 +111,8 @@ sealed class Wots
     /// <param name="KEY">key</param>
     /// <param name="SEED">seed</param>
     /// <param name="ADRS">address</param>
-    /// <returns>BaseHashAlgorithm(toByte(4, n_base) || KEY || SEED || ADRS)</returns>
-    internal byte[] PRF_keygen(byte[] KEY, byte[] SEED, Address ADRS)
+    /// <returns>HashAlgorithm(toByte(4, toByteLength) || KEY || SEED || ADRS)</returns>
+    byte[] PRF_keygen(byte[] KEY, byte[] SEED, Address ADRS)
     {
         Debug.Assert(KEY.Length == Parameters.n);
         Debug.Assert(SEED.Length == Parameters.n);

@@ -7,7 +7,7 @@ using System.Reflection;
 namespace UnitTests;
 
 [AttributeUsage(AttributeTargets.Method)]
-internal sealed class NistShakeMsgDataSourceAttribute
+sealed class NistShakeMsgDataSourceAttribute
     : Attribute
     , ITestDataSource
 {

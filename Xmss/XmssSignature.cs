@@ -2,7 +2,11 @@
 //
 // SPDX-License-Identifier: MIT
 
-class XmssSignature
+using System.Linq;
+
+namespace Dorssel.Security.Cryptography;
+
+sealed class XmssSignature
 {
     public XmssSignature(int idx_sig, byte[] r, byte[][] sig_ots, byte[][] auth)
     {
@@ -31,4 +35,14 @@ class XmssSignature
     /// authentication path [h,n]
     /// </summary>
     public byte[][] auth;
+
+    public byte[] ToBytes()
+    {
+        return
+            idx_sig.toByte(4)
+            .Concat(r)
+            .Concat(sig_ots.SelectMany(i => i))
+            .Concat(auth.SelectMany(i => i))
+            .ToArray();
+    }
 }

@@ -10,18 +10,38 @@ using System.Security.Cryptography;
 
 namespace Dorssel.Security.Cryptography;
 
-class Xmss
+sealed class Xmss
+    : IDisposable
 {
-    // XMSS-SHA2_10_256
-    const int n = 32;
-    // unused: const int w = 16;
-    const int len = 67;
-    const int h = 10;
+    public Xmss(XmssOid xmssOid)
+    {
+        Parameters = XmssParameters.Lookup(xmssOid);
 
-    static readonly Wots Wots = new(WotsOid.WOTSP_SHA2_256);
+        toByte_1 = 1.toByte(Parameters.Wots.toByteLength);
+        toByte_2 = 2.toByte(Parameters.Wots.toByteLength);
 
-    static readonly byte[] toByte_1_32 = 1.toByte(32);
-    static readonly byte[] toByte_2_32 = 2.toByte(32);
+        Wots = new(Parameters.Wots.OID);
+    }
+
+    readonly XmssParameters Parameters;
+    readonly Wots Wots;
+    readonly byte[] toByte_1 = 1.toByte(32);
+    readonly byte[] toByte_2 = 2.toByte(32);
+
+    #region IDisposable
+
+    bool IsDisposed;
+
+    public void Dispose()
+    {
+        if (!IsDisposed)
+        {
+            Wots.Dispose();
+            IsDisposed = true;
+        }
+    }
+
+    #endregion
 
     /// <summary>
     /// Hash function
@@ -30,21 +50,20 @@ class Xmss
     /// </summary>
     /// <param name="KEY">key</param>
     /// <param name="M">message</param>
-    /// <returns>SHA2-256(toByte(1, 32) || KEY || M)</returns>
-    static byte[] H(byte[] KEY, params byte[][] M)
+    /// <returns>HashAlgorithm(toByte(1, toBytesLength) || KEY || M)</returns>
+    byte[] H(byte[] KEY, params byte[][] M)
     {
-        Debug.Assert(KEY.Length == n);
-        Debug.Assert(M.Sum(m => m.Length) == 2 * n);
+        Debug.Assert(KEY.Length == Parameters.Wots.n);
+        Debug.Assert(M.Sum(m => m.Length) == 2 * Parameters.Wots.n);
 
-        using var hash = SHA256.Create();
-        hash.TransformBlock(toByte_1_32);
-        hash.TransformBlock(KEY);
+        Wots.HashAlgorithm.TransformBlock(toByte_1);
+        Wots.HashAlgorithm.TransformBlock(KEY);
         foreach (var m in M)
         {
-            hash.TransformBlock(m);
+            Wots.HashAlgorithm.TransformBlock(m);
         }
-        hash.TransformFinalBlock(Array.Empty<byte>());
-        return hash.Hash;
+        Wots.HashAlgorithm.TransformFinalBlock(Array.Empty<byte>());
+        return Wots.T(Wots.HashAlgorithm.Hash);
     }
 
     /// <summary>
@@ -54,23 +73,22 @@ class Xmss
     /// </summary>
     /// <param name="KEY">key (array of 3 instances of n-byte keys)</param>
     /// <param name="M">message (possibly in segments)</param>
-    /// <returns>SHA2-256(toByte(2, 32) || KEY || M)</returns>
-    static byte[] H_msg(byte[][] KEY, params byte[][] M)
+    /// <returns>HashAlgorithm(toByte(2, toByteLength) || KEY || M)</returns>
+    byte[] H_msg(byte[][] KEY, params byte[][] M)
     {
         Debug.Assert(KEY.Length == 3);
-        Debug.Assert(KEY.All(k => k.Length == n));
+        Debug.Assert(KEY.All(k => k.Length == Parameters.Wots.n));
 
-        using var hash = SHA256.Create();
-        hash.TransformBlock(toByte_2_32);
-        hash.TransformBlock(KEY[0]);
-        hash.TransformBlock(KEY[1]);
-        hash.TransformBlock(KEY[2]);
+        Wots.HashAlgorithm.TransformBlock(toByte_2);
+        Wots.HashAlgorithm.TransformBlock(KEY[0]);
+        Wots.HashAlgorithm.TransformBlock(KEY[1]);
+        Wots.HashAlgorithm.TransformBlock(KEY[2]);
         foreach (var m in M)
         {
-            hash.TransformBlock(m);
+            Wots.HashAlgorithm.TransformBlock(m);
         }
-        hash.TransformFinalBlock(Array.Empty<byte>());
-        return hash.Hash;
+        Wots.HashAlgorithm.TransformFinalBlock(Array.Empty<byte>());
+        return Wots.T(Wots.HashAlgorithm.Hash);
     }
 
     /// <summary>
@@ -83,11 +101,11 @@ class Xmss
     /// <param name="SEED">seed</param>
     /// <param name="ADRS">address</param>
     /// <returns>n-byte randomized hash</returns>
-    static byte[] RAND_HASH(byte[] LEFT, byte[] RIGHT, byte[] SEED, Address ADRS)
+    byte[] RAND_HASH(byte[] LEFT, byte[] RIGHT, byte[] SEED, Address ADRS)
     {
-        Debug.Assert(LEFT.Length == n);
-        Debug.Assert(RIGHT.Length == n);
-        Debug.Assert(SEED.Length == n);
+        Debug.Assert(LEFT.Length == Parameters.Wots.n);
+        Debug.Assert(RIGHT.Length == Parameters.Wots.n);
+        Debug.Assert(SEED.Length == Parameters.Wots.n);
 
         ADRS.keyAndMask = 0;
         var KEY = Wots.PRF(SEED, ADRS);
@@ -114,11 +132,11 @@ class Xmss
     /// <param name="ADRS">address</param>
     /// <param name="SEED">seed</param>
     /// <returns>n-byte compressed public key value</returns>
-    internal static byte[] ltree(byte[][] pk, byte[] SEED, Address ADRS)
+    byte[] ltree(byte[][] pk, byte[] SEED, Address ADRS)
     {
-        Debug.Assert(SEED.Length == n);
+        Debug.Assert(SEED.Length == Parameters.Wots.n);
 
-        var lenPrime = len;
+        var lenPrime = Parameters.Wots.len;
         ADRS.tree_height = 0;
         while (lenPrime > 1)
         {
@@ -147,7 +165,7 @@ class Xmss
     /// <param name="t">target node height</param>
     /// <param name="ADRS">address</param>
     /// <returns>n-byte root node - top node on Stack</returns>
-    internal static byte[] treeHash(XmssPrivateKey SK, int s, int t, Address ADRS)
+    byte[] treeHash(XmssPrivateKey SK, int s, int t, Address ADRS)
     {
         Debug.Assert(s >= 0);
         Debug.Assert(t >= 0);
@@ -187,7 +205,7 @@ class Xmss
     /// NOTE: This uses the default .NET <see cref="RandomNumberGenerator"/>, which may not be NIST approved.
     /// </summary>
     /// <returns>XMSS private key SK, XMSS public key PK</returns>
-    public static (XmssPrivateKey, XmssPublicKey) XMSS_keyGen()
+    public (XmssPrivateKey, XmssPublicKey) XMSS_keyGen()
     {
         using var rng = RandomNumberGenerator.Create();
         return XMSS_keyGen(rng);
@@ -197,32 +215,34 @@ class Xmss
     /// Algorithm 10: XMSS Key Generation
     /// <para/>
     /// <see href="https://doi.org/10.17487/RFC8391">RFC 8391, Section 4.1.7</see>
+    /// <para/>
+    /// This will request 3 times n random bytes (for S_XMSS, SK_PRF, and SEED) in
+    /// separate invocations. This allows the RNG to use fresh entropy on each
+    /// invocation if it is configured to do so.
     /// </summary>
     /// <param name="rng">An approved random bit generator, see NIST SP 800-208, Secton 6.2.</param>
     /// <returns>XMSS private key SK, XMSS public key PK</returns>
-    public static (XmssPrivateKey, XmssPublicKey) XMSS_keyGen(RandomNumberGenerator rng)
+    public (XmssPrivateKey, XmssPublicKey) XMSS_keyGen(RandomNumberGenerator rng)
     {
-        var SK = new XmssPrivateKey(XmssOid.XMSS_SHA2_10_256);
-
         // WOTS key generation as required by NIST SP 800-208, Section 6.2.
         // See also NIST SP 800-208, Algorithm 10'.
-        var S_XMSS = new byte[n];
+        var S_XMSS = new byte[Parameters.Wots.n];
+        var SK_PRF = new byte[Parameters.Wots.n];
+        var SEED = new byte[Parameters.Wots.n];
+
         rng.GetBytes(S_XMSS);
-        SK.setS_XMSS(S_XMSS);
-
-        var SK_PRF = new byte[n];
         rng.GetBytes(SK_PRF);
-        SK.setSK_PRF(SK_PRF);
-
-        // Initialization for common contents
-        var SEED = new byte[n];
         rng.GetBytes(SEED);
+
+        var SK = new XmssPrivateKey(Parameters.OID);
+        SK.setS_XMSS(S_XMSS);
+        SK.setSK_PRF(SK_PRF);
         SK.setSEED(SEED);
 
-        var root = treeHash(SK, 0, h, new());
+        var root = treeHash(SK, 0, Parameters.h, new());
         SK.setRoot(root);
 
-        return (SK, new XmssPublicKey(XmssOid.XMSS_SHA2_10_256, root, SEED));
+        return (SK, new XmssPublicKey(Parameters.OID, root, SEED));
     }
 
     /// <summary>
@@ -234,12 +254,12 @@ class Xmss
     /// <param name="i">WOTS+ key pair index</param>
     /// <param name="ADRS">address</param>
     /// <returns>Authentication path</returns>
-    static byte[][] buildAuth(XmssPrivateKey SK, int i, Address ADRS)
+    byte[][] buildAuth(XmssPrivateKey SK, int i, Address ADRS)
     {
-        var auth = new byte[h][];
-        for (var j = 0; j < h; j++)
+        var auth = new byte[Parameters.h][];
+        for (var j = 0; j < Parameters.h; j++)
         {
-            var k = (i / 2) ^ 1;
+            var k = (i / (1 << j)) ^ 1;
             auth[j] = treeHash(SK, k * (1 << j), j, ADRS);
         }
         return auth;
@@ -255,7 +275,7 @@ class Xmss
     /// <param name="idx_sig">signature index</param>
     /// <param name="ADRS">address</param>
     /// <returns>Concatenation of WOTS+ signature sig_ots and authentication path auth</returns>
-    static (byte[][] sig_ots, byte[][] auth) treeSig(byte[] Mprime, XmssPrivateKey SK, int idx_sig, Address ADRS)
+    (byte[][] sig_ots, byte[][] auth) treeSig(byte[] Mprime, XmssPrivateKey SK, int idx_sig, Address ADRS)
     {
         var auth = buildAuth(SK, idx_sig, ADRS);
         ADRS.type = AddressType.OTS;
@@ -276,11 +296,11 @@ class Xmss
     /// <param name="M">Message M</param>
     /// <param name="SK">XMSS private key</param>
     /// <returns>XMSS signature Sig</returns>
-    public static XmssSignature XMSS_sign(byte[] M, XmssPrivateKey SK)
+    public XmssSignature XMSS_sign(byte[] M, XmssPrivateKey SK)
     {
         var idx_sig = SK.idx_sig++;
         var r = Wots.PRF(SK.getSK_PRF(), idx_sig.toByte(32));
-        var Mprime = H_msg(new byte[][] { r, SK.getRoot(), idx_sig.toByte(n) }, M);
+        var Mprime = H_msg(new byte[][] { r, SK.getRoot(), idx_sig.toByte(Parameters.Wots.n) }, M);
         var (sig_ots, auth) = treeSig(Mprime, SK, idx_sig, new());
         return new(idx_sig, r, sig_ots, auth);
     }
@@ -297,7 +317,7 @@ class Xmss
     /// <param name="SEED">seed</param>
     /// <param name="ADRS">address</param>
     /// <returns>n-byte root value</returns>
-    internal static byte[] XMSS_rootFromSig(int idx_sig, byte[][] sig_ots, byte[][] auth, byte[] Mprime, byte[] SEED, Address ADRS)
+    byte[] XMSS_rootFromSig(int idx_sig, byte[][] sig_ots, byte[][] auth, byte[] Mprime, byte[] SEED, Address ADRS)
     {
         ADRS.type = AddressType.OTS;
         ADRS.OTS_address = idx_sig;
@@ -305,15 +325,16 @@ class Xmss
 
         ADRS.type = AddressType.L_tree;
         ADRS.L_tree_address = idx_sig;
-        byte[] node; ;
-        node = ltree(pk_ots, SEED, ADRS);
+        var node = ltree(pk_ots, SEED, ADRS);
         ADRS.type = AddressType.Hash_tree;
         ADRS.tree_index = idx_sig;
-        for (var k = 0; k < h; k++)
+        for (var k = 0; k < Parameters.h; k++)
         {
             ADRS.tree_height = k;
             ADRS.tree_index /= 2;
-            node = RAND_HASH(node, auth[k], SEED, ADRS);
+            node = (idx_sig & (1 << k)) == 0
+                ? RAND_HASH(node, auth[k], SEED, ADRS)
+                : RAND_HASH(auth[k], node, SEED, ADRS);
         }
         return node;
     }
@@ -327,9 +348,9 @@ class Xmss
     /// <param name="M">message</param>
     /// <param name="PK">XMSS public key</param>
     /// <returns>Boolean</returns>
-    public static bool XMSS_verify(XmssSignature Sig, byte[] M, XmssPublicKey PK)
+    public bool XMSS_verify(XmssSignature Sig, byte[] M, XmssPublicKey PK)
     {
-        var Mprime = H_msg(new byte[][] { Sig.r, PK.getRoot(), Sig.idx_sig.toByte(n) }, M);
+        var Mprime = H_msg(new byte[][] { Sig.r, PK.getRoot(), Sig.idx_sig.toByte(Parameters.Wots.n) }, M);
         var node = XMSS_rootFromSig(Sig.idx_sig, Sig.sig_ots, Sig.auth, Mprime, PK.getSEED(), new());
         return CryptographicOperations.FixedTimeEquals(node, PK.getRoot());
     }

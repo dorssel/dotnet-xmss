@@ -66,6 +66,4 @@ static class ExtensionMethods
             X[i] ^= Y[i];
         }
     }
-
-    public static WotsOid ToWotsOid(this XmssOid xmssOid) => (WotsOid)((((int)xmssOid) - 1) / 3 + 1);
 }

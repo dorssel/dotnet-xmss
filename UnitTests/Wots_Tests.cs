@@ -7,17 +7,27 @@ namespace UnitTests;
 [TestClass]
 sealed class Wots_Tests
 {
-    static byte[] getHash(params byte[][] buf)
+    [TestMethod]
+    public void OidMapping()
     {
-        using var shake = new SHAKE(128, 80);
-        return shake.ComputeHash(buf.SelectMany(i => i).ToArray());
+        // xmss-reference identifies the WOTS+ test vectors with an XMSS OID instead of a WOTS+ OID.
+        // They expect a mapping where each 3 successive XMSS OIDs (one for tree height 10, 16, and 20) per
+        // WOTS+ OID.
+        //
+        // This test asserts that assumption.
+
+        foreach (var oid in Enum.GetValues<XmssOid>())
+        {
+            var parameters = XmssParameters.Lookup(oid);
+            Assert.AreEqual(parameters.Wots.OID, (WotsOid)((((int)parameters.OID) - 1) / 3 + 1));
+        }
     }
 
     [TestMethod]
     [XmssReferenceDataSource("WOTS+")]
-    public void TestKAT(XmssReferenceTestVector testVector)
+    public void KnownAnswerTest(XmssReferenceTestVector testVector)
     {
-        var parameters = WotsParameters.Lookup(((XmssOid)testVector.Oid).ToWotsOid());
+        var parameters = XmssParameters.Lookup((XmssOid)testVector.Oid).Wots;
         using var wots = new Wots(parameters.OID);
 
         var sk_seed = new byte[parameters.n];
@@ -54,8 +64,8 @@ sealed class Wots_Tests
         var sig = wots.WOTS_sign(sk, m, pub_seed, ADRS);
         var verify = wots.WOTS_pkFromSig(sig, m, pub_seed, ADRS);
 
-        Assert.IsTrue(Enumerable.SequenceEqual(testVector.PublicKeyHash.ToArray(), getHash(pk)));
-        Assert.IsTrue(Enumerable.SequenceEqual(testVector.SignatureHash.ToArray(), getHash(sig)));
-        Assert.IsTrue(Enumerable.SequenceEqual(testVector.PublicKeyHash.ToArray(), getHash(verify)));
+        Assert.IsTrue(testVector.PublicKeyHash.Span.SequenceEqual(XmssReferenceTestVector.computeHash(pk)));
+        Assert.IsTrue(testVector.SignatureHash.Span.SequenceEqual(XmssReferenceTestVector.computeHash(sig)));
+        Assert.IsTrue(testVector.PublicKeyHash.Span.SequenceEqual(XmssReferenceTestVector.computeHash(verify)));
     }
 }

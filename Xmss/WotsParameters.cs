@@ -7,7 +7,7 @@ using System.Security.Cryptography;
 
 namespace Dorssel.Security.Cryptography;
 
-record WotsParameters
+sealed record WotsParameters
 {
     private WotsParameters()
     {
