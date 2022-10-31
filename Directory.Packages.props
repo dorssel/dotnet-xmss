@@ -16,6 +16,6 @@ SPDX-License-Identifier: MIT
     <PackageVersion Include="MSTest.TestFramework" Version="2.2.10" />
     <PackageVersion Include="System.IO.Pipelines" Version="6.0.3" />
     <PackageVersion Include="Waher.Security.SHA3" Version="1.0.3" />
-    <PackageVersion Include="coverlet.collector" Version="3.1.2" />
+    <PackageVersion Include="coverlet.collector" Version="3.2.0" />
   </ItemGroup>
 </Project>
