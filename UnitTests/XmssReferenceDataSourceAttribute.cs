@@ -23,9 +23,9 @@ sealed class XmssReferenceDataSourceAttribute
         return XmssReferenceTestVector.All.Where(tv => tv.Type == TestVectorType).Select(tv => new object[] { tv });
     }
 
-    public string GetDisplayName(MethodInfo methodInfo, object[] data)
+    public string GetDisplayName(MethodInfo methodInfo, object?[]? data)
     {
-        var testVector = (XmssReferenceTestVector)data[0];
-        return $"{methodInfo.Name}({testVector.Name})";
+        var testVector = data?.FirstOrDefault() as XmssReferenceTestVector;
+        return $"{methodInfo.Name}({testVector?.Name})";
     }
 }
