@@ -20,9 +20,9 @@ sealed class NistShakeMsgDataSourceAttribute
         return NistShakeMsgTestVector.All.Select(tv => new object[] { tv });
     }
 
-    public string GetDisplayName(MethodInfo methodInfo, object[] data)
+    public string GetDisplayName(MethodInfo methodInfo, object?[]? data)
     {
-        var testVector = (NistShakeMsgTestVector)data[0];
-        return $"{methodInfo.Name}({testVector.L},{testVector.Msg.Length}=>{testVector.Output.Length})";
+        var testVector = data?.FirstOrDefault() as NistShakeMsgTestVector;
+        return $"{methodInfo.Name}({testVector?.L},{testVector?.Msg.Length}=>{testVector?.Output.Length})";
     }
 }
