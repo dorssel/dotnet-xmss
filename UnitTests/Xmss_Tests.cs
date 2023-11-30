@@ -31,7 +31,9 @@ sealed class Xmss_Tests
     {
         using var xmss = new Xmss((XmssOid)testVector.Oid);
 
+#pragma warning disable IDE0230 // Use UTF-8 string literal
         var m = new byte[1] { 37 };
+#pragma warning restore IDE0230 // Use UTF-8 string literal
 
         using var rng = new TestRandomNumberGenerator(Enumerable.Range(0, 3 * xmss.WotsParameters.n).Select(i => (byte)i).ToArray());
         var (sk, pk) = xmss.XMSS_keyGen(rng);

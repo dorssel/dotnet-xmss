@@ -6,15 +6,10 @@ using System.Security.Cryptography;
 
 namespace UnitTests;
 
-sealed class TestRandomNumberGenerator
-    : RandomNumberGenerator
+sealed class TestRandomNumberGenerator(ReadOnlySpan<byte> data)
+        : RandomNumberGenerator
 {
-    public TestRandomNumberGenerator(ReadOnlySpan<byte> data)
-    {
-        Data = data.ToArray();
-    }
-
-    readonly byte[] Data;
+    readonly byte[] Data = data.ToArray();
 
     public int Position { get; private set; }
 

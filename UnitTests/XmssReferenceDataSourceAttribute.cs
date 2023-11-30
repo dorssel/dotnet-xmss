@@ -7,16 +7,11 @@ using System.Reflection;
 namespace UnitTests;
 
 [AttributeUsage(AttributeTargets.Method)]
-sealed class XmssReferenceDataSourceAttribute
-    : Attribute
+sealed class XmssReferenceDataSourceAttribute(string TestVectorType)
+        : Attribute
     , ITestDataSource
 {
-    public string TestVectorType { get; private set; }
-
-    public XmssReferenceDataSourceAttribute(string TestVectorType)
-    {
-        this.TestVectorType = TestVectorType;
-    }
+    public string TestVectorType { get; private set; } = TestVectorType;
 
     public IEnumerable<object[]> GetData(MethodInfo methodInfo)
     {

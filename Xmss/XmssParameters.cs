@@ -14,8 +14,8 @@ sealed record XmssParameters
     public WotsOid WotsOID { get; private init; }
     public int h { get; private init; }
 
-    static readonly XmssParameters[] All = new XmssParameters[]
-    {
+    static readonly XmssParameters[] All =
+    [
         new()
         {
             OID = XmssOid.XMSS_SHA2_10_256,
@@ -142,7 +142,7 @@ sealed record XmssParameters
             WotsOID = WotsOid.WOTSP_SHAKE256_192,
             h = 20,
         },
-    };
+    ];
 
     public static XmssParameters Lookup(XmssOid OID)
     {

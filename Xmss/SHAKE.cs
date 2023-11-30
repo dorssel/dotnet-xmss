@@ -2,26 +2,19 @@
 //
 // SPDX-License-Identifier: MIT
 
-using System;
-using System.IO;
 using System.Security.Cryptography;
 
 namespace Dorssel.Security.Cryptography;
 
-sealed class SHAKE
-    : HashAlgorithm
+sealed class SHAKE(int securityBits, int digestSize)
+        : HashAlgorithm
 {
-    public SHAKE(int securityBits, int digestSize)
+    readonly Waher.Security.SHA3.Keccak1600 BaseHashAlgorithm = securityBits switch
     {
-        BaseHashAlgorithm = securityBits switch
-        {
-            128 => new Waher.Security.SHA3.SHAKE128(digestSize),
-            256 => new Waher.Security.SHA3.SHAKE256(digestSize),
-            _ => throw new ArgumentException($"Invalid SHAKE bitsize", nameof(securityBits)),
-        };
-    }
-
-    readonly Waher.Security.SHA3.Keccak1600 BaseHashAlgorithm;
+        128 => new Waher.Security.SHA3.SHAKE128(digestSize),
+        256 => new Waher.Security.SHA3.SHAKE256(digestSize),
+        _ => throw new ArgumentException($"Invalid SHAKE bitsize", nameof(securityBits)),
+    };
     readonly MemoryStream Stream = new();
 
     public override void Initialize()

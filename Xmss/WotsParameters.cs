@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-using System;
 using System.Security.Cryptography;
 
 namespace Dorssel.Security.Cryptography;
@@ -27,8 +26,8 @@ sealed record WotsParameters
     public Func<HashAlgorithm> HashAlgorithm { get; private init; } = null!;
     public int toByteLength { get; private set; }
 
-    static readonly WotsParameters[] All = new WotsParameters[]
-    {
+    static readonly WotsParameters[] All =
+    [
         new()
         {
             OID = WotsOid.WOTSP_SHA2_256,
@@ -85,7 +84,7 @@ sealed record WotsParameters
             HashAlgorithm = () => new SHAKE(256, 192),
             toByteLength = 4,
         },
-    };
+    ];
 
     public static WotsParameters Lookup(WotsOid OID)
     {

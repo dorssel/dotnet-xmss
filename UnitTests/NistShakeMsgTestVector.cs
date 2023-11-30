@@ -21,11 +21,11 @@ sealed partial record NistShakeMsgTestVector
         var testVectors = new List<NistShakeMsgTestVector>();
         foreach (var file in Directory.GetFiles("shakebytetestvectors", "SHAKE*Msg.rsp"))
         {
-            var L = int.Parse(Regex.Matches(file, @"SHAKE(\d+)[^\d]*\.rsp").Single().Groups[1].Value);
+            var L = int.Parse(FilenameRegex().Matches(file).Single().Groups[1].Value);
             var content = File.ReadAllText(file);
             // unused:
             // var Outputlen = int.Parse(Regex.Matches(content, @"\[Outputlen = (\d+)]").Single().Groups[1].Value);
-            foreach (var match in Regex.Matches(content, @"Len = (\d+)\s*Msg = ([0-9a-fA-F]+)\s*Output = ([0-9a-fA-F]+)").Cast<Match>())
+            foreach (var match in LenRegex().Matches(content).Cast<Match>())
             {
                 var Len = int.Parse(match.Groups[1].Value);
                 var Msg = Convert.FromHexString(match.Groups[2].Value).Take(Len / 8).ToArray();
@@ -35,10 +35,10 @@ sealed partial record NistShakeMsgTestVector
         }
         foreach (var file in Directory.GetFiles("shakebytetestvectors", "SHAKE*VariableOut.rsp"))
         {
-            var L = int.Parse(Regex.Matches(file, @"SHAKE(\d+)[^\d]*\.rsp").Single().Groups[1].Value);
+            var L = int.Parse(FilenameRegex().Matches(file).Single().Groups[1].Value);
             var content = File.ReadAllText(file);
-            var InputLength = int.Parse(Regex.Matches(content, @"\[Input Length = (\d+)]").Single().Groups[1].Value);
-            foreach (var match in Regex.Matches(content, @"Outputlen = (\d+)\s*Msg = ([0-9a-fA-F]+)\s*Output = ([0-9a-fA-F]+)").Cast<Match>())
+            var InputLength = int.Parse(InputLengthRegex().Matches(content).Single().Groups[1].Value);
+            foreach (var match in OutputRegex().Matches(content).Cast<Match>())
             {
                 // unused:
                 // var Outputlen = int.Parse(match.Groups[1].Value);
@@ -49,4 +49,16 @@ sealed partial record NistShakeMsgTestVector
         }
         All = testVectors.AsReadOnly();
     }
+
+    [GeneratedRegex(@"SHAKE(\d+)[^\d]*\.rsp")]
+    private static partial Regex FilenameRegex();
+
+    [GeneratedRegex(@"Len = (\d+)\s*Msg = ([0-9a-fA-F]+)\s*Output = ([0-9a-fA-F]+)")]
+    private static partial Regex LenRegex();
+
+    [GeneratedRegex(@"\[Input Length = (\d+)]")]
+    private static partial Regex InputLengthRegex();
+
+    [GeneratedRegex(@"Outputlen = (\d+)\s*Msg = ([0-9a-fA-F]+)\s*Output = ([0-9a-fA-F]+)")]
+    private static partial Regex OutputRegex();
 }

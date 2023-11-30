@@ -28,7 +28,7 @@ sealed class CryptographicOperations_Tests
     [TestMethod]
     public void FixedTimeEquals_EmptyData()
     {
-        Assert.IsTrue(FixedTimeEquals(Array.Empty<byte>(), Array.Empty<byte>()));
+        Assert.IsTrue(FixedTimeEquals([], []));
     }
 
     [TestMethod]

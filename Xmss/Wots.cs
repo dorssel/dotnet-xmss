@@ -2,9 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Security.Cryptography;
 
 namespace Dorssel.Security.Cryptography;
@@ -287,7 +285,7 @@ sealed class Wots
     /// </summary>
     /// <param name="sk">WOTS+ private key</param>
     /// <param name="M">Message</param>
-    /// <param name="ADDR">address</param>
+    /// <param name="ADRS">address</param>
     /// <param name="SEED">seed</param>
     /// <returns>WOTS+ signature sig</returns>
     public byte[][] WOTS_sign(byte[][] sk, byte[] M, byte[] SEED, Address ADRS)
@@ -318,7 +316,7 @@ sealed class Wots
     /// </summary>
     /// <param name="M">Message</param>
     /// <param name="sig">WOTS+ signature</param>
-    /// <param name="ADDR">address</param>
+    /// <param name="ADRS">address</param>
     /// <param name="SEED">seed</param>
     /// <returns>'Temporary' WOTS+ public key tmp_pk</returns>
     public byte[][] WOTS_pkFromSig(byte[][] sig, byte[] M, byte[] SEED, Address ADRS)

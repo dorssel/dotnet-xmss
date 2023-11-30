@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-using System.Linq;
-
 namespace Dorssel.Security.Cryptography;
 
 sealed class XmssPublicKey
@@ -33,6 +31,6 @@ sealed class XmssPublicKey
 
     public byte[] ToBytes()
     {
-        return root.Concat(SEED).ToArray();
+        return [.. root, .. SEED];
     }
 }
