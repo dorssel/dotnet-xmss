@@ -2,10 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Security.Cryptography;
 
 namespace Dorssel.Security.Cryptography;
@@ -65,7 +62,7 @@ sealed class Xmss
         {
             Wots.HashAlgorithm.TransformBlock(m);
         }
-        Wots.HashAlgorithm.TransformFinalBlock(Array.Empty<byte>());
+        Wots.HashAlgorithm.TransformFinalBlock([]);
         return Wots.T(Wots.HashAlgorithm.Hash);
     }
 
@@ -90,7 +87,7 @@ sealed class Xmss
         {
             Wots.HashAlgorithm.TransformBlock(m);
         }
-        Wots.HashAlgorithm.TransformFinalBlock(Array.Empty<byte>());
+        Wots.HashAlgorithm.TransformFinalBlock([]);
         return Wots.T(Wots.HashAlgorithm.Hash);
     }
 
@@ -303,7 +300,7 @@ sealed class Xmss
     {
         var idx_sig = SK.idx_sig++;
         var r = Wots.PRF(SK.getSK_PRF(), idx_sig.toByte(32));
-        var Mprime = H_msg(new byte[][] { r, SK.getRoot(), idx_sig.toByte(WotsParameters.n) }, M);
+        var Mprime = H_msg([r, SK.getRoot(), idx_sig.toByte(WotsParameters.n)], M);
         var (sig_ots, auth) = treeSig(Mprime, SK, idx_sig, new());
         return new(idx_sig, r, sig_ots, auth);
     }
@@ -353,7 +350,7 @@ sealed class Xmss
     /// <returns>Boolean</returns>
     public bool XMSS_verify(XmssSignature Sig, byte[] M, XmssPublicKey PK)
     {
-        var Mprime = H_msg(new byte[][] { Sig.r, PK.getRoot(), Sig.idx_sig.toByte(WotsParameters.n) }, M);
+        var Mprime = H_msg([Sig.r, PK.getRoot(), Sig.idx_sig.toByte(WotsParameters.n)], M);
         var node = XMSS_rootFromSig(Sig.idx_sig, Sig.sig_ots, Sig.auth, Mprime, PK.getSEED(), new());
         return CryptographicOperations.FixedTimeEquals(node, PK.getRoot());
     }
