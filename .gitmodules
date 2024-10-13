@@ -1,0 +1,3 @@
+[submodule "xmss-library"]
+	path = xmss-library
+	url = https://github.com/FoxCryptoNL/xmss-library.git
