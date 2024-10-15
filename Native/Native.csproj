@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
+
+SPDX-License-Identifier: MIT
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Dorssel.Security.Cryptography</RootNamespace>
+    <AssemblyName>Dorssel.Security.Cryptography.Xmss.Native</AssemblyName>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>dotnet_libxmss</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	  <GenerateDocumentationFile>true</GenerateDocumentationFile>
+	  <IncludeSymbols>true</IncludeSymbols>
+	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<Content Include="runtimes\win-x64\native\xmss.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Pack>true</Pack>
+      <PackagePath>runtimes\win-x64\native\xmss.dll</PackagePath>
+    </Content>
+		<Content Include="runtimes\linux-x64\native\xmss.so">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Pack>true</Pack>
+			<PackagePath>runtimes\linux-x64\native\xmss.so</PackagePath>
+		</Content>
+	</ItemGroup>
+
+</Project>
