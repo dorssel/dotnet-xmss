@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
+#
+# SPDX-License-Identifier: MIT
+
 [submodule "xmss-library"]
 	path = xmss-library
 	url = https://github.com/FoxCryptoNL/xmss-library.git
