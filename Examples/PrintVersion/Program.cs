@@ -4,9 +4,8 @@
 
 using Dorssel.Security.Cryptography.Xmss;
 
-// This is only needed for software within this repository.
-// When consuming the Dorssel.Security.Cryptography.Xmss.Native NuGet package
-// this is not required.
+// This is only needed for software within this repository itself.
+// When referencing the NuGet package this is not required.
 NativeHelper.NativeLoader.Setup();
 
 Console.WriteLine($"Library version: 0x{Native.LibraryGetVersion():X08}");

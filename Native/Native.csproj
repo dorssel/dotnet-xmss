@@ -21,26 +21,18 @@ SPDX-License-Identifier: MIT
   </PropertyGroup>
 
 	<ItemGroup>
-		<Content Include="runtimes\win-x64\native\xmss.dll" Condition="Exists('runtimes\win-x64\native\xmss.dll')">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Pack>true</Pack>
-      <PackagePath>runtimes\win-x64\native\xmss.dll</PackagePath>
-    </Content>
-    <Content Include="runtimes\win-x86\native\xmss.dll" Condition="Exists('runtimes\win-x86\native\xmss.dll')">
+    <Content Include="runtimes\**">
+      <!-- Required for running unit tests and examples within this repository. -->
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <!-- Required for NuGet. -->
       <Pack>true</Pack>
-      <PackagePath>runtimes\win-x86\native\xmss.dll</PackagePath>
+      <PackagePath>%(Identity)</PackagePath>
     </Content>
-    <Content Include="runtimes\linux-x64\native\xmss.so" Condition="Exists('runtimes\linux-x64\native\xmss.so')">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Pack>true</Pack>
-			<PackagePath>runtimes\linux-x64\native\xmss.so</PackagePath>
-		</Content>
 	</ItemGroup>
 
   <ItemGroup>
     <None Include="..\LICENSE.txt" Pack="true" PackagePath="" Visible="false" />
     <None Include="..\README.md" Pack="true" PackagePath="" Visible="false" />
   </ItemGroup>
-
+  
 </Project>

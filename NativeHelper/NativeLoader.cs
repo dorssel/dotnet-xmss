@@ -21,19 +21,14 @@ public static class NativeLoader
             {
                 return 0;
             }
-
-            if (OperatingSystem.IsWindows() && Environment.Is64BitProcess)
+            foreach (var libraryPath in Directory.EnumerateFiles(Path.Combine(baseDir, "runtimes"), "*", SearchOption.AllDirectories))
             {
-                return NativeLibrary.Load(Path.Combine(baseDir, "runtimes", "win-x64", "native", "xmss.dll"));
+                if (NativeLibrary.TryLoad(libraryPath, out nint handle))
+                {
+                    return handle;
+                }
             }
-            else if (OperatingSystem.IsLinux() && Environment.Is64BitProcess)
-            {
-                return NativeLibrary.Load(Path.Combine(baseDir, "runtimes", "linux-x64", "native", "xmss.so"));
-            }
-            else
-            {
-                return 0;
-            }
+            return 0;
         });
     }
 }
