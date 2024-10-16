@@ -27,7 +27,7 @@ public static partial class Native
         public XmssValue256 seed;
     };
 
-    public enum XmssDistantValues : uint
+    public enum XmssDistantValues : int
     {
         XMSS_DISTANT_VALUE_0 = 0x00,
         XMSS_DISTANT_VALUE_1 = 0xD2,
@@ -47,7 +47,9 @@ public static partial class Native
         XMSS_DISTANT_VALUE_F = 0xFF,
     };
 
-    public enum XmssError : uint
+#pragma warning disable CA1008 // Enums should have zero value
+    public enum XmssError : int
+#pragma warning restore CA1008 // Enums should have zero value
     {
         XMSS_OKAY = XmssDistantValues.XMSS_DISTANT_VALUE_1,
         XMSS_ERR_NULL_POINTER = XmssDistantValues.XMSS_DISTANT_VALUE_2,
@@ -67,6 +69,8 @@ public static partial class Native
     };
 
     [LibraryImport("xmss")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+
     private static partial uint xmss_library_get_version();
 
     /// <summary>
@@ -79,11 +83,14 @@ public static partial class Native
     }
 
     [LibraryImport("xmss")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.UseDllDirectoryForDependencies)]
+
     private static unsafe partial XmssError xmss_verification_init(out XmssVerificationContext context,
         in XmssPublicKey public_key, uint* signature, nuint signature_length);
 
     public static XmssError VerificationInit(out XmssVerificationContext context, in XmssPublicKey publicKey, uint[] signature)
     {
+        ArgumentNullException.ThrowIfNull(signature);
         unsafe
         {
             fixed (uint* ptr = signature)
@@ -94,6 +101,8 @@ public static partial class Native
     }
 
     [LibraryImport("xmss")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.UseDllDirectoryForDependencies)]
+
     private static unsafe partial XmssError xmss_verification_update(ref XmssVerificationContext context,
         byte* part, nuint part_length, out byte* part_verify);
 
@@ -114,6 +123,8 @@ public static partial class Native
     }
 
     [LibraryImport("xmss")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
+
     private static partial XmssError xmss_verification_check(ref XmssVerificationContext context, in XmssPublicKey public_key);
 
     public static XmssError VerificationCheck(ref XmssVerificationContext context, in XmssPublicKey publicKey)
