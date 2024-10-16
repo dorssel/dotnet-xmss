@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
+
+SPDX-License-Identifier: MIT
+-->
+<Project>
+  <ItemGroup>
+    <!-- all -->
+    <PackageVersion Include="GitVersion.MsBuild" Version="6.0.2" />
+    <!-- unit tests -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageVersion Include="MSTest.TestAdapter" Version="3.6.1" />
+    <PackageVersion Include="MSTest.TestFramework" Version="3.6.1" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.2" />
+  </ItemGroup>
+</Project>

@@ -9,7 +9,7 @@ using System.Buffers.Binary;
 namespace UnitTests;
 
 [TestClass]
-public class Native_Tests
+public class NativeTests
 {
     [AssemblyInitialize]
     public static void AssemblyInitialize(TestContext testContext)
@@ -19,7 +19,7 @@ public class Native_Tests
     }
 
     [TestMethod]
-    public void LibraryGetVersion_MatchesExpected()
+    public void LibraryGetVersionMatchesExpected()
     {
         var version = Native.LibraryGetVersion();
 
@@ -27,7 +27,7 @@ public class Native_Tests
     }
 
     [TestMethod]
-    public void VerificationInit_Valid()
+    public void VerificationInitValid()
     {
         Native.XmssPublicKey publicKey;
         var signature = new uint[625];

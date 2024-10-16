@@ -9,27 +9,38 @@ SPDX-License-Identifier: MIT
   <PropertyGroup>
     <RootNamespace>Dorssel.Security.Cryptography</RootNamespace>
     <AssemblyName>Dorssel.Security.Cryptography.Xmss.Native</AssemblyName>
-    <TargetFramework>net8.0</TargetFramework>
-    <RootNamespace>dotnet_libxmss</RootNamespace>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	  <GenerateDocumentationFile>true</GenerateDocumentationFile>
-	  <IncludeSymbols>true</IncludeSymbols>
-	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <IsPackable>true</IsPackable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageId>Dorssel.Security.Cryptography.Xmss.Native</PackageId>
+    
+    <!-- For now, suppress missing documentation. -->
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
 
 	<ItemGroup>
-		<Content Include="runtimes\win-x64\native\xmss.dll">
+		<Content Include="runtimes\win-x64\native\xmss.dll" Condition="Exists('runtimes\win-x64\native\xmss.dll')">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<Pack>true</Pack>
       <PackagePath>runtimes\win-x64\native\xmss.dll</PackagePath>
     </Content>
-		<Content Include="runtimes\linux-x64\native\xmss.so">
+    <Content Include="runtimes\win-x86\native\xmss.dll" Condition="Exists('runtimes\win-x86\native\xmss.dll')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>true</Pack>
+      <PackagePath>runtimes\win-x86\native\xmss.dll</PackagePath>
+    </Content>
+    <Content Include="runtimes\linux-x64\native\xmss.so" Condition="Exists('runtimes\linux-x64\native\xmss.so')">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<Pack>true</Pack>
 			<PackagePath>runtimes\linux-x64\native\xmss.so</PackagePath>
 		</Content>
 	</ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE.txt" Pack="true" PackagePath="" Visible="false" />
+    <None Include="..\README.md" Pack="true" PackagePath="" Visible="false" />
+  </ItemGroup>
 
 </Project>
