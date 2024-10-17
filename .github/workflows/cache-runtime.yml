@@ -28,7 +28,6 @@ on:
 
 permissions:
   contents: read
-  actions: write
 
 env:
   runtime-workflow: .github/workflows/runtime-${{ inputs.runtime }}.yml
