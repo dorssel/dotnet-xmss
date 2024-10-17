@@ -1,0 +1,53 @@
+# SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
+#
+# SPDX-License-Identifier: MIT
+
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+name: Runtime linux-x64
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-linux-x64:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configure
+        run: >
+          cmake
+          -S xmss-library
+          -B build
+          -DCMAKE_C_COMPILER=clang
+          -DXMSS_C99_COMPATIBLE=OFF
+          -DBUILD_SHARED_LIBS=ON
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        working-directory: build
+        run: ctest
+
+      - name: Copy artifact
+        run: |
+          mkdir -p Native/runtimes/linux-x64/native
+          cp build/src/libxmss.so Native/runtimes/linux-x64/native/xmss.so
+
+      - name: Save artifact
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            Native/runtimes/**
+          key: runtime-linux-x64-${{ hashFiles('.gitmodules', '.github/workflow/runtime-linux-x64.yml') }}
+          enableCrossOsArchive: true

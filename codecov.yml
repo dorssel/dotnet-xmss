@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
+#
+# SPDX-License-Identifier: MIT
+
+---
+# yaml-language-server: $schema=https://json.schemastore.org/codecov.json
+
+coverage:
+  status:
+    project:
+      default:
+        informational: true
+    patch:
+      default:
+        informational: true

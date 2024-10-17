@@ -1,0 +1,42 @@
+# SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
+#
+# SPDX-License-Identifier: MIT
+
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+# This workflow checks if the given runtime parameter is valid. If it is, it tries to
+# retrieve the cache. If the cached runtime does not exist, it will rebuild it by
+# calling the applicable runtime build workflow.
+
+# TODO: Make the specific runtime a parameter (for now: test with linux-x64).
+
+name: Cache runtime
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cache-linux-x64:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Check existing
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            Native/runtimes/**
+          key: runtime-linux-x64-${{ hashFiles('.gitmodules', '.github/workflow/runtime-linux-x64.yml') }}
+
+      - name: Build runtime
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: ./.github/workflows/runtime-linux-x64.yml
