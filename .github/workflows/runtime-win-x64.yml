@@ -15,6 +15,7 @@ on:
 
 permissions:
   contents: read
+  actions: write
 
 jobs:
   build-win-x64:
@@ -46,7 +47,25 @@ jobs:
           mkdir Native\runtimes\win-x64\native
           copy build\src\Release\xmss.dll Native\runtimes\win-x64\native\
 
-      - name: Save artifact
+      - name: Check existing cache
+        id: cache-check
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            Native/runtimes/**
+          key: runtime-${{ inputs.runtime }}-${{ hashFiles('.gitmodules', '.github/workflows/runtime-win-x64.yml') }}
+          enableCrossOsArchive: true
+          lookup-only: true
+
+      - name: Delete existing cache
+        if: ${{ steps.cache-check.outputs.cache-hit }}
+        run: |
+          gh extension install actions/gh-actions-cache
+          gh actions-cache delete "runtime-${{ inputs.runtime }}-${{ hashFiles('.gitmodules', '.github/workflows/runtime-win-x64.yml') }}" --confirm
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Save cache
         uses: actions/cache/save@v4
         with:
           path: |
