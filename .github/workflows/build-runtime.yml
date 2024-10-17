@@ -1,0 +1,25 @@
+# SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
+#
+# SPDX-License-Identifier: MIT
+
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+# This is a placeholder workflow.
+
+name: Placeholder runtime builder workflow
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  fail:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Fail
+        run: |
+          exit 1

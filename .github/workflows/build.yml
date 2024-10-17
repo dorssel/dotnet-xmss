@@ -57,13 +57,19 @@ jobs:
           key: cache-win-x64-${{ github.run_id }}
           enableCrossOsArchive: true
 
-  cache-runtime-linux-x64:
+  cache-runtimes:
+    strategy:
+      matrix:
+        runtime: [linux-x64]
     uses: ./.github/workflows/cache-runtime.yml
+    with:
+      runtime: ${{ matrix.runtime }}
+      
 
   build-dotnet:
     needs:
       - build-win-x64
-      - cache-runtime-linux-x64
+      - cache-runtimes
 
     runs-on: ubuntu-latest
 
