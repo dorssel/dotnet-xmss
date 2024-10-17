@@ -45,7 +45,7 @@ jobs:
           submodules: recursive
 
       - name: Validate runtime identifier
-        if: ${{ hashFiles(env.runtime-workflow) }} == ''
+        if: ${{ hashFiles(env.runtime-workflow) == '' }}
         run: |
           exit 1
 
