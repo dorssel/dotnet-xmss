@@ -28,6 +28,7 @@ on:
 
 permissions:
   contents: read
+  actions: write
 
 env:
   runtime-workflow: .github/workflows/runtime-${{ inputs.runtime }}.yml
@@ -70,3 +71,6 @@ jobs:
     uses: ./.github/workflows/build-runtime.yml
     with:
       runtime: ${{ inputs.runtime }}
+    permissions:
+      contents: read
+      actions: write

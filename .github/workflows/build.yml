@@ -18,6 +18,7 @@ permissions:
   issues: read
   checks: write
   pull-requests: write
+  actions: write
 
 jobs:
   cache-runtimes:
@@ -29,7 +30,9 @@ jobs:
     uses: ./.github/workflows/cache-runtime.yml
     with:
       runtime: ${{ matrix.runtime }}
-      
+    permissions:
+      contents: read
+      actions: write
 
   build-dotnet:
     needs:
