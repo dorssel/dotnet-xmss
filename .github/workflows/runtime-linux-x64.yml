@@ -2,8 +2,12 @@
 #
 # SPDX-License-Identifier: MIT
 
+# This file requires LF line endings, as it is used in GitHub action hashes.
+
 ---
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+# This file requires LF line endings, as it is used in GitHub action hashes.
 
 name: Runtime linux-x64
 

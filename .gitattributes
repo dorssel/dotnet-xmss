@@ -7,7 +7,10 @@
 
 .gitattributes   text
 .gitignore       text
+.gitmodules      text eol=lf
 .editorconfig    text
+
+.github/workflows/runtime-*.yml   text eol=lf
 
 *.txt       text
 *.md        text

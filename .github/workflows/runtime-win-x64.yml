@@ -5,6 +5,8 @@
 ---
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 
+# This file requires LF line endings, as it is used in GitHub action hashes.
+
 name: Runtime win-x64
 
 on:
