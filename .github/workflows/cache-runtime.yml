@@ -15,10 +15,24 @@ name: Cache runtime
 
 on:
   workflow_dispatch:
+    inputs:
+      runtime:
+        description: 'A runtime identifier (RID)'
+        required: true
+        type: string
+
   workflow_call:
+    inputs:
+      runtime:
+        description: 'A runtime identifier (RID)'
+        required: true
+        type: string
 
 permissions:
   contents: read
+
+env:
+  runtime-workflow: .github/workflows/runtime-${{ inputs.runtime }}.yml
 
 jobs:
   check-cache:
@@ -30,13 +44,22 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Validate runtime identifier
+        if: ${{ hashFiles(env.runtime-workflow) }} == ''
+        run: |
+          exit 1
+
+      - name: Copy build workflow
+        run: |
+          cp ${{ env.runtime-workflow }} .github/workflows/build-runtime.yml
+
       - name: Check existing cache
         id: cache
         uses: actions/cache/restore@v4
         with:
           path: |
             Native/runtimes/**
-          key: runtime-linux-x64-${{ hashFiles('.gitmodules', '.github/workflows/runtime-linux-x64.yml') }}
+          key: runtime-${{ inputs.runtime }}-${{ hashFiles('.gitmodules', env.runtime-workflow) }}
           enableCrossOsArchive: true
           lookup-only: true
 
@@ -46,4 +69,4 @@ jobs:
   build-runtime:
     needs: check-cache
     if: needs.check-cache.outputs.cache-hit != 'true'
-    uses: ./.github/workflows/runtime-linux-x64.yml
+    uses: ./.github/workflows/build-runtime.yml
