@@ -57,48 +57,13 @@ jobs:
           key: cache-win-x64-${{ github.run_id }}
           enableCrossOsArchive: true
 
-  build-linux-x64:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Configure
-        run: >
-          cmake
-          -S xmss-library
-          -B build
-          -DCMAKE_C_COMPILER=clang
-          -DXMSS_C99_COMPATIBLE=OFF
-          -DBUILD_SHARED_LIBS=ON
-
-      - name: Build
-        run: cmake --build build
-
-      - name: Test
-        working-directory: build
-        run: ctest
-
-      - name: Copy artifact
-        run: |
-          mkdir -p Native/runtimes/linux-x64/native
-          cp build/src/libxmss.so Native/runtimes/linux-x64/native/xmss.so
-
-      - name: Save artifact
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            Native/runtimes/**
-          key: cache-linux-x64-${{ github.run_id }}
-          enableCrossOsArchive: true
+  cache-runtime-linux-x64:
+    uses: ./.github/workflows/cache-runtime.yml
 
   build-dotnet:
     needs:
       - build-win-x64
-      - build-linux-x64
+      - cache-runtime-linux-x64
 
     runs-on: ubuntu-latest
 
@@ -121,7 +86,7 @@ jobs:
         with:
           path: |
             Native/runtimes/**
-          key: cache-linux-x64-${{ github.run_id }}
+          key: runtime-linux-x64-${{ hashFiles('.gitmodules', '.github/workflows/runtime-linux-x64.yml') }}
           fail-on-cache-miss: true
 
       - name: Setup .NET

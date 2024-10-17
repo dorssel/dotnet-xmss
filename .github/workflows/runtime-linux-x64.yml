@@ -9,6 +9,7 @@ name: Runtime linux-x64
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -49,5 +50,5 @@ jobs:
         with:
           path: |
             Native/runtimes/**
-          key: runtime-linux-x64-${{ hashFiles('.gitmodules', '.github/workflow/runtime-linux-x64.yml') }}
+          key: runtime-linux-x64-${{ hashFiles('.gitmodules', '.github/workflows/runtime-linux-x64.yml') }}
           enableCrossOsArchive: true

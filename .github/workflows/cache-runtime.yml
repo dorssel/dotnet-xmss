@@ -15,12 +15,13 @@ name: Cache runtime
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
 
 jobs:
-  cache-linux-x64:
+  check-cache:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,14 +30,20 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Check existing
+      - name: Check existing cache
         id: cache
         uses: actions/cache/restore@v4
         with:
           path: |
             Native/runtimes/**
-          key: runtime-linux-x64-${{ hashFiles('.gitmodules', '.github/workflow/runtime-linux-x64.yml') }}
+          key: runtime-linux-x64-${{ hashFiles('.gitmodules', '.github/workflows/runtime-linux-x64.yml') }}
+          enableCrossOsArchive: true
+          lookup-only: true
 
-      - name: Build runtime
-        if: steps.cache.outputs.cache-hit != 'true'
-        uses: ./.github/workflows/runtime-linux-x64.yml
+    outputs:
+      cache-hit: ${{ steps.cache.outputs.cache-hit }}
+
+  build-runtime:
+    needs: check-cache
+    if: needs.check-cache.outputs.cache-hit != 'true'
+    uses: ./.github/workflows/runtime-linux-x64.yml
