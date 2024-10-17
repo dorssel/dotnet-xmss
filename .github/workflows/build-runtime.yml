@@ -5,21 +5,33 @@
 ---
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 
-# This is a placeholder workflow.
+# Because parameterized reusable workflow names are not supported, we need this "switch board".
 
-name: Placeholder runtime builder workflow
+name: Build runtime
 
 on:
+  workflow_dispatch:
+    inputs:
+      runtime:
+        description: 'A runtime identifier (RID)'
+        required: true
+        type: string
+
   workflow_call:
+    inputs:
+      runtime:
+        description: 'A runtime identifier (RID)'
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 jobs:
-  fail:
-    runs-on: ubuntu-latest
+  build-linux-x64:
+    uses: ./.github/workflows/runtime-linux-x64.yml
+    if: inputs.runtime == 'linux-x64'
 
-    steps:
-      - name: Fail
-        run: |
-          exit 1
+  build-win-x64:
+    uses: ./.github/workflows/runtime-win-x64.yml
+    if: inputs.runtime == 'win-x64'

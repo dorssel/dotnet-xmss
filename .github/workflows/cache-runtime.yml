@@ -68,3 +68,5 @@ jobs:
     needs: check-cache
     if: needs.check-cache.outputs.cache-hit != 'true'
     uses: ./.github/workflows/build-runtime.yml
+    with:
+      runtime: ${{ inputs.runtime }}
