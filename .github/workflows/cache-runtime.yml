@@ -9,8 +9,6 @@
 # retrieve the cache. If the cached runtime does not exist, it will rebuild it by
 # calling the applicable runtime build workflow.
 
-# TODO: Make the specific runtime a parameter (for now: test with linux-x64).
-
 name: Cache runtime
 
 on:
@@ -44,7 +42,7 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Validate runtime identifier
+      - name: Fail if runtime identifier invalid
         if: ${{ hashFiles(env.runtime-workflow) == '' }}
         run: |
           exit 1
@@ -59,7 +57,7 @@ jobs:
         with:
           path: |
             Native/runtimes/**
-          key: runtime-${{ inputs.runtime }}-${{ hashFiles('.gitmodules', env.runtime-workflow) }}
+          key: xxx-runtime-${{ inputs.runtime }}-${{ hashFiles('.gitmodules', env.runtime-workflow) }}
           enableCrossOsArchive: true
           lookup-only: true
 
