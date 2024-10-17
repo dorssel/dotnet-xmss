@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+# This file requires LF line endings, as it is used in cross-platform GitHub action hashes.
+
 [submodule "xmss-library"]
 	path = xmss-library
 	url = https://github.com/FoxCryptoNL/xmss-library.git

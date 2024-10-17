@@ -7,7 +7,7 @@
 ---
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 
-# This file requires LF line endings, as it is used in GitHub action hashes.
+# This file requires LF line endings, as it is used in cross-platform GitHub action hashes.
 
 name: Runtime linux-x64
 
@@ -49,7 +49,25 @@ jobs:
           mkdir -p Native/runtimes/linux-x64/native
           cp build/src/libxmss.so Native/runtimes/linux-x64/native/xmss.so
 
-      - name: Save artifact
+      - name: Check existing cache
+        id: cache-check
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            Native/runtimes/**
+          key: runtime-${{ inputs.runtime }}-${{ hashFiles('.gitmodules', '.github/workflows/runtime-linux-x64.yml') }}
+          enableCrossOsArchive: true
+          lookup-only: true
+
+      - name: Delete existing cache
+        if: ${{ steps.cache-check.outputs.cache-hit }}
+        run: |
+          gh extension install actions/gh-actions-cache
+          gh actions-cache delete "runtime-${{ inputs.runtime }}-${{ hashFiles('.gitmodules', '.github/workflows/runtime-linux-x64.yml') }}" --confirm
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Save cache
         uses: actions/cache/save@v4
         with:
           path: |
