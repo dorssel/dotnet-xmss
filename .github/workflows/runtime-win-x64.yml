@@ -1,0 +1,53 @@
+# SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
+#
+# SPDX-License-Identifier: MIT
+
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+name: Runtime win-x64
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  build-win-x64:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configure
+        run: >
+          cmake
+          -S xmss-library
+          -B build
+          -DXMSS_C99_COMPATIBLE=OFF
+          -DBUILD_SHARED_LIBS=ON
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Test
+        working-directory: build
+        run: ctest --build-config Release
+
+      - name: Copy artifact
+        run: |
+          mkdir Native\runtimes\win-x64\native
+          copy build\src\Release\xmss.dll Native\runtimes\win-x64\native\
+
+      - name: Save artifact
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            Native/runtimes/**
+          key: runtime-win-x64-${{ hashFiles('.gitmodules', '.github/workflows/runtime-win-x64.yml') }}
+          enableCrossOsArchive: true
