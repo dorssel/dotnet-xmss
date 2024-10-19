@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-using Dorssel.Security.Cryptography.Xmss;
 using System.Runtime.InteropServices;
+using Dorssel.Security.Cryptography.Xmss.Native;
 
 namespace NativeHelper;
 
@@ -11,7 +11,7 @@ public static class NativeLoader
 {
     public static void Setup()
     {
-        NativeLibrary.SetDllImportResolver(typeof(Native).Assembly, (libraryName, assembly, searchPath) =>
+        NativeLibrary.SetDllImportResolver(typeof(XmssSignature).Assembly, (libraryName, assembly, searchPath) =>
         {
             if (libraryName != "xmss")
             {
