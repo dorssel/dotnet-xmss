@@ -14,3 +14,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Security", "CA5393:Do not use unsafe DllImportSearchPath value", Justification = "Under investigation")]
 [assembly: SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Fix later")]
 [assembly: SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Fix later")]
+[assembly: SuppressMessage("Interoperability", "CA1401:P/Invokes should not be visible", Justification = "Under investigation")]

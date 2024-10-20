@@ -8,6 +8,8 @@ SPDX-License-Identifier: MIT
 
   <PropertyGroup>
     <IsTestProject>true</IsTestProject>
+
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
