@@ -49,6 +49,7 @@ SPDX-License-Identifier: MIT
 
     <!-- SourceLink -->
     <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' != 'true'">false</ContinuousIntegrationBuild>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
@@ -61,7 +62,10 @@ SPDX-License-Identifier: MIT
 
   <Target Name="SetPackageVersion" AfterTargets="GetVersion">
     <PropertyGroup>
-      <PackageVersion>$(GitVersion_MajorMinorPatch)</PackageVersion>
+      <!-- Default to (obviously bogus) pre-release version number in case GitVersion is not available (e.g., Visual Studio). -->
+      <PackageVersion>0.9.999</PackageVersion>
+      <!-- This must be used when building on GitHub, or when building locally with GitVersion available. -->
+      <PackageVersion Condition="$(ContinuousIntegrationBuild) Or ($(GitVersion_MajorMinorPatch) != '')">$(GitVersion_MajorMinorPatch)</PackageVersion>
     </PropertyGroup>
   </Target>
   

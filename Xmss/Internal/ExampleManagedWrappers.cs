@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: MIT
 
-namespace Dorssel.Security.Cryptography.Xmss.Native;
+namespace Dorssel.Security.Cryptography.Internal;
 
-public static partial class ExampleManagedWrappers
+static partial class ExampleManagedWrappers
 {
-    public static XmssError VerificationInit(out XmssVerificationContext context, in XmssPublicKey publicKey, uint[] signature)
+    internal static XmssError VerificationInit(out XmssVerificationContext context, in XmssPublicKey publicKey, uint[] signature)
     {
         ArgumentNullException.ThrowIfNull(signature);
         unsafe
@@ -19,7 +19,7 @@ public static partial class ExampleManagedWrappers
         }
     }
 
-    public static XmssError VerificationUpdate(ref XmssVerificationContext context, ReadOnlySpan<byte> part)
+    internal static XmssError VerificationUpdate(ref XmssVerificationContext context, ReadOnlySpan<byte> part)
     {
         unsafe
         {
@@ -35,7 +35,7 @@ public static partial class ExampleManagedWrappers
         }
     }
 
-    public static XmssError VerificationCheck(ref XmssVerificationContext context, in XmssPublicKey publicKey)
+    internal static XmssError VerificationCheck(ref XmssVerificationContext context, in XmssPublicKey publicKey)
     {
         return UnsafeNativeMethods.xmss_verification_check(ref context, in publicKey);
     }

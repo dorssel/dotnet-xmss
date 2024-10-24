@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: MIT
 
-namespace Dorssel.Security.Cryptography.Xmss.Native;
+namespace Dorssel.Security.Cryptography.Internal;
 
-public enum XmssDistantValues : int
+enum XmssDistantValues : int
 {
     XMSS_DISTANT_VALUE_0 = 0x00,
     XMSS_DISTANT_VALUE_1 = 0xD2,
@@ -24,9 +24,7 @@ public enum XmssDistantValues : int
     XMSS_DISTANT_VALUE_F = 0xFF,
 }
 
-#pragma warning disable CA1008 // Enums should have zero value
-public enum XmssError : int
-#pragma warning restore CA1008 // Enums should have zero value
+enum XmssError : int
 {
     XMSS_OKAY = XmssDistantValues.XMSS_DISTANT_VALUE_1,
     XMSS_ERR_NULL_POINTER = XmssDistantValues.XMSS_DISTANT_VALUE_2,
@@ -45,11 +43,7 @@ public enum XmssError : int
     XMSS_UNINITIALIZED = XmssDistantValues.XMSS_DISTANT_VALUE_F
 }
 
-#pragma warning disable CA1008 // Enums should have zero value
-#pragma warning disable CA1027 // Mark enums with FlagsAttribute
-public enum XmssParameterSetOID : int
-#pragma warning restore CA1027 // Mark enums with FlagsAttribute
-#pragma warning restore CA1008 // Enums should have zero value
+enum XmssParameterSetOID : int
 {
     XMSS_PARAM_SHA2_10_256 = 1,
     XMSS_PARAM_SHA2_16_256 = 2,
@@ -59,42 +53,53 @@ public enum XmssParameterSetOID : int
     XMSS_PARAM_SHAKE256_20_256 = 0x12,
 }
 
-// TODO: XMSS_TREE_DEPTH
+static partial class Defines
+{
+    internal static uint XMSS_TREE_DEPTH(XmssParameterSetOID oid) => oid switch
+    {
+        XmssParameterSetOID.XMSS_PARAM_SHA2_10_256 or XmssParameterSetOID.XMSS_PARAM_SHAKE256_10_256 => 10u,
+        XmssParameterSetOID.XMSS_PARAM_SHA2_16_256 or XmssParameterSetOID.XMSS_PARAM_SHAKE256_16_256 => 16u,
+        XmssParameterSetOID.XMSS_PARAM_SHA2_20_256 or XmssParameterSetOID.XMSS_PARAM_SHAKE256_20_256 => 20u,
+        _ => 0u,
+    };
+}
 
-#pragma warning disable CA1008 // Enums should have zero value
-public enum XmssIndexObfuscationSetting : int
-#pragma warning restore CA1008 // Enums should have zero value
+enum XmssIndexObfuscationSetting : int
 {
     XMSS_INDEX_OBFUSCATION_OFF = XmssDistantValues.XMSS_DISTANT_VALUE_1,
     XMSS_INDEX_OBFUSCATION_ON = XmssDistantValues.XMSS_DISTANT_VALUE_2
 }
 
-#pragma warning disable CA1008 // Enums should have zero value
-public enum XmssCacheType : int
-#pragma warning restore CA1008 // Enums should have zero value
+enum XmssCacheType : int
 {
     XMSS_CACHE_NONE = XmssDistantValues.XMSS_DISTANT_VALUE_1,
     XMSS_CACHE_SINGLE_LEVEL = XmssDistantValues.XMSS_DISTANT_VALUE_2,
     XMSS_CACHE_TOP = XmssDistantValues.XMSS_DISTANT_VALUE_3
 }
 
-public unsafe struct XmssValue256
+unsafe struct XmssValue256
 {
-    public fixed byte data[32];
+    internal fixed byte data[32];
 }
 
-// TODO: XMSS_VALUE_256_WORDS
-
-// TODO: XmssNativeValue256
-
-public unsafe struct XmssBuffer
+static partial class Defines
 {
-    public nuint data_size;
-    public byte* data;
+    internal const int XMSS_VALUE_256_WORDS = 8;
 }
 
-public unsafe delegate void* XmssReallocFunction(void* ptr, nuint size);
+unsafe struct XmssNativeValue256
+{
+    internal fixed uint data[Defines.XMSS_VALUE_256_WORDS];
+}
 
-public unsafe delegate void XmssFreeFunction(void* ptr);
+unsafe struct XmssBuffer
+{
+    internal nuint data_size;
+    internal byte* data;
+}
 
-public unsafe delegate void XmssZeroizeFunction(void* ptr, nuint size);
+unsafe delegate void* XmssReallocFunction(void* ptr, nuint size);
+
+unsafe delegate void XmssFreeFunction(void* ptr);
+
+unsafe delegate void XmssZeroizeFunction(void* ptr, nuint size);
