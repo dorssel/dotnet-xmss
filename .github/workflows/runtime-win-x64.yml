@@ -44,15 +44,15 @@ jobs:
 
       - name: Copy artifact
         run: |
-          mkdir Native\runtimes\win-x64\native
-          copy build\src\Release\xmss.dll Native\runtimes\win-x64\native\
+          mkdir Xmss\runtimes\win-x64\native
+          copy build\src\Release\xmss.dll Xmss\runtimes\win-x64\native\
 
       - name: Check existing cache
         id: cache-check
         uses: actions/cache/restore@v4
         with:
           path: |
-            Native/runtimes/**
+            Xmss/runtimes/**
           key: runtime-${{ inputs.runtime }}-${{ hashFiles('.gitmodules', '.github/workflows/runtime-win-x64.yml') }}
           enableCrossOsArchive: true
           lookup-only: true
@@ -69,6 +69,6 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: |
-            Native/runtimes/**
+            Xmss/runtimes/**
           key: runtime-win-x64-${{ hashFiles('.gitmodules', '.github/workflows/runtime-win-x64.yml') }}
           enableCrossOsArchive: true

@@ -6,14 +6,13 @@ using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using Dorssel.Security.Cryptography.Xmss;
-using Dorssel.Security.Cryptography.Xmss.Native;
+using Dorssel.Security.Cryptography.Internal;
 using NativeHelper;
 
 namespace UnitTests;
 
 [TestClass]
-public unsafe class NativeTests
+public unsafe class InternalTests
 {
     [AssemblyInitialize]
     public static void AssemblyInitialize(TestContext testContext)
@@ -36,14 +35,19 @@ public unsafe class NativeTests
         XmssPublicKey publicKey;
         var signature = new uint[625];
 
-        var schemeIdentifier = 1u; // XMSS_PARAM_SHA2_10_256
+        var schemeIdentifier = (uint)XmssParameterSetOID.XMSS_PARAM_SHAKE256_10_256;
         publicKey.scheme_identifier = BitConverter.IsLittleEndian
             ? BinaryPrimitives.ReverseEndianness(schemeIdentifier)
             : schemeIdentifier;
 
         var result = ExampleManagedWrappers.VerificationInit(out var context, in publicKey, signature);
+        Assert.AreEqual(XmssError.XMSS_OKAY, result);
+
         result = ExampleManagedWrappers.VerificationUpdate(ref context, [1, 2, 3, 4, 5,]);
+        Assert.AreEqual(XmssError.XMSS_OKAY, result);
+
         result = ExampleManagedWrappers.VerificationCheck(ref context, in publicKey);
+        Assert.AreEqual(XmssError.XMSS_ERR_INVALID_SIGNATURE, result);
     }
 
     static int AllocationCount;

@@ -47,15 +47,15 @@ jobs:
 
       - name: Copy artifact
         run: |
-          mkdir -p Native/runtimes/linux-x64/native
-          cp build/src/libxmss.so Native/runtimes/linux-x64/native/xmss.so
+          mkdir -p Xmss/runtimes/linux-x64/native
+          cp build/src/libxmss.so Xmss/runtimes/linux-x64/native/xmss.so
 
       - name: Check existing cache
         id: cache-check
         uses: actions/cache/restore@v4
         with:
           path: |
-            Native/runtimes/**
+            Xmss/runtimes/**
           key: runtime-${{ inputs.runtime }}-${{ hashFiles('.gitmodules', '.github/workflows/runtime-linux-x64.yml') }}
           enableCrossOsArchive: true
           lookup-only: true
@@ -72,6 +72,6 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: |
-            Native/runtimes/**
+            Xmss/runtimes/**
           key: runtime-linux-x64-${{ hashFiles('.gitmodules', '.github/workflows/runtime-linux-x64.yml') }}
           enableCrossOsArchive: true

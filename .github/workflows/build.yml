@@ -50,7 +50,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: |
-            Native/runtimes/**
+            Xmss/runtimes/**
           key: runtime-linux-x64-${{ hashFiles('.gitmodules', '.github/workflows/runtime-linux-x64.yml') }}
           fail-on-cache-miss: true
 
@@ -58,7 +58,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: |
-            Native/runtimes/**
+            Xmss/runtimes/**
           key: runtime-win-x64-${{ hashFiles('.gitmodules', '.github/workflows/runtime-win-x64.yml') }}
           fail-on-cache-miss: true
 

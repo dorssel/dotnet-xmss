@@ -5,12 +5,12 @@
 using System.Runtime.InteropServices;
 using System.Security;
 
-namespace Dorssel.Security.Cryptography.Xmss.Native;
+namespace Dorssel.Security.Cryptography.Internal;
 
-public unsafe struct XmssPrivateKeyStatelessBlob
+unsafe struct XmssPrivateKeyStatelessBlob
 {
-    public nuint data_size;
-    public byte* data // originally: uint8_t[]
+    internal nuint data_size;
+    internal byte* data // originally: uint8_t[]
     {
         get
         {
@@ -24,10 +24,10 @@ public unsafe struct XmssPrivateKeyStatelessBlob
 
 // TODO: XMSS_PRIVATE_KEY_STATELESS_BLOB_SIZE
 
-public unsafe struct XmssPrivateKeyStatefulBlob
+unsafe struct XmssPrivateKeyStatefulBlob
 {
-    public nuint data_size;
-    public byte* data // originally: uint8_t[]
+    internal nuint data_size;
+    internal byte* data // originally: uint8_t[]
     {
         get
         {
@@ -41,10 +41,10 @@ public unsafe struct XmssPrivateKeyStatefulBlob
 
 // TODO: XMSS_PRIVATE_KEY_STATEFUL_BLOB_SIZE
 
-public unsafe struct XmssPublicKeyInternalBlob
+unsafe struct XmssPublicKeyInternalBlob
 {
-    public nuint data_size;
-    public byte* data // originally: uint8_t[]
+    internal nuint data_size;
+    internal byte* data // originally: uint8_t[]
     {
         get
         {
@@ -58,24 +58,24 @@ public unsafe struct XmssPublicKeyInternalBlob
 
 // TODO: XMSS_PUBLIC_KEY_INTERNAL_BLOB_SIZE
 
-public struct XmssPublicKey
+struct XmssPublicKey
 {
-    public uint scheme_identifier; // big-endian
-    public XmssValue256 root;
-    public XmssValue256 seed;
+    internal uint scheme_identifier; // big-endian
+    internal XmssValue256 root;
+    internal XmssValue256 seed;
 };
 
-public static partial class Defines
+static partial class Defines
 {
-    public static readonly unsafe nuint XMSS_PUBLIC_KEY_SIZE = (nuint)sizeof(XmssPublicKey);
+    internal static readonly unsafe nuint XMSS_PUBLIC_KEY_SIZE = (nuint)sizeof(XmssPublicKey);
 }
 
-public unsafe struct XmssSignature
+unsafe struct XmssSignature
 {
-    public uint leaf_index; // big-endian
-    public XmssValue256 random_bytes;
-    public fixed byte wots_signature[67 * 32]; // originally: XmssValue256[32]
-    public XmssValue256* authentication_path // originally: XmssValue256[]
+    internal uint leaf_index; // big-endian
+    internal XmssValue256 random_bytes;
+    internal fixed byte wots_signature[67 * 32]; // originally: XmssValue256[32]
+    internal XmssValue256* authentication_path // originally: XmssValue256[]
     {
         get
         {
@@ -87,10 +87,10 @@ public unsafe struct XmssSignature
     }
 }
 
-public unsafe struct XmssSignatureBlob
+unsafe struct XmssSignatureBlob
 {
-    public nuint data_size;
-    public byte* data // originally: uint8_t[]
+    internal nuint data_size;
+    internal byte* data // originally: uint8_t[]
     {
         get
         {
@@ -102,11 +102,11 @@ public unsafe struct XmssSignatureBlob
     }
 }
 
-[SuppressUnmanagedCodeSecurityAttribute]
-public static unsafe partial class UnsafeNativeMethods
+[SuppressUnmanagedCodeSecurity]
+static unsafe partial class UnsafeNativeMethods
 {
     // originally: a static inline function
-    public static unsafe XmssSignature* xmss_get_signature_struct(XmssSignatureBlob* signature)
+    internal static unsafe XmssSignature* xmss_get_signature_struct(XmssSignatureBlob* signature)
     {
         if (signature is null)
         {
@@ -122,17 +122,17 @@ public static unsafe partial class UnsafeNativeMethods
 
 // TODO: XMSS_VERIFICATION_CONTEXT_SIZE
 
-public static partial class Defines
+static partial class Defines
 {
-    public const int XMSS_VERIFICATION_CONTEXT_SIZE = 4 + 4 + 8 + 8 + 200 + 8 + 32;
+    internal const int XMSS_VERIFICATION_CONTEXT_SIZE = 4 + 4 + 8 + 8 + 200 + 8 + 32;
 }
 
 [StructLayout(LayoutKind.Explicit)]
-public unsafe struct XmssVerificationContext
+unsafe struct XmssVerificationContext
 {
     [FieldOffset(0)]
-    public fixed byte data[Defines.XMSS_VERIFICATION_CONTEXT_SIZE];
+    internal fixed byte data[Defines.XMSS_VERIFICATION_CONTEXT_SIZE];
 
     [FieldOffset(0)]
-    public ulong alignment;
+    internal ulong alignment;
 }

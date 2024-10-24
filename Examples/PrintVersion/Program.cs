@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-using Dorssel.Security.Cryptography.Xmss;
+using Dorssel.Security.Cryptography;
 
 static class Program
 {
@@ -12,6 +12,7 @@ static class Program
         // When referencing the NuGet package this is not required.
         NativeHelper.NativeLoader.Setup();
 
-        Console.WriteLine($"Library version: 0x{SafeNativeMethods.xmss_library_get_version():X08}");
+        Console.WriteLine($"Native headers version: {Xmss.NativeHeadersVersion}");
+        Console.WriteLine($"Native library version: {Xmss.NativeLibraryVersion}");
     }
 }
