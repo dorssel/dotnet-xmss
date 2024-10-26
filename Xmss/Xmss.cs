@@ -7,9 +7,11 @@ using Dorssel.Security.Cryptography.Internal;
 
 namespace Dorssel.Security.Cryptography;
 
-public class Xmss : AsymmetricAlgorithm
+public class Xmss
+    : AsymmetricAlgorithm
+    , IXmss
 {
-    public static Version NativeHeadersVersion
+    public Version NativeHeadersVersion
     {
         get
         {
@@ -18,7 +20,7 @@ public class Xmss : AsymmetricAlgorithm
         }
     }
 
-    public static Version NativeLibraryVersion
+    public Version NativeLibraryVersion
     {
         get
         {
@@ -26,5 +28,10 @@ public class Xmss : AsymmetricAlgorithm
             return new(Defines.XMSS_LIBRARY_GET_VERSION_MAJOR(nativeVersion),
                 Defines.XMSS_LIBRARY_GET_VERSION_MINOR(nativeVersion), Defines.XMSS_LIBRARY_GET_VERSION_PATCH(nativeVersion));
         }
+    }
+
+    public bool Verify(Stream data, byte[] signature)
+    {
+        throw new NotImplementedException();
     }
 }

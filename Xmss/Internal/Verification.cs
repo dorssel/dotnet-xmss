@@ -8,7 +8,7 @@ using System.Security;
 namespace Dorssel.Security.Cryptography.Internal;
 
 [SuppressUnmanagedCodeSecurity]
-static unsafe partial class UnsafeNativeMethods
+static partial class UnsafeNativeMethods
 {
     [LibraryImport("xmss")]
     [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]

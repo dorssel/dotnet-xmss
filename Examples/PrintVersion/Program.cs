@@ -12,7 +12,9 @@ static class Program
         // When referencing the NuGet package this is not required.
         NativeHelper.NativeLoader.Setup();
 
-        Console.WriteLine($"Native headers version: {Xmss.NativeHeadersVersion}");
-        Console.WriteLine($"Native library version: {Xmss.NativeLibraryVersion}");
+        using var xmss = new Xmss();
+
+        Console.WriteLine($"Native headers version: {xmss.NativeHeadersVersion}");
+        Console.WriteLine($"Native library version: {xmss.NativeLibraryVersion}");
     }
 }

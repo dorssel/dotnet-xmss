@@ -6,6 +6,10 @@ SPDX-License-Identifier: MIT
 -->
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Xmss\Xmss.csproj" />
   </ItemGroup>

@@ -74,7 +74,7 @@ unsafe struct XmssSignature
 {
     internal uint leaf_index; // big-endian
     internal XmssValue256 random_bytes;
-    internal fixed byte wots_signature[67 * 32]; // originally: XmssValue256[32]
+    internal fixed byte wots_signature[67 * 32]; // originally: XmssValue256[67]
     internal XmssValue256* authentication_path // originally: XmssValue256[]
     {
         get
@@ -103,7 +103,7 @@ unsafe struct XmssSignatureBlob
 }
 
 [SuppressUnmanagedCodeSecurity]
-static unsafe partial class UnsafeNativeMethods
+static partial class UnsafeNativeMethods
 {
     // originally: a static inline function
     internal static unsafe XmssSignature* xmss_get_signature_struct(XmssSignatureBlob* signature)
