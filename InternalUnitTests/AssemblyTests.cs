@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -12,7 +11,7 @@ using NativeHelper;
 namespace UnitTests;
 
 [TestClass]
-sealed unsafe class InternalTests
+sealed unsafe class AssemblyTests
 {
     [AssemblyInitialize]
     public static void AssemblyInitialize(TestContext testContext)
@@ -27,27 +26,6 @@ sealed unsafe class InternalTests
         var version = SafeNativeMethods.xmss_library_get_version();
 
         Assert.AreEqual(0x00020000u, version);
-    }
-
-    [TestMethod]
-    public void VerificationInitValid()
-    {
-        XmssPublicKey publicKey;
-        var signature = new uint[625];
-
-        var schemeIdentifier = (uint)XmssParameterSetOID.XMSS_PARAM_SHAKE256_10_256;
-        publicKey.scheme_identifier = BitConverter.IsLittleEndian
-            ? BinaryPrimitives.ReverseEndianness(schemeIdentifier)
-            : schemeIdentifier;
-
-        var result = ExampleManagedWrappers.VerificationInit(out var context, in publicKey, signature);
-        Assert.AreEqual(XmssError.XMSS_OKAY, result);
-
-        result = ExampleManagedWrappers.VerificationUpdate(ref context, [1, 2, 3, 4, 5,]);
-        Assert.AreEqual(XmssError.XMSS_OKAY, result);
-
-        result = ExampleManagedWrappers.VerificationCheck(ref context, in publicKey);
-        Assert.AreEqual(XmssError.XMSS_ERR_INVALID_SIGNATURE, result);
     }
 
     static int AllocationCount;

@@ -7,7 +7,7 @@ using Dorssel.Security.Cryptography.Internal;
 namespace UnitTests;
 
 [TestClass]
-sealed unsafe class InternalErrorsTests
+sealed unsafe class ErrorsTests
 {
     [TestMethod]
     public void xmss_error_to_name()
