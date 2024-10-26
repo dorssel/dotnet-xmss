@@ -21,7 +21,7 @@ static partial class Defines
 }
 
 [SuppressUnmanagedCodeSecurity]
-unsafe partial class SafeNativeMethods
+static partial class SafeNativeMethods
 {
     [LibraryImport("xmss")]
     [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]

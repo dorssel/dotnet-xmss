@@ -15,7 +15,7 @@ static partial class Defines
 }
 
 [SuppressUnmanagedCodeSecurity]
-static unsafe partial class UnsafeNativeMethods
+static partial class UnsafeNativeMethods
 {
     [LibraryImport("xmss")]
     [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
@@ -37,7 +37,7 @@ unsafe struct XmssKeyContext { }
 // TODO: XMSS_KEY_CONTEXT_SIZE
 
 [SuppressUnmanagedCodeSecurity]
-static unsafe partial class UnsafeNativeMethods
+static partial class UnsafeNativeMethods
 {
     [LibraryImport("xmss")]
     [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
@@ -49,7 +49,7 @@ unsafe struct XmssKeyGenerationContext { }
 // TODO: XMSS_KEY_GENERATION_CONTEXT_SIZE
 
 [SuppressUnmanagedCodeSecurity]
-static unsafe partial class UnsafeNativeMethods
+static partial class UnsafeNativeMethods
 {
     [LibraryImport("xmss")]
     [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]

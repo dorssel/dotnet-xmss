@@ -12,7 +12,7 @@ using NativeHelper;
 namespace UnitTests;
 
 [TestClass]
-public unsafe class InternalTests
+sealed unsafe class InternalTests
 {
     [AssemblyInitialize]
     public static void AssemblyInitialize(TestContext testContext)
@@ -20,6 +20,8 @@ public unsafe class InternalTests
         _ = testContext;
         NativeLoader.Setup();
     }
+
+
 
     [TestMethod]
     public void LibraryGetVersionMatchesExpected()
