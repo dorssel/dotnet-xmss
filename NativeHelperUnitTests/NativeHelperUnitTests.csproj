@@ -8,12 +8,8 @@ SPDX-License-Identifier: MIT
 
   <Import Project="..\UnitTests.Build.props" />
 
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\NativeHelper\NativeHelper.csproj" />
   </ItemGroup>
-
+  
 </Project>
