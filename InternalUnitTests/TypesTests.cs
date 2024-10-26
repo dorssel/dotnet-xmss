@@ -2,13 +2,24 @@
 //
 // SPDX-License-Identifier: MIT
 
+using System.Reflection.Metadata;
 using Dorssel.Security.Cryptography.Internal;
 
 namespace UnitTests;
 
 [TestClass]
-sealed unsafe class InternalDefinesTests
+sealed unsafe class TypesTests
 {
+    [TestMethod]
+    public void XMSS_TREE_DEPTH()
+    {
+        foreach (var parameter in Enum.GetValues<XmssParameterSetOID>())
+        {
+            Assert.IsTrue(Defines.XMSS_TREE_DEPTH(parameter) > 0);
+        }
+        Assert.AreEqual(0u, Defines.XMSS_TREE_DEPTH(0));
+    }
+
     [TestMethod]
     public void XMSS_VALUE_256_WORDS()
     {

@@ -5,7 +5,9 @@ VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xmss", "Xmss\Xmss.csproj", "{5435047D-2323-4E4D-9476-27D469940E20}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "UnitTests\UnitTests.csproj", "{64B1F2BE-C094-4ED2-AE56-9E41728300C7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InternalUnitTests", "InternalUnitTests\InternalUnitTests.csproj", "{1C09C487-4772-48DA-AE2D-1FB3E11B7D43}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XmssUnitTests", "XmssUnitTests\XmssUnitTests.csproj", "{64B1F2BE-C094-4ED2-AE56-9E41728300C7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NativeHelper", "NativeHelper\NativeHelper.csproj", "{336EC031-7C5F-4B5A-9680-FA247EDCC752}"
 EndProject
@@ -35,6 +37,10 @@ Global
 		{5435047D-2323-4E4D-9476-27D469940E20}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5435047D-2323-4E4D-9476-27D469940E20}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5435047D-2323-4E4D-9476-27D469940E20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C09C487-4772-48DA-AE2D-1FB3E11B7D43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C09C487-4772-48DA-AE2D-1FB3E11B7D43}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C09C487-4772-48DA-AE2D-1FB3E11B7D43}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C09C487-4772-48DA-AE2D-1FB3E11B7D43}.Release|Any CPU.Build.0 = Release|Any CPU
 		{64B1F2BE-C094-4ED2-AE56-9E41728300C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{64B1F2BE-C094-4ED2-AE56-9E41728300C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{64B1F2BE-C094-4ED2-AE56-9E41728300C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
