@@ -21,8 +21,6 @@ sealed unsafe class InternalTests
         NativeLoader.Setup();
     }
 
-
-
     [TestMethod]
     public void LibraryGetVersionMatchesExpected()
     {

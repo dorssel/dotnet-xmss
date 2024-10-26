@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
+
+SPDX-License-Identifier: MIT
+-->
+<Project>
+
+  <PropertyGroup>
+    <!-- Be strict when testing, even in Release (at the cost of performance) -->
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="MSTest.TestAdapter" />
+    <PackageReference Include="MSTest.TestFramework" />
+    <PackageReference Include="coverlet.collector" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- We use internal test classes. -->
+    <AssemblyAttribute Include="Microsoft.VisualStudio.TestTools.UnitTesting.DiscoverInternalsAttribute" />
+    <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.SuppressMessageAttribute">
+      <_Parameter1>Performance</_Parameter1>
+      <_Parameter2>CA1812:Internal class is never instantiated</_Parameter2>
+    </AssemblyAttribute>
+    </ItemGroup>
+
+</Project>
