@@ -24,17 +24,39 @@ static partial class UnsafeNativeMethods
 
 unsafe struct XmssInternalCache { }
 
-// TODO: XMSS_CACHE_ENTRY_COUNT
+static partial class Defines
+{
+    internal static int XMSS_CACHE_ENTRY_COUNT(XmssCacheType cache_type, byte cache_level, XmssParameterSetOID param_set) =>
+        ((cache_type) == XmssCacheType.XMSS_CACHE_NONE ? 0 :
+            ((cache_level) >= XMSS_TREE_DEPTH(param_set) ? 0 :
+                ((cache_type) == XmssCacheType.XMSS_CACHE_SINGLE_LEVEL ? (1 << (XMSS_TREE_DEPTH(param_set) - (cache_level))) :
+                    ((cache_type) == XmssCacheType.XMSS_CACHE_TOP ? ((1 << ((XMSS_TREE_DEPTH(param_set) - (cache_level)) + 1)) - 1) :
+                        0 /* Garbage in, 0 out. */
+                    )
+                )
+            )
+        );
 
-// TODO: XMSS_PUBLIC_KEY_GENERATION_CACHE_SIZE
+    internal static unsafe int XMSS_INTERNAL_CACHE_SIZE(XmssCacheType cache_type, byte cache_level, XmssParameterSetOID param_set) =>
+        4 + 4 + (sizeof(XmssValue256) * XMSS_CACHE_ENTRY_COUNT(cache_type, cache_level, param_set));
+
+    internal static unsafe int XMSS_PUBLIC_KEY_GENERATION_CACHE_SIZE(int number_of_partitions) =>
+        4 + 4 + (sizeof(XmssValue256) * number_of_partitions);
+}
 
 unsafe struct XmssKeyContext { }
 
-// TODO: XMSS_PRIVATE_KEY_STATEFUL_PART_SIZE
+static partial class Defines
+{
+    internal const int XMSS_PRIVATE_KEY_STATEFUL_PART_SIZE = 4 + 4;
 
-// TODO: XMSS_PRIVATE_KEY_STATELESS_PART_SIZE
+    internal static readonly unsafe int XMSS_PRIVATE_KEY_STATELESS_PART_SIZE = 32 + 32 + 4 + 4 + 32 + sizeof(XmssValue256) + 32;
 
-// TODO: XMSS_KEY_CONTEXT_SIZE
+    internal static unsafe int XMSS_KEY_CONTEXT_SIZE(XmssParameterSetOID param_set, XmssIndexObfuscationSetting obfuscation_setting) =>
+        4 + 4 + XMSS_SIGNING_CONTEXT_SIZE + XMSS_PRIVATE_KEY_STATELESS_PART_SIZE + (2 * XMSS_PRIVATE_KEY_STATEFUL_PART_SIZE)
+        + (3 * sizeof(XmssValue256) + sizeof(void*) + 4 + 4)
+        + (4 * (1 << XMSS_TREE_DEPTH(param_set)) * ((obfuscation_setting == XmssIndexObfuscationSetting.XMSS_INDEX_OBFUSCATION_ON) ? 1 : 0));
+}
 
 [SuppressUnmanagedCodeSecurity]
 static partial class UnsafeNativeMethods
@@ -46,7 +68,11 @@ static partial class UnsafeNativeMethods
 
 unsafe struct XmssKeyGenerationContext { }
 
-// TODO: XMSS_KEY_GENERATION_CONTEXT_SIZE
+static partial class Defines
+{
+    internal static unsafe int XMSS_KEY_GENERATION_CONTEXT_SIZE(int generation_partitions) =>
+        sizeof(void*) + sizeof(uint) + sizeof(uint) + sizeof(void*) + sizeof(void*) + (sizeof(uint) * (generation_partitions));
+}
 
 [SuppressUnmanagedCodeSecurity]
 static partial class UnsafeNativeMethods

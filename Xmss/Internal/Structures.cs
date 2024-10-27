@@ -22,7 +22,11 @@ unsafe struct XmssPrivateKeyStatelessBlob
     }
 }
 
-// TODO: XMSS_PRIVATE_KEY_STATELESS_BLOB_SIZE
+static partial class Defines
+{
+    internal static readonly unsafe int XMSS_PRIVATE_KEY_STATELESS_BLOB_SIZE = sizeof(XmssPrivateKeyStatelessBlob)
+        + sizeof(XmssValue256) + 4 + 4 + 4 + 4 + XMSS_PRIVATE_KEY_STATELESS_PART_SIZE;
+}
 
 unsafe struct XmssPrivateKeyStatefulBlob
 {
@@ -39,7 +43,11 @@ unsafe struct XmssPrivateKeyStatefulBlob
     }
 }
 
-// TODO: XMSS_PRIVATE_KEY_STATEFUL_BLOB_SIZE
+static partial class Defines
+{
+    internal static readonly unsafe int XMSS_PRIVATE_KEY_STATEFUL_BLOB_SIZE = sizeof(XmssPrivateKeyStatefulBlob) + sizeof(XmssValue256)
+        + 4 + 4 + 4 + 4 + sizeof(XmssValue256) + (2 * XMSS_PRIVATE_KEY_STATEFUL_PART_SIZE);
+}
 
 unsafe struct XmssPublicKeyInternalBlob
 {
@@ -56,7 +64,12 @@ unsafe struct XmssPublicKeyInternalBlob
     }
 }
 
-// TODO: XMSS_PUBLIC_KEY_INTERNAL_BLOB_SIZE
+static partial class Defines
+{
+    internal static unsafe int XMSS_PUBLIC_KEY_INTERNAL_BLOB_SIZE(XmssCacheType cache_type, byte cache_level, XmssParameterSetOID param_set) =>
+        sizeof(XmssPublicKeyInternalBlob) + sizeof(XmssValue256) + 4 + 4 + sizeof(XmssValue256) + sizeof(XmssValue256)
+        + 4 + 4 + 4 + 4 + (sizeof(XmssValue256) * XMSS_CACHE_ENTRY_COUNT(cache_type, cache_level, param_set));
+}
 
 struct XmssPublicKey
 {
@@ -67,7 +80,7 @@ struct XmssPublicKey
 
 static partial class Defines
 {
-    internal static readonly unsafe nuint XMSS_PUBLIC_KEY_SIZE = (nuint)sizeof(XmssPublicKey);
+    internal static readonly unsafe int XMSS_PUBLIC_KEY_SIZE = sizeof(XmssPublicKey);
 }
 
 unsafe struct XmssSignature
@@ -116,14 +129,14 @@ static partial class UnsafeNativeMethods
     }
 }
 
-// TODO: XMSS_SIGNATURE_SIZE
-
-// TODO: XMSS_SIGNATURE_BLOB_SIZE
-
-// TODO: XMSS_VERIFICATION_CONTEXT_SIZE
-
 static partial class Defines
 {
+    internal static unsafe int XMSS_SIGNATURE_SIZE(XmssParameterSetOID param_set) =>
+        sizeof(XmssSignature) + (sizeof(XmssValue256) * XMSS_TREE_DEPTH(param_set));
+
+    internal static unsafe int XMSS_SIGNATURE_BLOB_SIZE(XmssParameterSetOID param_set) =>
+        sizeof(XmssSignatureBlob) + XMSS_SIGNATURE_SIZE(param_set);
+
     internal const int XMSS_VERIFICATION_CONTEXT_SIZE = 4 + 4 + 8 + 8 + 200 + 8 + 32;
 }
 

@@ -10,6 +10,18 @@ namespace UnitTests;
 sealed unsafe class VersionTests
 {
     [TestMethod]
+    public void XMSS_LIBRARY_VERSION_CONSTRUCT()
+    {
+        Assert.AreEqual(0x00123456u, Defines.XMSS_LIBRARY_VERSION_CONSTRUCT(0x12, 0x34, 0x56));
+    }
+
+    [TestMethod]
+    public void XMSS_LIBRARY_VERSION()
+    {
+        _ = Defines.XMSS_LIBRARY_VERSION;
+    }
+
+    [TestMethod]
     public void XMSS_LIBRARY_GET_VERSION_MAJOR()
     {
         Assert.AreEqual(0x12, Defines.XMSS_LIBRARY_GET_VERSION_MAJOR(0x00123456));

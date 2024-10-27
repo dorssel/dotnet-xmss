@@ -7,9 +7,13 @@ using System.Security;
 
 namespace Dorssel.Security.Cryptography.Internal;
 
-// TODO: XMSS_LIBRARY_VERSION_CONSTRUCT
+static partial class Defines
+{
+    internal static uint XMSS_LIBRARY_VERSION_CONSTRUCT(byte major, byte minor, byte patch) => (((uint)major) << 16) | (((uint)minor) << 8) | patch;
 
-// TODO: XMSS_LIBRARY_VERSION
+    internal static readonly uint XMSS_LIBRARY_VERSION = XMSS_LIBRARY_VERSION_CONSTRUCT(XMSS_LIBRARY_VERSION_MAJOR,
+        XMSS_LIBRARY_VERSION_MINOR, XMSS_LIBRARY_VERSION_PATCH);
+}
 
 static partial class Defines
 {

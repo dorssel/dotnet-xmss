@@ -17,6 +17,12 @@ sealed unsafe class StructuresTests
     }
 
     [TestMethod]
+    public void XMSS_PRIVATE_KEY_STATELESS_BLOB_SIZE()
+    {
+        _ = Defines.XMSS_PRIVATE_KEY_STATELESS_BLOB_SIZE;
+    }
+
+    [TestMethod]
     public void XmssPrivateKeyStatefulBlob_data()
     {
         XmssPrivateKeyStatefulBlob privateKeyStatefulBlob = default;
@@ -24,10 +30,22 @@ sealed unsafe class StructuresTests
     }
 
     [TestMethod]
+    public void XMSS_PRIVATE_KEY_STATEFUL_BLOB_SIZE()
+    {
+        _ = Defines.XMSS_PRIVATE_KEY_STATEFUL_BLOB_SIZE;
+    }
+
+    [TestMethod]
     public void XmssPublicKeyInternalBlob_data()
     {
         XmssPublicKeyInternalBlob publicKeyInternalBlob = default;
         Assert.IsFalse(publicKeyInternalBlob.data == null);
+    }
+
+    [TestMethod]
+    public void XMSS_PUBLIC_KEY_INTERNAL_BLOB_SIZE()
+    {
+        _ = Defines.XMSS_PUBLIC_KEY_INTERNAL_BLOB_SIZE(XmssCacheType.XMSS_CACHE_TOP, 2, XmssParameterSetOID.XMSS_PARAM_SHA2_10_256);
     }
 
     [TestMethod]
@@ -48,6 +66,18 @@ sealed unsafe class StructuresTests
     {
         XmssSignatureBlob signatureBlob = default;
         Assert.IsFalse(signatureBlob.data == null);
+    }
+
+    [TestMethod]
+    public void XMSS_SIGNATURE_SIZE()
+    {
+        _ = Defines.XMSS_SIGNATURE_SIZE(XmssParameterSetOID.XMSS_PARAM_SHA2_10_256);
+    }
+
+    [TestMethod]
+    public void XMSS_SIGNATURE_BLOB_SIZE()
+    {
+        _ = Defines.XMSS_SIGNATURE_BLOB_SIZE(XmssParameterSetOID.XMSS_PARAM_SHA2_10_256);
     }
 
     [TestMethod]
