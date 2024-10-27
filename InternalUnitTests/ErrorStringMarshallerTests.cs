@@ -27,7 +27,7 @@ sealed unsafe class ErrorStringMarshallerTests
     [TestMethod]
     public void ConvertToManagedString()
     {
-        fixed(byte* unmanaged = "test"u8)
+        fixed (byte* unmanaged = "test"u8)
         {
             Assert.AreEqual("test", ErrorStringMarshaller.ConvertToManaged(unmanaged));
         }
