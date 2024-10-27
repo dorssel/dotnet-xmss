@@ -34,6 +34,8 @@ jobs:
           -B build
           -DXMSS_C99_COMPATIBLE=OFF
           -DBUILD_SHARED_LIBS=ON
+          -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
+          -A x64
 
       - name: Build
         run: cmake --build build --config Release
