@@ -15,9 +15,15 @@ static partial class UnsafeNativeMethods
     internal static unsafe partial XmssError xmss_context_initialize(ref XmssSigningContext* context, XmssParameterSetOID parameter_set,
         XmssReallocFunction custom_realloc, XmssFreeFunction custom_free, XmssZeroizeFunction zeroize);
 
-    // TODO: xmss_load_private_key
+    [LibraryImport("xmss")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
+    internal static unsafe partial XmssError xmss_load_private_key(ref XmssKeyContext* key_context, in XmssPrivateKeyStatelessBlob private_key,
+        in XmssPrivateKeyStatefulBlob key_usage, in XmssSigningContext context);
 
-    // TODO: xmss_load_public_key
+    [LibraryImport("xmss")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
+    internal static unsafe partial XmssError xmss_load_public_key(ref XmssInternalCache* cache, ref XmssKeyContext key_context,
+        in XmssPublicKeyInternalBlob public_key);
 
     [LibraryImport("xmss")]
     [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
@@ -48,23 +54,44 @@ static partial class UnsafeNativeMethods
     [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
     internal static unsafe partial XmssError xmss_sign_message(ref XmssSignatureBlob* signature, ref XmssKeyContext key_context, in XmssBuffer message);
 
-    // TODO: xmss_partition_signature_space
+    [LibraryImport("xmss")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
+    internal static unsafe partial XmssError xmss_partition_signature_space(ref XmssPrivateKeyStatefulBlob* new_partition,
+        ref XmssPrivateKeyStatefulBlob* updated_current_partition, ref XmssKeyContext key_context, uint new_partition_size);
 
-    // TODO: xmss_merge_signature_space
+    [LibraryImport("xmss")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
+    internal static unsafe partial XmssError xmss_merge_signature_space(ref XmssPrivateKeyStatefulBlob* new_key_usage, ref XmssKeyContext key_context,
+        in XmssPrivateKeyStatefulBlob partition_extension);
 
-    // TODO: xmss_get_signature_count
+    [LibraryImport("xmss")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
+    internal static partial XmssError xmss_get_signature_count(out nuint total_count, out nuint remaining_count, in XmssKeyContext key_context);
 
-    // TODO: xmss_verify_public_key
+    [LibraryImport("xmss")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
+    internal static partial XmssError xmss_verify_public_key(in XmssPublicKeyInternalBlob pub_key,
+        in XmssPrivateKeyStatelessBlob private_key, in XmssKeyContext key_context);
 
-    // TODO: xmss_verify_private_key_stateless
+    [LibraryImport("xmss")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
+    internal static partial XmssError xmss_verify_private_key_stateless(in XmssPrivateKeyStatelessBlob private_key, in XmssSigningContext context);
 
-    // TODO: xmss_verify_private_key_stateful
+    [LibraryImport("xmss")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
+    internal static partial XmssError xmss_verify_private_key_stateful(in XmssPrivateKeyStatefulBlob key_usage,
+        in XmssPrivateKeyStatelessBlob private_key, in XmssKeyContext key_context, in XmssSigningContext signing_context);
 
-    // TODO: xmss_get_caching_in_public_key
+    [LibraryImport("xmss")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
+    internal static partial XmssError xmss_get_caching_in_public_key(out XmssCacheType cache_type, out uint cache_level,
+        in XmssPublicKeyInternalBlob pub_key);
 
     [LibraryImport("xmss")]
     [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
     internal static partial XmssError xmss_export_public_key(out XmssPublicKey exported_pub_key, in XmssKeyContext key_context);
 
-    // TODO: xmss_verify_exported_public_key
+    [LibraryImport("xmss")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
+    internal static partial XmssError xmss_verify_exported_public_key(in XmssPublicKey exported_pub_key, in XmssKeyContext key_context);
 }
