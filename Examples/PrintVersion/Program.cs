@@ -16,5 +16,8 @@ static class Program
 
         Console.WriteLine($"Native headers version: {xmss.NativeHeadersVersion}");
         Console.WriteLine($"Native library version: {xmss.NativeLibraryVersion}");
+
+        using var xmssSign = new Xmss(new XmssFileStateManager());
+        xmssSign.GeneratePrivateKey(XmssParameterSet.XMSS_SHA2_10_256);
     }
 }

@@ -51,7 +51,7 @@ jobs:
         with:
           path: |
             Xmss/runtimes/**
-          key: runtime-linux-x64-${{ hashFiles('.gitmodules', '.github/workflows/runtime-linux-x64.yml') }}
+          key: runtime-linux-x64-${{ hashFiles('.gitmodules', 'libc/libc.c', '.github/workflows/runtime-linux-x64.yml') }}
           fail-on-cache-miss: true
 
       - name: Restore win-x64 artifact
@@ -59,7 +59,7 @@ jobs:
         with:
           path: |
             Xmss/runtimes/**
-          key: runtime-win-x64-${{ hashFiles('.gitmodules', '.github/workflows/runtime-win-x64.yml') }}
+          key: runtime-win-x64-${{ hashFiles('.gitmodules', 'libc/libc.c', '.github/workflows/runtime-win-x64.yml') }}
           fail-on-cache-miss: true
 
       - name: Setup .NET

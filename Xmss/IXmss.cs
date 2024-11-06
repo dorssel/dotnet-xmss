@@ -11,4 +11,6 @@ public interface IXmss
     public Version NativeLibraryVersion { get; }
 
     public bool Verify(Stream data, byte[] signature);
+
+    public void GeneratePrivateKey(XmssParameterSet parameterSet);
 }

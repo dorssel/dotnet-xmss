@@ -32,9 +32,12 @@ jobs:
           cmake
           -S xmss-library
           -B build
-          -DXMSS_C99_COMPATIBLE=OFF
           -DBUILD_SHARED_LIBS=ON
-          -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
+          -DXMSS_C99_COMPATIBLE=OFF
+          -DXMSS_SHAKE256_256=OverrideInternal
+          -DXMSS_HASH_OVERRIDE_SOURCES="../../libc/libc.c"
+          -DCMAKE_C_FLAGS="/Oi- /GS- /Gs8192"
+          -DCMAKE_SHARED_LINKER_FLAGS="/NODEFAULTLIB /NOENTRY"
           -A x64
 
       - name: Build
@@ -55,7 +58,7 @@ jobs:
         with:
           path: |
             Xmss/runtimes/**
-          key: runtime-${{ inputs.runtime }}-${{ hashFiles('.gitmodules', '.github/workflows/runtime-win-x64.yml') }}
+          key: runtime-${{ inputs.runtime }}-${{ hashFiles('.gitmodules', 'libc/libc.c', '.github/workflows/runtime-win-x64.yml') }}
           enableCrossOsArchive: true
           lookup-only: true
 
@@ -63,7 +66,7 @@ jobs:
         if: ${{ steps.cache-check.outputs.cache-hit }}
         run: |
           gh extension install actions/gh-actions-cache
-          gh actions-cache delete "runtime-${{ inputs.runtime }}-${{ hashFiles('.gitmodules', '.github/workflows/runtime-win-x64.yml') }}" --confirm
+          gh actions-cache delete "runtime-${{ inputs.runtime }}-${{ hashFiles('.gitmodules', 'libc/libc.c', '.github/workflows/runtime-win-x64.yml') }}" --confirm
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -72,5 +75,5 @@ jobs:
         with:
           path: |
             Xmss/runtimes/**
-          key: runtime-win-x64-${{ hashFiles('.gitmodules', '.github/workflows/runtime-win-x64.yml') }}
+          key: runtime-win-x64-${{ hashFiles('.gitmodules', 'libc/libc.c', '.github/workflows/runtime-win-x64.yml') }}
           enableCrossOsArchive: true
