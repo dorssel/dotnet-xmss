@@ -58,7 +58,7 @@ jobs:
         with:
           path: |
             Xmss/runtimes/**
-          key: runtime-${{ inputs.runtime }}-${{ hashFiles('.gitmodules', env.runtime-workflow) }}
+          key: runtime-${{ inputs.runtime }}-${{ hashFiles('.gitmodules', 'libc/libc.c', env.runtime-workflow) }}
           enableCrossOsArchive: true
           lookup-only: true
 
