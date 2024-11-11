@@ -12,5 +12,7 @@ public interface IXmss
 
     public bool Verify(Stream data, byte[] signature);
 
-    public void GeneratePrivateKey(XmssParameterSet parameterSet);
+    public void GeneratePrivateKey(XmssParameterSet parameterSet, bool enableIndexObfuscation);
+
+    public void LoadPrivateKey();
 }
