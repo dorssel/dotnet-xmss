@@ -16,7 +16,7 @@ unsafe struct XmssPrivateKeyStatelessBlob
         {
             fixed (XmssPrivateKeyStatelessBlob* ptr = &this)
             {
-                return (byte*)(&ptr + 1);
+                return (byte*)(ptr + 1);
             }
         }
     }
@@ -37,7 +37,7 @@ unsafe struct XmssPrivateKeyStatefulBlob
         {
             fixed (XmssPrivateKeyStatefulBlob* ptr = &this)
             {
-                return (byte*)(&ptr + 1);
+                return (byte*)(ptr + 1);
             }
         }
     }
@@ -58,7 +58,7 @@ unsafe struct XmssPublicKeyInternalBlob
         {
             fixed (XmssPublicKeyInternalBlob* ptr = &this)
             {
-                return (byte*)(&ptr + 1);
+                return (byte*)(ptr + 1);
             }
         }
     }
@@ -94,7 +94,7 @@ unsafe struct XmssSignature
         {
             fixed (XmssSignature* ptr = &this)
             {
-                return (XmssValue256*)(&ptr + 1);
+                return (XmssValue256*)(ptr + 1);
             }
         }
     }
@@ -109,7 +109,7 @@ unsafe struct XmssSignatureBlob
         {
             fixed (XmssSignatureBlob* ptr = &this)
             {
-                return (byte*)(&ptr + 1);
+                return (byte*)(ptr + 1);
             }
         }
     }

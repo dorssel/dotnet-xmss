@@ -6,18 +6,30 @@ using Dorssel.Security.Cryptography;
 
 static class Program
 {
-    static void Main()
+    static Program()
     {
         // This is only needed for software within this repository itself.
         // When referencing the NuGet package this is not required.
         NativeHelper.NativeLoader.Setup();
+    }
 
-        using var xmss = new Xmss();
-
-        Console.WriteLine($"Native headers version: {xmss.NativeHeadersVersion}");
-        Console.WriteLine($"Native library version: {xmss.NativeLibraryVersion}");
-
-        using var xmssSign = new Xmss(new XmssFileStateManager());
-        xmssSign.GeneratePrivateKey(XmssParameterSet.XMSS_SHA2_10_256);
+    static void Main()
+    {
+        {
+            using var xmss = new Xmss();
+            Console.WriteLine($"Native headers version: {xmss.NativeHeadersVersion}");
+            Console.WriteLine($"Native library version: {xmss.NativeLibraryVersion}");
+        }
+        {
+            using var stateManager = new XmssFileStateManager(@"C:\test");
+            stateManager.Delete();
+            using var xmss = new Xmss(stateManager);
+            xmss.GeneratePrivateKey(XmssParameterSet.XMSS_SHA2_10_256, false);
+        }
+        {
+            using var stateManager = new XmssFileStateManager(@"C:\test");
+            using var xmss = new Xmss(stateManager);
+            xmss.LoadPrivateKey();
+        }
     }
 }

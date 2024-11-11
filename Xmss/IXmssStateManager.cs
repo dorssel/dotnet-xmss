@@ -5,6 +5,17 @@
 namespace Dorssel.Security.Cryptography;
 
 public interface IXmssStateManager
+    : IDisposable
 {
-    void Func();
+    XmssKeyParts AvailableKeyParts { get; }
+
+    void Lock();
+
+    void Unlock();
+
+    void Delete();
+
+    public void Store(XmssKeyParts part, ReadOnlySpan<byte> data);
+
+    public byte[] Load(XmssKeyParts part);
 }
