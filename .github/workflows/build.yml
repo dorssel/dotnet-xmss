@@ -27,6 +27,7 @@ jobs:
         runtime:
           - linux-x64
           - win-x64
+          - browser-wasm
     uses: ./.github/workflows/cache-runtime.yml
     with:
       runtime: ${{ matrix.runtime }}
@@ -62,11 +63,21 @@ jobs:
           key: runtime-win-x64-${{ hashFiles('.gitmodules', 'libc/libc.c', '.github/workflows/runtime-win-x64.yml') }}
           fail-on-cache-miss: true
 
+      - name: Restore browser-wasm artifact
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            Xmss/runtimes/**
+          key: runtime-browser-wasm-${{ hashFiles('.gitmodules', 'libc/libc.c', '.github/workflows/runtime-browser-wasm.yml') }}
+          fail-on-cache-miss: true
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: |
+          dotnet workload restore
+          dotnet restore
 
       - name: Build
         run: dotnet build --configuration Release --no-restore

@@ -10,10 +10,16 @@ namespace Dorssel.Security.Cryptography.Internal;
 [SuppressUnmanagedCodeSecurity]
 static partial class UnsafeNativeMethods
 {
+    // WASM requires function pointers to be passed as nuint; it cannot handle any form of delegate (neither managed or unmanaged).
     [LibraryImport("xmss")]
     [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
-    internal static unsafe partial XmssError xmss_context_initialize(ref XmssSigningContext* context, XmssParameterSetOID parameter_set,
-        XmssReallocFunction custom_realloc, XmssFreeFunction custom_free, XmssZeroizeFunction zeroize);
+    private static unsafe partial XmssError xmss_context_initialize(ref XmssSigningContext* context, XmssParameterSetOID parameter_set,
+        nuint custom_realloc, nuint custom_free, nuint zeroize);
+
+    // This signature works fine for LibraryImport *except* for WASM.
+    internal static unsafe XmssError xmss_context_initialize(ref XmssSigningContext* context, XmssParameterSetOID parameter_set,
+        delegate* unmanaged<void*, nuint, void*> custom_realloc, delegate* unmanaged<void*, void> custom_free, delegate* unmanaged<void*, nuint, void> zeroize)
+        => xmss_context_initialize(ref context, parameter_set, (nuint)custom_realloc, (nuint)custom_free, (nuint)zeroize);
 
     [LibraryImport("xmss")]
     [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]

@@ -42,12 +42,16 @@ public sealed class Xmss
         base.Dispose(disposing);
     }
 
-    IXmssStateManager? StateManager;
+    readonly IXmssStateManager? StateManager;
 
-    static unsafe void CustomZeroizeFunction(void* ptr, nuint size)
-    {
-        CryptographicOperations.ZeroMemory(new(ptr, (int)size));
-    }
+    [UnmanagedCallersOnly]
+    static unsafe void* CustomReallocFunction(void* ptr, nuint size) => NativeMemory.Realloc(ptr, size);
+
+    [UnmanagedCallersOnly]
+    static unsafe void CustomFreeFunction(void* ptr) => NativeMemory.Free(ptr);
+
+    [UnmanagedCallersOnly]
+    static unsafe void CustomZeroizeFunction(void* ptr, nuint size) => CryptographicOperations.ZeroMemory(new(ptr, (int)size));
 
     public void GeneratePrivateKey(XmssParameterSet parameterSet, bool enableIndexObfuscation)
     {
@@ -62,7 +66,7 @@ public sealed class Xmss
         {
             XmssSigningContext* signingContextPtr = null;
             var result = UnsafeNativeMethods.xmss_context_initialize(ref signingContextPtr, (XmssParameterSetOID)parameterSet,
-                NativeMemory.Realloc, NativeMemory.Free, CustomZeroizeFunction);
+                &CustomReallocFunction, &CustomFreeFunction, &CustomZeroizeFunction);
             XmssException.ThrowIfNotOkay(result);
             using var signingContext = SafeSigningContextHandle.TakeOwnership(ref signingContextPtr);
 
@@ -113,7 +117,7 @@ public sealed class Xmss
 
             XmssSigningContext* signingContextPtr = null;
             var result = UnsafeNativeMethods.xmss_context_initialize(ref signingContextPtr, parameterSet,
-                NativeMemory.Realloc, NativeMemory.Free, CustomZeroizeFunction);
+                &CustomReallocFunction, &CustomFreeFunction, &CustomZeroizeFunction);
             XmssException.ThrowIfNotOkay(result);
             using var signingContext = SafeSigningContextHandle.TakeOwnership(ref signingContextPtr);
 

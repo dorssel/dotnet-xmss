@@ -8,7 +8,7 @@ using System.Security.Cryptography;
 using Dorssel.Security.Cryptography.Internal;
 using NativeHelper;
 
-namespace UnitTests;
+namespace InternalUnitTests;
 
 [TestClass]
 sealed unsafe class AssemblyTests
@@ -30,6 +30,7 @@ sealed unsafe class AssemblyTests
 
     static int AllocationCount;
 
+    [UnmanagedCallersOnly]
     static unsafe void* CustomReallocFunction(void* ptr, nuint size)
     {
         if (ptr is not null)
@@ -43,7 +44,7 @@ sealed unsafe class AssemblyTests
         return ptr;
     }
 
-    static unsafe void CustomFreeFunction(void* ptr)
+    static unsafe void CustomFree(void* ptr)
     {
         if (ptr is not null)
         {
@@ -53,6 +54,13 @@ sealed unsafe class AssemblyTests
         NativeMemory.Free(ptr);
     }
 
+    [UnmanagedCallersOnly]
+    static unsafe void CustomFreeFunction(void* ptr)
+    {
+        CustomFree(ptr);
+    }
+
+    [UnmanagedCallersOnly]
     static unsafe void CustomZeroizeFunction(void* ptr, nuint size)
     {
         CryptographicOperations.ZeroMemory(new(ptr, (int)size));
@@ -65,7 +73,7 @@ sealed unsafe class AssemblyTests
 
         XmssSigningContext* signingContext = null;
         var result = UnsafeNativeMethods.xmss_context_initialize(ref signingContext, XmssParameterSetOID.XMSS_PARAM_SHA2_10_256,
-            CustomReallocFunction, CustomFreeFunction, CustomZeroizeFunction);
+            &CustomReallocFunction, &CustomFreeFunction, &CustomZeroizeFunction);
         Assert.AreEqual(XmssError.XMSS_OKAY, result);
 
         XmssKeyContext* keyContext = null;
@@ -145,15 +153,15 @@ sealed unsafe class AssemblyTests
         UnsafeNativeMethods.xmss_free_key_context(keyContext);
         keyContext = null;
 
-        CustomFreeFunction(privateKeyStatelessBlob);
+        CustomFree(privateKeyStatelessBlob);
         privateKeyStatelessBlob = null;
-        CustomFreeFunction(privateKeyStatefulBlob);
+        CustomFree(privateKeyStatefulBlob);
         privateKeyStatefulBlob = null;
-        CustomFreeFunction(privateKeyStatefulBlobNew);
+        CustomFree(privateKeyStatefulBlobNew);
         privateKeyStatefulBlobNew = null;
-        CustomFreeFunction(publicKeyInternal);
+        CustomFree(publicKeyInternal);
         publicKeyInternal = null;
-        CustomFreeFunction(signatureBlob);
+        CustomFree(signatureBlob);
         signatureBlob = null;
         signature = null;
 

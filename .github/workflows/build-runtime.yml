@@ -36,3 +36,7 @@ jobs:
   build-win-x64:
     uses: ./.github/workflows/runtime-win-x64.yml
     if: inputs.runtime == 'win-x64'
+
+  build-browser-wasm:
+    uses: ./.github/workflows/runtime-browser-wasm.yml
+    if: inputs.runtime == 'browser-wasm'

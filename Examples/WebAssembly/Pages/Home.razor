@@ -1,0 +1,23 @@
+﻿@*
+    SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
+
+    SPDX-License-Identifier: MIT
+*@
+
+@page "/"
+@using Dorssel.Security.Cryptography
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+<FluentButton Appearance="Appearance.Accent" @onclick="Test">Test XMSS</FluentButton>
+
+@code {
+    private void Test()
+    {
+        using var stateManager = new XmssFileStateManager(@".");
+        using var xmss = new Xmss(stateManager);
+        xmss.GeneratePrivateKey(XmssParameterSet.XMSS_SHA2_10_256, false);
+    }
+}

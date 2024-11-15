@@ -23,5 +23,10 @@
 *.csproj   text
 *.cs       text eol=crlf
 *.props    text
+*.targets  text
 
 libc/*.c   text eol=lf
+
+*.razor   text
+*.html    text
+*.css    text
