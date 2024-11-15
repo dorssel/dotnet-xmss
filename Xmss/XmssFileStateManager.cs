@@ -4,7 +4,7 @@
 
 namespace Dorssel.Security.Cryptography;
 
-public sealed class XmssFileStateManager
+public sealed class XmssFileStateManager(string path)
     : IXmssStateManager
 {
     static readonly Dictionary<XmssKeyParts, string> FileNames = new()
@@ -14,13 +14,7 @@ public sealed class XmssFileStateManager
         { XmssKeyParts.PrivateStateful, "xmss_private_stateful" },
         { XmssKeyParts.Public, "xmss_public" },
     };
-
-    public XmssFileStateManager(string path)
-    {
-        Folder = path;
-    }
-
-    string Folder;
+    readonly string Folder = path;
 
     string GetPartPath(XmssKeyParts part) => Path.Combine(Folder, FileNames[part]);
 

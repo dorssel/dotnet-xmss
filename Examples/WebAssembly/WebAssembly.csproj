@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
+
+SPDX-License-Identifier: MIT
+-->
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <!--
+  This is only needed for software within this repository itself.
+  When referencing the NuGet package (see below) this is not required.
+  -->
+  <Import Project="..\..\Xmss\buildTransitive\Dorssel.Security.Cryptography.Xmss.props" />
+
+  <PropertyGroup>
+    <IsPublishable>true</IsPublishable>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <!--
+    This is only needed for software within this repository itself.
+    When referencing the NuGet package (see below) this is not required.
+    -->
+    <ProjectReference Include="..\..\Xmss\Xmss.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <!-- 
+    <PackageReference Include="Dorssel.Security.Cryptography.Xmss" />
+    -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" />
+	  <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" />
+  </ItemGroup>
+
+  <!--
+  This is only needed for software within this repository itself.
+  When referencing the NuGet package (see below) this is not required.
+  -->
+  <Import Project="..\..\Xmss\buildTransitive\Dorssel.Security.Cryptography.Xmss.targets" />
+
+</Project>
