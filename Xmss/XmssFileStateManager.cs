@@ -27,20 +27,11 @@ public sealed class XmssFileStateManager(string path)
         file.Flush();
     }
 
-    public byte[] Load(XmssKeyParts part)
-    {
-        return File.ReadAllBytes(GetPartPath(part));
-    }
+    public byte[] Load(XmssKeyParts part) => File.ReadAllBytes(GetPartPath(part));
 
-    public void Lock()
-    {
-        throw new NotImplementedException();
-    }
+    public void Lock() => throw new NotImplementedException();
 
-    public void Unlock()
-    {
-        throw new NotImplementedException();
-    }
+    public void Unlock() => throw new NotImplementedException();
 
     public void Delete()
     {

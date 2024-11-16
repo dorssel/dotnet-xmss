@@ -5,7 +5,7 @@
 using System.Reflection;
 using NativeHelper;
 
-namespace UnitTests;
+namespace NativeHelperUnitTests;
 
 [TestClass]
 sealed class NativeHelperTests
@@ -20,7 +20,7 @@ sealed class NativeHelperTests
     [TestMethod]
     public void LoadUnknownLibraryFails()
     {
-        Assert.ThrowsException<DllNotFoundException>(() =>
+        _ = Assert.ThrowsException<DllNotFoundException>(() =>
         {
             _ = NativeMethods.unknown_library();
         });

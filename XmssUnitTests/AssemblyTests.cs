@@ -4,7 +4,7 @@
 
 using NativeHelper;
 
-namespace UnitTests;
+namespace XmssUnitTests;
 
 [TestClass]
 sealed unsafe class AssemblyTests

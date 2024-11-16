@@ -4,7 +4,7 @@
 
 using System.Reflection;
 
-namespace UnitTests;
+namespace NativeHelperUnitTests;
 
 [TestClass]
 sealed class NoRuntimeTests
@@ -27,7 +27,7 @@ sealed class NoRuntimeTests
     [TestMethod]
     public void LoadFails()
     {
-        Assert.ThrowsException<DllNotFoundException>(() =>
+        _ = Assert.ThrowsException<DllNotFoundException>(() =>
         {
             _ = NativeMethods.xmss_library_get_version();
         });

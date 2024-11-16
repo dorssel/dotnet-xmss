@@ -24,12 +24,10 @@ public class XmssException
 
     internal static void ThrowIfNotOkay(XmssError error)
     {
-        switch (error)
+        if (error == XmssError.XMSS_OKAY)
         {
-            case XmssError.XMSS_OKAY:
-                return;
-            default:
-                throw new XmssException(UnsafeNativeMethods.xmss_error_to_description(error));
+            return;
         }
+        throw new XmssException(UnsafeNativeMethods.xmss_error_to_description(error));
     }
 }

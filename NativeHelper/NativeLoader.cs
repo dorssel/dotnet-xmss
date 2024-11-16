@@ -8,8 +8,15 @@ using Dorssel.Security.Cryptography;
 
 namespace NativeHelper;
 
+/// <summary>
+/// Helper for projects *within this repository* that use the Xmss assembly.
+/// </summary>
 public static class NativeLoader
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="assembly">An assembly that has the runtimes installed in its directory; defaults to the Xmss assembly.</param>
     public static void Setup(Assembly? assembly = null)
     {
         NativeLibrary.SetDllImportResolver(assembly ?? typeof(Xmss).Assembly, (libraryName, assembly, searchPath) =>

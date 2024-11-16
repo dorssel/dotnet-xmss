@@ -27,15 +27,15 @@ unsafe struct XmssInternalCache { }
 static partial class Defines
 {
     internal static int XMSS_CACHE_ENTRY_COUNT(XmssCacheType cache_type, byte cache_level, XmssParameterSetOID param_set) =>
-        ((cache_type) == XmssCacheType.XMSS_CACHE_NONE ? 0 :
-            ((cache_level) >= XMSS_TREE_DEPTH(param_set) ? 0 :
-                ((cache_type) == XmssCacheType.XMSS_CACHE_SINGLE_LEVEL ? (1 << (XMSS_TREE_DEPTH(param_set) - (cache_level))) :
-                    ((cache_type) == XmssCacheType.XMSS_CACHE_TOP ? ((1 << ((XMSS_TREE_DEPTH(param_set) - (cache_level)) + 1)) - 1) :
+        cache_type == XmssCacheType.XMSS_CACHE_NONE ? 0 :
+            (cache_level >= XMSS_TREE_DEPTH(param_set) ? 0 :
+                (cache_type == XmssCacheType.XMSS_CACHE_SINGLE_LEVEL ? (1 << (XMSS_TREE_DEPTH(param_set) - cache_level)) :
+                    (cache_type == XmssCacheType.XMSS_CACHE_TOP ? ((1 << (XMSS_TREE_DEPTH(param_set) - cache_level + 1)) - 1) :
                         0 /* Garbage in, 0 out. */
                     )
                 )
             )
-        );
+        ;
 
     internal static unsafe int XMSS_INTERNAL_CACHE_SIZE(XmssCacheType cache_type, byte cache_level, XmssParameterSetOID param_set) =>
         4 + 4 + (sizeof(XmssValue256) * XMSS_CACHE_ENTRY_COUNT(cache_type, cache_level, param_set));
@@ -54,7 +54,7 @@ static partial class Defines
 
     internal static unsafe int XMSS_KEY_CONTEXT_SIZE(XmssParameterSetOID param_set, XmssIndexObfuscationSetting obfuscation_setting) =>
         4 + 4 + XMSS_SIGNING_CONTEXT_SIZE + XMSS_PRIVATE_KEY_STATELESS_PART_SIZE + (2 * XMSS_PRIVATE_KEY_STATEFUL_PART_SIZE)
-        + (3 * sizeof(XmssValue256) + sizeof(void*) + 4 + 4)
+        + ((3 * sizeof(XmssValue256)) + sizeof(void*) + 4 + 4)
         + (4 * (1 << XMSS_TREE_DEPTH(param_set)) * ((obfuscation_setting == XmssIndexObfuscationSetting.XMSS_INDEX_OBFUSCATION_ON) ? 1 : 0));
 }
 
@@ -71,7 +71,7 @@ unsafe struct XmssKeyGenerationContext { }
 static partial class Defines
 {
     internal static unsafe int XMSS_KEY_GENERATION_CONTEXT_SIZE(int generation_partitions) =>
-        sizeof(void*) + sizeof(uint) + sizeof(uint) + sizeof(void*) + sizeof(void*) + (sizeof(uint) * (generation_partitions));
+        sizeof(void*) + sizeof(uint) + sizeof(uint) + sizeof(void*) + sizeof(void*) + (sizeof(uint) * generation_partitions);
 }
 
 [SuppressUnmanagedCodeSecurity]

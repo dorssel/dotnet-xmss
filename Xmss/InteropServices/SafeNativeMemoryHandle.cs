@@ -34,15 +34,10 @@ class SafeNativeMemoryHandle
     }
 }
 
-sealed class SafeNativeMemoryHandle<T>
-    : SafeNativeMemoryHandle
+sealed unsafe class SafeNativeMemoryHandle<T>(T* ptr, bool ownsHandle)
+    : SafeNativeMemoryHandle(ptr, ownsHandle)
     where T : unmanaged
 {
-    public unsafe SafeNativeMemoryHandle(T* ptr, bool ownsHandle)
-        : base(ptr, ownsHandle)
-    {
-    }
-
     public ref T AsRef()
     {
         unsafe

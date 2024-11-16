@@ -4,7 +4,7 @@
 
 using System.Runtime.InteropServices;
 
-namespace UnitTests;
+namespace NativeHelperUnitTests;
 
 static partial class NativeMethods
 {
