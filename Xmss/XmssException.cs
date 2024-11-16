@@ -22,12 +22,16 @@ public class XmssException
     {
     }
 
+    internal XmssException(XmssError error) : base(UnsafeNativeMethods.xmss_error_to_description(error))
+    {
+    }
+
     internal static void ThrowIfNotOkay(XmssError error)
     {
         if (error == XmssError.XMSS_OKAY)
         {
             return;
         }
-        throw new XmssException(UnsafeNativeMethods.xmss_error_to_description(error));
+        throw new XmssException(error);
     }
 }
