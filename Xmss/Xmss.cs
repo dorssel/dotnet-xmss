@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -16,9 +17,30 @@ public sealed class Xmss
 {
     public Xmss()
     {
+        LegalKeySizesValue = [new(256, 256, 0)];
+        KeySizeValue = 256;
     }
 
+#pragma warning disable CA1822 // Mark members as static
+    XmssParameterSet ParameterSet => XmssParameterSet.XMSS_SHA2_10_256;
+#pragma warning restore CA1822 // Mark members as static
+
+    public override string? SignatureAlgorithm => ParameterSet switch
+    {
+        // See https://www.iana.org/assignments/xml-security-uris/xml-security-uris.xhtml
+        // and https://www.rfc-editor.org/rfc/rfc9231.html#name-xmss-and-xmssmt
+
+        XmssParameterSet.XMSS_SHA2_10_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-sha2-10-256",
+        XmssParameterSet.XMSS_SHA2_16_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-sha2-16-256",
+        XmssParameterSet.XMSS_SHA2_20_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-sha2-20-256",
+        XmssParameterSet.XMSS_SHAKE256_10_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-shake256-10-256",
+        XmssParameterSet.XMSS_SHAKE256_16_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-shake256-16-256",
+        XmssParameterSet.XMSS_SHAKE256_20_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-shake256-20-256",
+        XmssParameterSet.None or _ => throw new InvalidOperationException(),
+    };
+
     public Xmss(IXmssStateManager stateManager)
+        : this()
     {
         StateManager = stateManager;
     }
@@ -155,5 +177,56 @@ public sealed class Xmss
         }
     }
 
-    public bool Verify(Stream data, byte[] signature) => throw new NotImplementedException();
+    XmssPublicKey PublicKey;
+
+    public bool Verify(Stream data, byte[] signature)
+    {
+        ArgumentNullException.ThrowIfNull(data);
+        ArgumentNullException.ThrowIfNull(signature);
+
+        // 1088 is the Least Common Multiple of the block sizes for SHA-256 (64) and SHAKE256/256 (136).
+        // The result (16320) is slightly less than 16 kiB (16384).
+        var buffer = ArrayPool<byte>.Shared.Rent(15 * 1088);
+        try
+        {
+            unsafe
+            {
+
+                fixed (byte* signaturePtr = signature)
+                fixed (byte* bufferPtr = buffer)
+                fixed (XmssPublicKey* publicKeyPtr = &PublicKey)
+                {
+                    var result = UnsafeNativeMethods.xmss_verification_init(out var context, PublicKey, *(XmssSignature*)signaturePtr, (nuint)signature.Length);
+                    if (result == XmssError.XMSS_ERR_INVALID_SIGNATURE)
+                    {
+                        return false;
+                    }
+                    XmssException.ThrowIfNotOkay(result);
+
+                    int bytesRead;
+                    while ((bytesRead = data.Read(new(bufferPtr, buffer.Length))) != 0)
+                    {
+                        result = UnsafeNativeMethods.xmss_verification_update(ref context, bufferPtr, (nuint)bytesRead, out var bufferPtrVerify);
+                        XmssException.ThrowIfNotOkay(result);
+                        if (bufferPtrVerify != bufferPtr)
+                        {
+                            throw new XmssException(XmssError.XMSS_ERR_FAULT_DETECTED);
+                        }
+                    }
+
+                    result = UnsafeNativeMethods.xmss_verification_check(ref context, PublicKey);
+                    if (result == XmssError.XMSS_ERR_INVALID_SIGNATURE)
+                    {
+                        return false;
+                    }
+                    XmssException.ThrowIfNotOkay(result);
+                    return true;
+                }
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
+    }
 }
