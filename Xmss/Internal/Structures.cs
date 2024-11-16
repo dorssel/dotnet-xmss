@@ -120,13 +120,7 @@ static partial class UnsafeNativeMethods
 {
     // originally: a static inline function
     internal static unsafe XmssSignature* xmss_get_signature_struct(XmssSignatureBlob* signature)
-    {
-        if (signature is null)
-        {
-            return null;
-        }
-        return (XmssSignature*)(signature + 1);
-    }
+        => signature is null ? (XmssSignature*)null : (XmssSignature*)(signature + 1);
 }
 
 static partial class Defines

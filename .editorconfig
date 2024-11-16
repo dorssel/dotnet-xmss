@@ -110,7 +110,7 @@ csharp_style_var_for_built_in_types = true:suggestion
 csharp_style_var_when_type_is_apparent = true:suggestion
 csharp_style_var_elsewhere = true:suggestion
 # Expression-bodied members
-csharp_style_expression_bodied_methods = false:silent
+csharp_style_expression_bodied_methods = when_on_single_line:silent
 csharp_style_expression_bodied_constructors = false:silent
 csharp_style_expression_bodied_operators = false:silent
 csharp_style_expression_bodied_properties = true:silent
@@ -162,7 +162,7 @@ csharp_preserve_single_line_statements = true
 csharp_preserve_single_line_blocks = true
 csharp_using_directive_placement = outside_namespace:silent
 csharp_prefer_simple_using_statement = true:suggestion
-csharp_style_namespace_declarations = block_scoped:silent
+csharp_style_namespace_declarations = file_scoped:silent
 csharp_style_expression_bodied_lambdas = true:silent
 csharp_style_expression_bodied_local_functions = false:silent
 csharp_style_prefer_method_group_conversion = true:silent
@@ -190,6 +190,7 @@ csharp_style_prefer_tuple_swap = true:suggestion
 csharp_style_implicit_object_creation_when_type_is_apparent = true:suggestion
 csharp_style_prefer_range_operator = true:suggestion
 csharp_style_prefer_index_operator = true:suggestion
+csharp_prefer_system_threading_lock = true:suggestion
 ###############################
 # VB Coding Conventions       #
 ###############################

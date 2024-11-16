@@ -142,14 +142,8 @@ public sealed class Xmss
         }
     }
 
-    public Version NativeHeadersVersion
-    {
-        get
-        {
-            return new(Defines.XMSS_LIBRARY_VERSION_MAJOR, Defines.XMSS_LIBRARY_VERSION_MINOR,
+    public Version NativeHeadersVersion => new(Defines.XMSS_LIBRARY_VERSION_MAJOR, Defines.XMSS_LIBRARY_VERSION_MINOR,
                 Defines.XMSS_LIBRARY_VERSION_PATCH);
-        }
-    }
 
     public Version NativeLibraryVersion
     {
@@ -161,8 +155,5 @@ public sealed class Xmss
         }
     }
 
-    public bool Verify(Stream data, byte[] signature)
-    {
-        throw new NotImplementedException();
-    }
+    public bool Verify(Stream data, byte[] signature) => throw new NotImplementedException();
 }
