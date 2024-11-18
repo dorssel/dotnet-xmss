@@ -4,7 +4,7 @@
 
 using Dorssel.Security.Cryptography.Internal;
 
-namespace UnitTests;
+namespace InternalUnitTests;
 
 [TestClass]
 sealed unsafe class ErrorStringMarshallerTests
@@ -12,9 +12,9 @@ sealed unsafe class ErrorStringMarshallerTests
     [TestMethod]
     public void ConvertToUnmanagedThrows()
     {
-        Assert.ThrowsException<NotImplementedException>(() =>
+        _ = Assert.ThrowsException<NotImplementedException>(() =>
         {
-            ErrorStringMarshaller.ConvertToUnmanaged(string.Empty);
+            _ = ErrorStringMarshaller.ConvertToUnmanaged(string.Empty);
         });
     }
 

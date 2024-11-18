@@ -55,13 +55,16 @@ enum XmssParameterSetOID : int
 
 static partial class Defines
 {
-    internal static byte XMSS_TREE_DEPTH(XmssParameterSetOID oid) => oid switch
+    internal static byte XMSS_TREE_DEPTH(XmssParameterSetOID oid)
     {
-        XmssParameterSetOID.XMSS_PARAM_SHA2_10_256 or XmssParameterSetOID.XMSS_PARAM_SHAKE256_10_256 => 10,
-        XmssParameterSetOID.XMSS_PARAM_SHA2_16_256 or XmssParameterSetOID.XMSS_PARAM_SHAKE256_16_256 => 16,
-        XmssParameterSetOID.XMSS_PARAM_SHA2_20_256 or XmssParameterSetOID.XMSS_PARAM_SHAKE256_20_256 => 20,
-        _ => 0,
-    };
+        return oid switch
+        {
+            XmssParameterSetOID.XMSS_PARAM_SHA2_10_256 or XmssParameterSetOID.XMSS_PARAM_SHAKE256_10_256 => 10,
+            XmssParameterSetOID.XMSS_PARAM_SHA2_16_256 or XmssParameterSetOID.XMSS_PARAM_SHAKE256_16_256 => 16,
+            XmssParameterSetOID.XMSS_PARAM_SHA2_20_256 or XmssParameterSetOID.XMSS_PARAM_SHAKE256_20_256 => 20,
+            _ => 0,
+        };
+    }
 }
 
 enum XmssIndexObfuscationSetting : int
