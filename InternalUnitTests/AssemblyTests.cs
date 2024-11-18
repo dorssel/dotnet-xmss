@@ -55,10 +55,16 @@ sealed unsafe class AssemblyTests
     }
 
     [UnmanagedCallersOnly]
-    static unsafe void CustomFreeFunction(void* ptr) => CustomFree(ptr);
+    static unsafe void CustomFreeFunction(void* ptr)
+    {
+        CustomFree(ptr);
+    }
 
     [UnmanagedCallersOnly]
-    static unsafe void CustomZeroizeFunction(void* ptr, nuint size) => CryptographicOperations.ZeroMemory(new(ptr, (int)size));
+    static unsafe void CustomZeroizeFunction(void* ptr, nuint size)
+    {
+        CryptographicOperations.ZeroMemory(new(ptr, (int)size));
+    }
 
     [TestMethod]
     public void TestSignVerify()

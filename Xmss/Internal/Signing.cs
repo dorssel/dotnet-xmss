@@ -19,7 +19,9 @@ static partial class UnsafeNativeMethods
     // This signature works fine for LibraryImport *except* for WASM.
     internal static unsafe XmssError xmss_context_initialize(ref XmssSigningContext* context, XmssParameterSetOID parameter_set,
         delegate* unmanaged<void*, nuint, void*> custom_realloc, delegate* unmanaged<void*, void> custom_free, delegate* unmanaged<void*, nuint, void> zeroize)
-        => xmss_context_initialize(ref context, parameter_set, (nuint)custom_realloc, (nuint)custom_free, (nuint)zeroize);
+    {
+        return xmss_context_initialize(ref context, parameter_set, (nuint)custom_realloc, (nuint)custom_free, (nuint)zeroize);
+    }
 
     [LibraryImport("xmss")]
     [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]

@@ -66,9 +66,11 @@ unsafe struct XmssPublicKeyInternalBlob
 
 static partial class Defines
 {
-    internal static unsafe int XMSS_PUBLIC_KEY_INTERNAL_BLOB_SIZE(XmssCacheType cache_type, byte cache_level, XmssParameterSetOID param_set) =>
-        sizeof(XmssPublicKeyInternalBlob) + sizeof(XmssValue256) + 4 + 4 + sizeof(XmssValue256) + sizeof(XmssValue256)
+    internal static unsafe int XMSS_PUBLIC_KEY_INTERNAL_BLOB_SIZE(XmssCacheType cache_type, byte cache_level, XmssParameterSetOID param_set)
+    {
+        return sizeof(XmssPublicKeyInternalBlob) + sizeof(XmssValue256) + 4 + 4 + sizeof(XmssValue256) + sizeof(XmssValue256)
         + 4 + 4 + 4 + 4 + (sizeof(XmssValue256) * XMSS_CACHE_ENTRY_COUNT(cache_type, cache_level, param_set));
+    }
 }
 
 struct XmssPublicKey
@@ -120,16 +122,22 @@ static partial class UnsafeNativeMethods
 {
     // originally: a static inline function
     internal static unsafe XmssSignature* xmss_get_signature_struct(XmssSignatureBlob* signature)
-        => signature is null ? (XmssSignature*)null : (XmssSignature*)(signature + 1);
+    {
+        return signature is null ? (XmssSignature*)null : (XmssSignature*)(signature + 1);
+    }
 }
 
 static partial class Defines
 {
-    internal static unsafe int XMSS_SIGNATURE_SIZE(XmssParameterSetOID param_set) =>
-        sizeof(XmssSignature) + (sizeof(XmssValue256) * XMSS_TREE_DEPTH(param_set));
+    internal static unsafe int XMSS_SIGNATURE_SIZE(XmssParameterSetOID param_set)
+    {
+        return sizeof(XmssSignature) + (sizeof(XmssValue256) * XMSS_TREE_DEPTH(param_set));
+    }
 
-    internal static unsafe int XMSS_SIGNATURE_BLOB_SIZE(XmssParameterSetOID param_set) =>
-        sizeof(XmssSignatureBlob) + XMSS_SIGNATURE_SIZE(param_set);
+    internal static unsafe int XMSS_SIGNATURE_BLOB_SIZE(XmssParameterSetOID param_set)
+    {
+        return sizeof(XmssSignatureBlob) + XMSS_SIGNATURE_SIZE(param_set);
+    }
 
     internal const int XMSS_VERIFICATION_CONTEXT_SIZE = 4 + 4 + 8 + 8 + 200 + 8 + 32;
 }

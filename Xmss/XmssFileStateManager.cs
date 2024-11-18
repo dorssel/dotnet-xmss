@@ -16,7 +16,10 @@ public sealed class XmssFileStateManager(string path)
     };
     readonly string Folder = path;
 
-    string GetPartPath(XmssKeyParts part) => Path.Combine(Folder, FileNames[part]);
+    string GetPartPath(XmssKeyParts part)
+    {
+        return Path.Combine(Folder, FileNames[part]);
+    }
 
     public XmssKeyParts AvailableKeyParts => XmssKeyParts.ParameterSet | XmssKeyParts.PrivateStateless | XmssKeyParts.PrivateStateful | XmssKeyParts.Public;
 
@@ -27,11 +30,20 @@ public sealed class XmssFileStateManager(string path)
         file.Flush();
     }
 
-    public byte[] Load(XmssKeyParts part) => File.ReadAllBytes(GetPartPath(part));
+    public byte[] Load(XmssKeyParts part)
+    {
+        return File.ReadAllBytes(GetPartPath(part));
+    }
 
-    public void Lock() => throw new NotImplementedException();
+    public void Lock()
+    {
+        throw new NotImplementedException();
+    }
 
-    public void Unlock() => throw new NotImplementedException();
+    public void Unlock()
+    {
+        throw new NotImplementedException();
+    }
 
     public void Delete()
     {

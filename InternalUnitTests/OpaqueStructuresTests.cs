@@ -4,7 +4,7 @@
 
 using Dorssel.Security.Cryptography.Internal;
 
-namespace UnitTests;
+namespace InternalUnitTests;
 
 [TestClass]
 sealed unsafe class OpaqueStructuresTests

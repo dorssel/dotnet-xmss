@@ -67,13 +67,22 @@ public sealed class Xmss
     readonly IXmssStateManager? StateManager;
 
     [UnmanagedCallersOnly]
-    static unsafe void* CustomReallocFunction(void* ptr, nuint size) => NativeMemory.Realloc(ptr, size);
+    static unsafe void* CustomReallocFunction(void* ptr, nuint size)
+    {
+        return NativeMemory.Realloc(ptr, size);
+    }
 
     [UnmanagedCallersOnly]
-    static unsafe void CustomFreeFunction(void* ptr) => NativeMemory.Free(ptr);
+    static unsafe void CustomFreeFunction(void* ptr)
+    {
+        NativeMemory.Free(ptr);
+    }
 
     [UnmanagedCallersOnly]
-    static unsafe void CustomZeroizeFunction(void* ptr, nuint size) => CryptographicOperations.ZeroMemory(new(ptr, (int)size));
+    static unsafe void CustomZeroizeFunction(void* ptr, nuint size)
+    {
+        CryptographicOperations.ZeroMemory(new(ptr, (int)size));
+    }
 
     public void GeneratePrivateKey(XmssParameterSet parameterSet, bool enableIndexObfuscation)
     {

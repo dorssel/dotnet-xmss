@@ -7,8 +7,11 @@ SPDX-License-Identifier: MIT
 <Project>
 
   <PropertyGroup>
-    <!-- Use the latest LTS .NET SDK -->
-    <TargetFrameworks>net8.0</TargetFrameworks>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' != 'true'">false</ContinuousIntegrationBuild>
+
+    <!-- Use the latest .NET SDK -->
+    <TargetFrameworks>net9.0</TargetFrameworks>
 
     <!-- Use the latest C# Language standard -->
     <LangVersion>13.0</LangVersion>
@@ -43,15 +46,9 @@ SPDX-License-Identifier: MIT
     <Authors>$(Company)</Authors>
     <Description>TODO</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/dorssel/dotnet-xmss-native</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
-
-    <!-- SourceLink -->
-    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
-    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' != 'true'">false</ContinuousIntegrationBuild>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
