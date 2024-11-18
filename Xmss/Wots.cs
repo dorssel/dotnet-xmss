@@ -99,7 +99,10 @@ sealed class Wots
     /// <param name="KEY">key</param>
     /// <param name="ADRS">address</param>
     /// <returns>HashAlgorithm(toByte(3, toByteLength) || KEY || ADRS)</returns>
-    public byte[] PRF(byte[] KEY, Address ADRS) => PRF(KEY, ADRS.ToBytes());
+    public byte[] PRF(byte[] KEY, Address ADRS)
+    {
+        return PRF(KEY, ADRS.ToBytes());
+    }
 
     /// <summary>
     /// Pseudo-Random Function
@@ -147,7 +150,7 @@ sealed class Wots
         for (var i = 0; i < Parameters.n; i++)
         {
             csum -= basew[2 * i] = X[i] >> 4;
-            csum -= basew[2 * i + 1] = X[i] & 0xf;
+            csum -= basew[(2 * i) + 1] = X[i] & 0xf;
         }
 
         // Append csum (also in base w)

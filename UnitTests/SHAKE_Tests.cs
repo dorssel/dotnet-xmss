@@ -10,7 +10,7 @@ sealed class SHAKE_Tests
     [TestMethod]
     public void Constructor_InvalidBitSizeThrows()
     {
-        Assert.ThrowsException<ArgumentException>(() => new SHAKE(42, 128));
+        _ = Assert.ThrowsException<ArgumentException>(() => new SHAKE(42, 128));
     }
 
     [TestMethod]

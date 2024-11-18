@@ -8,7 +8,7 @@ namespace Dorssel.Security.Cryptography;
 
 sealed record WotsParameters
 {
-    private WotsParameters()
+    WotsParameters()
     {
         // All currently defined parameter use hexadecimal digits.
         w = 16;
@@ -33,7 +33,7 @@ sealed record WotsParameters
             OID = WotsOid.WOTSP_SHA2_256,
             n = 32,
             len = 67,
-            HashAlgorithm = () => SHA256.Create(),
+            HashAlgorithm = SHA256.Create,
             toByteLength = 32,
         },
         new()
@@ -41,7 +41,7 @@ sealed record WotsParameters
             OID = WotsOid.WOTSP_SHA2_512,
             n = 64,
             len = 131,
-            HashAlgorithm = () => SHA512.Create(),
+            HashAlgorithm = SHA512.Create,
             toByteLength = 64,
         },
         new()
@@ -65,7 +65,7 @@ sealed record WotsParameters
             OID = WotsOid.WOTSP_SHA2_192,
             n = 24,
             len = 51,
-            HashAlgorithm = () => SHA256.Create(),
+            HashAlgorithm = SHA256.Create,
             toByteLength = 4,
         },
         new()
