@@ -143,7 +143,7 @@ sealed class Xmss
             for (var i = 0; i < lenPrime / 2; i++)
             {
                 ADRS.tree_index = i;
-                pk[i] = RAND_HASH(pk[2 * i], pk[2 * i + 1], SEED, ADRS);
+                pk[i] = RAND_HASH(pk[2 * i], pk[(2 * i) + 1], SEED, ADRS);
             }
             if (lenPrime % 2 == 1)
             {

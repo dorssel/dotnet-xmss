@@ -6,7 +6,7 @@ namespace Dorssel.Security.Cryptography;
 
 sealed record XmssParameters
 {
-    private XmssParameters()
+    XmssParameters()
     {
     }
 

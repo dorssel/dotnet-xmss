@@ -29,7 +29,11 @@ sealed class XmssPrivateKey
     }
 
     byte[] _SK_PRF = null!;
-    public byte[] getSK_PRF() => (byte[])_SK_PRF.Clone();
+    public byte[] getSK_PRF()
+    {
+        return (byte[])_SK_PRF.Clone();
+    }
+
     public void setSK_PRF(byte[] SK_PRF)
     {
         Debug.Assert(SK_PRF.Length == WotsParameters.n);
@@ -38,7 +42,11 @@ sealed class XmssPrivateKey
     }
 
     byte[] _SEED = null!;
-    public byte[] getSEED() => (byte[])_SEED.Clone();
+    public byte[] getSEED()
+    {
+        return (byte[])_SEED.Clone();
+    }
+
     public void setSEED(byte[] SEED)
     {
         Debug.Assert(SEED.Length == WotsParameters.n);
@@ -61,7 +69,11 @@ sealed class XmssPrivateKey
     }
 
     byte[] _root = null!;
-    public byte[] getRoot() => (byte[])_root.Clone();
+    public byte[] getRoot()
+    {
+        return (byte[])_root.Clone();
+    }
+
     public void setRoot(byte[] root)
     {
         _root = root;

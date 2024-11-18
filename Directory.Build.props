@@ -12,10 +12,10 @@ SPDX-License-Identifier: MIT
     <Platforms>AnyCPU</Platforms>
 
     <!-- Use the latest .NET SDK -->
-    <TargetFrameworks>net8.0</TargetFrameworks>
+    <TargetFrameworks>net9.0</TargetFrameworks>
     
     <!-- Use the latest C# language standard -->
-    <LangVersion>12.0</LangVersion>
+    <LangVersion>13.0</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
 
     <!-- Be very strict -->
@@ -32,6 +32,10 @@ SPDX-License-Identifier: MIT
     <SelfContained>false</SelfContained>
     <IsPackable>false</IsPackable>
     <IsPublishable>false</IsPublishable>
+    <!--
+    See https://github.com/dotnet/roslyn/issues/41640
+    -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     <!-- Assembly metadata -->
     <Product>dotnet-xmss</Product>

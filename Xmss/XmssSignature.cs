@@ -28,7 +28,6 @@ sealed class XmssSignature(int idx_sig, byte[] r, byte[][] sig_ots, byte[][] aut
 
     public byte[] ToBytes()
     {
-        return
-            [.. idx_sig.toByte(4), .. r, .. sig_ots.SelectMany(i => i), .. auth.SelectMany(i => i)];
+        return [.. idx_sig.toByte(4), .. r, .. sig_ots.SelectMany(i => i), .. auth.SelectMany(i => i)];
     }
 }
