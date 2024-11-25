@@ -13,6 +13,7 @@ SPDX-License-Identifier: MIT
   <Import Project="..\..\Xmss\buildTransitive\Dorssel.Security.Cryptography.Xmss.props" />
 
   <PropertyGroup>
+    <TargetFramework>$(MainTargetFramework)</TargetFramework>
     <IsPublishable>true</IsPublishable>
   </PropertyGroup>
   

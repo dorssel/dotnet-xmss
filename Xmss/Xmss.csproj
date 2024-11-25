@@ -8,7 +8,7 @@ SPDX-License-Identifier: MIT
 
   <PropertyGroup>
     <!-- Target the latest LTS .NET SDK -->
-    <TargetFrameworks>net8.0</TargetFrameworks>
+    <TargetFramework>net8.0</TargetFramework>
 
     <RootNamespace>Dorssel.Security.Cryptography</RootNamespace>
     <AssemblyName>Dorssel.Security.Cryptography.Xmss</AssemblyName>
