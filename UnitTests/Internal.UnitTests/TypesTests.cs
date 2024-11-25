@@ -4,7 +4,7 @@
 
 using Dorssel.Security.Cryptography.Internal;
 
-namespace InternalUnitTests;
+namespace Internal.UnitTests;
 
 [TestClass]
 sealed unsafe class TypesTests
@@ -22,7 +22,8 @@ sealed unsafe class TypesTests
     [TestMethod]
     public void XMSS_VALUE_256_WORDS()
     {
-        Assert.AreEqual(sizeof(XmssValue256) / sizeof(uint), Defines.XMSS_VALUE_256_WORDS);
+        var actual = Defines.XMSS_VALUE_256_WORDS;
+        Assert.AreEqual(sizeof(XmssValue256) / sizeof(uint), actual);
     }
 
     [TestMethod]

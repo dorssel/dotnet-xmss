@@ -4,10 +4,10 @@
 
 using NativeHelper;
 
-namespace XmssUnitTests;
+namespace UnitTests;
 
 [TestClass]
-sealed unsafe class AssemblyTests
+static unsafe class AssemblyTests
 {
     [AssemblyInitialize]
     public static void AssemblyInitialize(TestContext testContext)

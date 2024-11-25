@@ -4,7 +4,7 @@
 
 using Dorssel.Security.Cryptography;
 
-namespace XmssUnitTests;
+namespace UnitTests;
 
 [TestClass]
 sealed unsafe class VersionTests

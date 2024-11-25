@@ -5,15 +5,19 @@ VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xmss", "Xmss\Xmss.csproj", "{5435047D-2323-4E4D-9476-27D469940E20}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InternalUnitTests", "InternalUnitTests\InternalUnitTests.csproj", "{1C09C487-4772-48DA-AE2D-1FB3E11B7D43}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XmssUnitTests", "XmssUnitTests\XmssUnitTests.csproj", "{64B1F2BE-C094-4ED2-AE56-9E41728300C7}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NativeHelper", "NativeHelper\NativeHelper.csproj", "{336EC031-7C5F-4B5A-9680-FA247EDCC752}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NativeHelperUnitTests", "NativeHelperUnitTests\NativeHelperUnitTests.csproj", "{342AC90B-5931-43C1-A9EB-B8801BE86E64}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Internal.UnitTests", "UnitTests\Internal.UnitTests\Internal.UnitTests.csproj", "{1C09C487-4772-48DA-AE2D-1FB3E11B7D43}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "UnitTests\UnitTests\UnitTests.csproj", "{64B1F2BE-C094-4ED2-AE56-9E41728300C7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NativeHelper.UnitTests", "UnitTests\NativeHelper.UnitTests\NativeHelper.UnitTests.csproj", "{342AC90B-5931-43C1-A9EB-B8801BE86E64}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{CC79AB74-8C66-431B-821D-494C329E93CE}"
+	ProjectSection(SolutionItems) = preProject
+		Examples\Directory.Build.props = Examples\Directory.Build.props
+		Examples\Directory.Build.targets = Examples\Directory.Build.targets
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrintVersion", "Examples\PrintVersion\PrintVersion.csproj", "{11B9BE3A-86E5-4AE8-BFF8-D849368689C0}"
 EndProject
@@ -30,7 +34,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 		libc\libc.c = libc\libc.c
 		README.md = README.md
-		UnitTests.Build.props = UnitTests.Build.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{63248BB0-2821-4868-B9D1-8D6044CE0D56}"
+	ProjectSection(SolutionItems) = preProject
+		UnitTests\Directory.Build.props = UnitTests\Directory.Build.props
 	EndProjectSection
 EndProject
 Global
@@ -43,6 +51,10 @@ Global
 		{5435047D-2323-4E4D-9476-27D469940E20}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5435047D-2323-4E4D-9476-27D469940E20}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5435047D-2323-4E4D-9476-27D469940E20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{336EC031-7C5F-4B5A-9680-FA247EDCC752}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{336EC031-7C5F-4B5A-9680-FA247EDCC752}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{336EC031-7C5F-4B5A-9680-FA247EDCC752}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{336EC031-7C5F-4B5A-9680-FA247EDCC752}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1C09C487-4772-48DA-AE2D-1FB3E11B7D43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1C09C487-4772-48DA-AE2D-1FB3E11B7D43}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1C09C487-4772-48DA-AE2D-1FB3E11B7D43}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -51,10 +63,6 @@ Global
 		{64B1F2BE-C094-4ED2-AE56-9E41728300C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{64B1F2BE-C094-4ED2-AE56-9E41728300C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{64B1F2BE-C094-4ED2-AE56-9E41728300C7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{336EC031-7C5F-4B5A-9680-FA247EDCC752}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{336EC031-7C5F-4B5A-9680-FA247EDCC752}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{336EC031-7C5F-4B5A-9680-FA247EDCC752}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{336EC031-7C5F-4B5A-9680-FA247EDCC752}.Release|Any CPU.Build.0 = Release|Any CPU
 		{342AC90B-5931-43C1-A9EB-B8801BE86E64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{342AC90B-5931-43C1-A9EB-B8801BE86E64}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{342AC90B-5931-43C1-A9EB-B8801BE86E64}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -72,6 +80,9 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{1C09C487-4772-48DA-AE2D-1FB3E11B7D43} = {63248BB0-2821-4868-B9D1-8D6044CE0D56}
+		{64B1F2BE-C094-4ED2-AE56-9E41728300C7} = {63248BB0-2821-4868-B9D1-8D6044CE0D56}
+		{342AC90B-5931-43C1-A9EB-B8801BE86E64} = {63248BB0-2821-4868-B9D1-8D6044CE0D56}
 		{11B9BE3A-86E5-4AE8-BFF8-D849368689C0} = {CC79AB74-8C66-431B-821D-494C329E93CE}
 		{06165BE7-C274-4CD4-AD9A-8BD4F3423B8D} = {CC79AB74-8C66-431B-821D-494C329E93CE}
 	EndGlobalSection

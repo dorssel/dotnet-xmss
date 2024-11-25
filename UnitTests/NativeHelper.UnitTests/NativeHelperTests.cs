@@ -3,9 +3,8 @@
 // SPDX-License-Identifier: MIT
 
 using System.Reflection;
-using NativeHelper;
 
-namespace NativeHelperUnitTests;
+namespace NativeHelper.UnitTests;
 
 [TestClass]
 sealed class NativeHelperTests
