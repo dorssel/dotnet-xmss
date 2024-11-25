@@ -30,7 +30,7 @@ public static class NativeLoader
             {
                 return 0;
             }
-            foreach (var libraryPath in Directory.EnumerateFiles(runtimes, "*", SearchOption.AllDirectories))
+            foreach (var libraryPath in Directory.EnumerateFiles(runtimes, "xmss.*", SearchOption.AllDirectories))
             {
                 if (NativeLibrary.TryLoad(libraryPath, out var handle))
                 {
