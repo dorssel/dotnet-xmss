@@ -4,27 +4,23 @@
 
 using System.Reflection;
 
-namespace NativeHelperUnitTests;
+namespace NativeHelper.UnitTests;
 
 [TestClass]
-sealed class NoRuntimesTests
+sealed class NoRuntimeTests
 {
     [TestInitialize]
     public void TestInitialize()
     {
-        // Ensure that the runtime for this platform does not exist.
+        // Ensure that the runtimes directory does not exist at all.
         var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         Directory.Move(Path.Combine(baseDir, "runtimes"), Path.Combine(baseDir, "runtimes-moved"));
-        _ = Directory.CreateDirectory(Path.Combine(baseDir, "runtimes"));
-        File.Create(Path.Combine(baseDir, "runtimes", "xmss.so")).Close();
-        File.Create(Path.Combine(baseDir, "runtimes", "xmss.dll")).Close();
     }
 
     [TestCleanup]
     public void TestCleanup()
     {
         var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
-        Directory.Delete(Path.Combine(baseDir, "runtimes"), true);
         Directory.Move(Path.Combine(baseDir, "runtimes-moved"), Path.Combine(baseDir, "runtimes"));
     }
 

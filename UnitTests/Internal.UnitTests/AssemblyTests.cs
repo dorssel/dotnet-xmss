@@ -8,7 +8,7 @@ using System.Security.Cryptography;
 using Dorssel.Security.Cryptography.Internal;
 using NativeHelper;
 
-namespace InternalUnitTests;
+namespace Internal.UnitTests;
 
 [TestClass]
 sealed unsafe class AssemblyTests

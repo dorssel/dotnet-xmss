@@ -6,13 +6,15 @@ SPDX-License-Identifier: MIT
 -->
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>$(MainTargetFramework)</TargetFramework>
-    <OutputType>Exe</OutputType>
-  </PropertyGroup>
-
   <ItemGroup>
+    <!--
+    This is only needed for software within this repository itself.
+    When referencing the NuGet package this is not required.
+    -->
     <ProjectReference Include="..\..\NativeHelper\NativeHelper.csproj" />
+    <!--
+    <PackageReference Include="Dorssel.Security.Cryptography.Xmss" />
+    -->
   </ItemGroup>
-	
+
 </Project>
