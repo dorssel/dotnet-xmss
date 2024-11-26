@@ -13,8 +13,6 @@ SPDX-License-Identifier: MIT
 
     <!-- Be strict when testing, even in Release (at the cost of performance) -->
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
-
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup>
