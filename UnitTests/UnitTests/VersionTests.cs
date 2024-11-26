@@ -7,7 +7,7 @@ using Dorssel.Security.Cryptography;
 namespace UnitTests;
 
 [TestClass]
-sealed unsafe class VersionTests
+sealed class VersionTests
 {
     [TestMethod]
     public void NativeHeadersVersion()

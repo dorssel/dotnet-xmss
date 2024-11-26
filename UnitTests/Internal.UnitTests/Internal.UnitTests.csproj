@@ -5,4 +5,9 @@ SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
 SPDX-License-Identifier: MIT
 -->
 <Project Sdk="MSTest.Sdk">
+
+  <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
 </Project>

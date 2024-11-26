@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 using System.Runtime.InteropServices;
+using Dorssel.Security.Cryptography.InteropServices.Generic;
 
 namespace Dorssel.Security.Cryptography.InteropServices;
 
@@ -31,18 +32,5 @@ class SafeNativeMemoryHandle
             NativeMemory.Free((void*)handle);
         }
         return true;
-    }
-}
-
-sealed unsafe class SafeNativeMemoryHandle<T>(T* ptr, bool ownsHandle)
-    : SafeNativeMemoryHandle(ptr, ownsHandle)
-    where T : unmanaged
-{
-    public ref T AsRef()
-    {
-        unsafe
-        {
-            return ref *(T*)handle;
-        }
     }
 }

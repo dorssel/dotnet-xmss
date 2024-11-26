@@ -7,7 +7,7 @@ using NativeHelper;
 namespace UnitTests;
 
 [TestClass]
-static unsafe class AssemblyTests
+static class AssemblyTests
 {
     [AssemblyInitialize]
     public static void AssemblyInitialize(TestContext testContext)

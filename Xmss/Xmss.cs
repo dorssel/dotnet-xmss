@@ -4,7 +4,6 @@
 
 using System.Buffers;
 using System.Buffers.Binary;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using Dorssel.Security.Cryptography.Internal;
 using Dorssel.Security.Cryptography.InteropServices;
@@ -66,24 +65,6 @@ public sealed class Xmss
 
     readonly IXmssStateManager? StateManager;
 
-    [UnmanagedCallersOnly]
-    static unsafe void* CustomReallocFunction(void* ptr, nuint size)
-    {
-        return NativeMemory.Realloc(ptr, size);
-    }
-
-    [UnmanagedCallersOnly]
-    static unsafe void CustomFreeFunction(void* ptr)
-    {
-        NativeMemory.Free(ptr);
-    }
-
-    [UnmanagedCallersOnly]
-    static unsafe void CustomZeroizeFunction(void* ptr, nuint size)
-    {
-        CryptographicOperations.ZeroMemory(new(ptr, (int)size));
-    }
-
     public void GeneratePrivateKey(XmssParameterSet parameterSet, bool enableIndexObfuscation)
     {
         ObjectDisposedException.ThrowIf(IsDisposed, typeof(Xmss));
@@ -97,7 +78,7 @@ public sealed class Xmss
         {
             XmssSigningContext* signingContextPtr = null;
             var result = UnsafeNativeMethods.xmss_context_initialize(ref signingContextPtr, (XmssParameterSetOID)parameterSet,
-                &CustomReallocFunction, &CustomFreeFunction, &CustomZeroizeFunction);
+                &UnmanagedFunctions.Realloc, &UnmanagedFunctions.Free, &UnmanagedFunctions.Zeroize);
             XmssException.ThrowIfNotOkay(result);
             using var signingContext = SafeSigningContextHandle.TakeOwnership(ref signingContextPtr);
 
@@ -148,7 +129,7 @@ public sealed class Xmss
 
             XmssSigningContext* signingContextPtr = null;
             var result = UnsafeNativeMethods.xmss_context_initialize(ref signingContextPtr, parameterSet,
-                &CustomReallocFunction, &CustomFreeFunction, &CustomZeroizeFunction);
+                &UnmanagedFunctions.Realloc, &UnmanagedFunctions.Free, &UnmanagedFunctions.Zeroize);
             XmssException.ThrowIfNotOkay(result);
             using var signingContext = SafeSigningContextHandle.TakeOwnership(ref signingContextPtr);
 
