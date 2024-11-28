@@ -22,28 +22,10 @@ sealed unsafe class SafeSigningContextHandleTests
     }
 
     [TestMethod]
-    public void TakeOwnership_Valid()
-    {
-        var signingContextPointer = CreateSigningContextPointer();
-        using var sigingContext = SafeSigningContextHandle.TakeOwnership(ref signingContextPointer);
-
-        Assert.IsFalse(sigingContext.IsInvalid);
-    }
-
-    [TestMethod]
-    public void TakeOwnership_Null()
-    {
-        XmssSigningContext* signingContextPointer = null;
-        using var sigingContext = SafeSigningContextHandle.TakeOwnership(ref signingContextPointer);
-
-        Assert.IsTrue(sigingContext.IsInvalid);
-    }
-
-    [TestMethod]
     public void AsRef_Valid()
     {
-        var signingContextPointer = CreateSigningContextPointer();
-        using var sigingContext = SafeSigningContextHandle.TakeOwnership(ref signingContextPointer);
+        using var sigingContext = new SafeSigningContextHandle();
+        sigingContext.AsPointerRef() = CreateSigningContextPointer();
 
         _ = sigingContext.AsRef().ToString();
     }
@@ -51,8 +33,7 @@ sealed unsafe class SafeSigningContextHandleTests
     [TestMethod]
     public void AsRef_Null()
     {
-        XmssSigningContext* signingContextPointer = null;
-        using var sigingContext = SafeSigningContextHandle.TakeOwnership(ref signingContextPointer);
+        using var sigingContext = new SafeSigningContextHandle();
 
         _ = Assert.ThrowsException<NullReferenceException>(() =>
         {

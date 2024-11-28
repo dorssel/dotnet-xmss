@@ -30,6 +30,7 @@ static class Program
             using var stateManager = new XmssFileStateManager(@"C:\test");
             using var xmss = new Xmss(stateManager);
             xmss.LoadPrivateKey();
+            _ = xmss.Sign([1, 2, 3]);
         }
     }
 }

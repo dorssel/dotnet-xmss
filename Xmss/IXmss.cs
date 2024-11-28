@@ -10,9 +10,17 @@ public interface IXmss
 
     public Version NativeLibraryVersion { get; }
 
-    public bool Verify(Stream data, byte[] signature);
-
     public void GeneratePrivateKey(XmssParameterSet parameterSet, bool enableIndexObfuscation);
 
     public void LoadPrivateKey();
+
+    public byte[] Sign(ReadOnlySpan<byte> data);
+
+    public int Sign(ReadOnlySpan<byte> data, Span<byte> destination);
+
+    public bool TrySign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten);
+
+    public bool Verify(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature);
+
+    public bool Verify(Stream data, ReadOnlySpan<byte> signature);
 }

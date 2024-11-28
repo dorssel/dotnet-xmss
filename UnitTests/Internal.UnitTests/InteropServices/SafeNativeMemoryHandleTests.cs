@@ -11,20 +11,22 @@ namespace Internal.UnitTests.InteropServices;
 sealed unsafe class SafeNativeMemoryHandleTests
 {
     [TestMethod]
-    public void TakeOwnership_Valid()
+    public void AsRef_Valid()
     {
-        var nativeMemoryPointer = (int*)NativeMemory.Alloc(sizeof(int));
-        using var nativeMemory = SafeNativeMemoryHandle.TakeOwnership(ref nativeMemoryPointer);
+        using var nativeMemory = new SafeNativeMemoryHandle<int>();
+        nativeMemory.AsPointerRef() = (int*)NativeMemory.Alloc(sizeof(int));
 
-        Assert.IsFalse(nativeMemory.IsInvalid);
+        nativeMemory.AsRef() = 42;
     }
 
     [TestMethod]
-    public void TakeOwnership_Null()
+    public void AsRef_Null()
     {
-        int* nativeMemoryPointer = null;
-        using var nativeMemory = SafeNativeMemoryHandle.TakeOwnership(ref nativeMemoryPointer);
+        using var nativeMemory = new SafeNativeMemoryHandle<int>();
 
-        Assert.IsTrue(nativeMemory.IsInvalid);
+        _ = Assert.ThrowsException<NullReferenceException>(() =>
+        {
+            nativeMemory.AsRef() = 42;
+        });
     }
 }
