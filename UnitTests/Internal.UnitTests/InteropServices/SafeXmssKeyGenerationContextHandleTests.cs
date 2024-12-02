@@ -10,7 +10,7 @@ using Dorssel.Security.Cryptography.InteropServices;
 namespace Internal.UnitTests.InteropServices;
 
 [TestClass]
-sealed unsafe class SafeKeyGenerationContextHandleTests
+sealed unsafe class SafeXmssKeyGenerationContextHandleTests
 {
     static unsafe XmssKeyGenerationContext* CreateKeyGenerationContextPointer(ref XmssKeyContext* keyContext)
     {
@@ -51,9 +51,9 @@ sealed unsafe class SafeKeyGenerationContextHandleTests
     public void AsRef_Valid()
     {
         // We need to keep the XmssKeyContext alive while handling the XmssKeyGenerationContext.
-        using var keyContext = new SafeKeyContextHandle();
+        using var keyContext = new SafeXmssKeyContextHandle();
 
-        using var keyGenerationContext = new SafeKeyGenerationContextHandle();
+        using var keyGenerationContext = new SafeXmssKeyGenerationContextHandle();
         keyGenerationContext.AsPointerRef() = CreateKeyGenerationContextPointer(ref keyContext.AsPointerRef());
 
         _ = keyGenerationContext.AsRef().ToString();
@@ -62,7 +62,7 @@ sealed unsafe class SafeKeyGenerationContextHandleTests
     [TestMethod]
     public void AsRef_Null()
     {
-        using var keyGenerationContext = new SafeKeyGenerationContextHandle();
+        using var keyGenerationContext = new SafeXmssKeyGenerationContextHandle();
 
         _ = Assert.ThrowsException<NullReferenceException>(() =>
         {

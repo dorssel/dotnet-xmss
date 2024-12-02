@@ -10,7 +10,7 @@ using Dorssel.Security.Cryptography.InteropServices;
 namespace Internal.UnitTests.InteropServices;
 
 [TestClass]
-sealed unsafe class SafeKeyContextHandleTests
+sealed unsafe class SafeXmssKeyContextHandleTests
 {
     static unsafe XmssKeyContext* CreateKeyContextPointer()
     {
@@ -44,7 +44,7 @@ sealed unsafe class SafeKeyContextHandleTests
     [TestMethod]
     public void AsRef_Valid()
     {
-        using var keyContext = new SafeKeyContextHandle();
+        using var keyContext = new SafeXmssKeyContextHandle();
         keyContext.AsPointerRef() = CreateKeyContextPointer();
 
         _ = keyContext.AsRef().ToString();
@@ -53,7 +53,7 @@ sealed unsafe class SafeKeyContextHandleTests
     [TestMethod]
     public void AsRef_Null()
     {
-        using var keyContext = new SafeKeyContextHandle();
+        using var keyContext = new SafeXmssKeyContextHandle();
 
         _ = Assert.ThrowsException<NullReferenceException>(() =>
         {

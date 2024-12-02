@@ -23,13 +23,13 @@ static class Program
         {
             using var stateManager = new XmssFileStateManager(@"C:\test");
             stateManager.Delete();
-            using var xmss = new Xmss(stateManager);
-            xmss.GeneratePrivateKey(XmssParameterSet.XMSS_SHA2_10_256, false);
+            using var xmss = new Xmss();
+            xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
         }
         {
             using var stateManager = new XmssFileStateManager(@"C:\test");
-            using var xmss = new Xmss(stateManager);
-            xmss.LoadPrivateKey();
+            using var xmss = new Xmss();
+            xmss.ImportPrivateKey(stateManager);
             _ = xmss.Sign([1, 2, 3]);
         }
     }

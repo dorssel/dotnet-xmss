@@ -30,9 +30,14 @@ public sealed class XmssFileStateManager(string path)
         file.Flush();
     }
 
-    public byte[] Load(XmssKeyParts part)
+    public void Load(XmssKeyParts part, Span<byte> destination)
     {
-        return File.ReadAllBytes(GetPartPath(part));
+        using var file = File.OpenRead(GetPartPath(part));
+        if (file.Length != destination.Length)
+        {
+            throw new ArgumentException("File size mismatch.", nameof(destination));
+        }
+        file.ReadExactly(destination);
     }
 
     public void Lock()

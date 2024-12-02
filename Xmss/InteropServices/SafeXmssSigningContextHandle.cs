@@ -6,7 +6,7 @@ using Dorssel.Security.Cryptography.Internal;
 
 namespace Dorssel.Security.Cryptography.InteropServices;
 
-sealed class SafeSigningContextHandle : SafeXmssHandle<XmssSigningContext>
+sealed class SafeXmssSigningContextHandle : SafeXmssHandle<XmssSigningContext>
 {
     protected override unsafe void Free(XmssSigningContext* pointer)
     {
