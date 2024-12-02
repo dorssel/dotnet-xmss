@@ -8,7 +8,7 @@ namespace Dorssel.Security.Cryptography.InteropServices;
 
 abstract class SafeXmssHandle<T> : SafeHandle where T : unmanaged
 {
-    public unsafe SafeXmssHandle()
+    private protected unsafe SafeXmssHandle()
         : base(0, true)
     {
     }
@@ -27,6 +27,12 @@ abstract class SafeXmssHandle<T> : SafeHandle where T : unmanaged
     {
         base.Dispose(disposing);
         Unpin();
+    }
+
+    public unsafe T* AsPointer()
+    {
+        ObjectDisposedException.ThrowIf(IsClosed, this);
+        return (T*)handle;
     }
 
     public ref T AsRef()

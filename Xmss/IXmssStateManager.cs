@@ -17,5 +17,5 @@ public interface IXmssStateManager
 
     public void Store(XmssKeyParts part, ReadOnlySpan<byte> data);
 
-    public byte[] Load(XmssKeyParts part);
+    public void Load(XmssKeyParts part, Span<byte> destination);
 }

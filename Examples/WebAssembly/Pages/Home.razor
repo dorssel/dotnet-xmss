@@ -16,8 +16,7 @@
 @code {
     private void Test()
     {
-        using var stateManager = new XmssFileStateManager(@".");
-        using var xmss = new Xmss(stateManager);
-        xmss.GeneratePrivateKey(XmssParameterSet.XMSS_SHA2_10_256, false);
+        using var xmss = new Xmss();
+        xmss.GeneratePrivateKey(new XmssFileStateManager(@"."), XmssParameterSet.XMSS_SHA2_10_256, false);
     }
 }

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
+using System.Diagnostics;
 using System.Security.Cryptography;
 using Dorssel.Security.Cryptography.Internal;
 
@@ -26,12 +27,12 @@ public class XmssException
     {
     }
 
+    [StackTraceHidden]
     internal static void ThrowIfNotOkay(XmssError error)
     {
-        if (error == XmssError.XMSS_OKAY)
+        if (error != XmssError.XMSS_OKAY)
         {
-            return;
+            throw new XmssException(error);
         }
-        throw new XmssException(error);
     }
 }

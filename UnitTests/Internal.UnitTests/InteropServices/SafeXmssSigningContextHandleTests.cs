@@ -9,7 +9,7 @@ using Dorssel.Security.Cryptography.InteropServices;
 namespace Internal.UnitTests.InteropServices;
 
 [TestClass]
-sealed unsafe class SafeSigningContextHandleTests
+sealed unsafe class SafeXmssSigningContextHandleTests
 {
     static unsafe XmssSigningContext* CreateSigningContextPointer()
     {
@@ -24,7 +24,7 @@ sealed unsafe class SafeSigningContextHandleTests
     [TestMethod]
     public void AsRef_Valid()
     {
-        using var sigingContext = new SafeSigningContextHandle();
+        using var sigingContext = new SafeXmssSigningContextHandle();
         sigingContext.AsPointerRef() = CreateSigningContextPointer();
 
         _ = sigingContext.AsRef().ToString();
@@ -33,7 +33,7 @@ sealed unsafe class SafeSigningContextHandleTests
     [TestMethod]
     public void AsRef_Null()
     {
-        using var sigingContext = new SafeSigningContextHandle();
+        using var sigingContext = new SafeXmssSigningContextHandle();
 
         _ = Assert.ThrowsException<NullReferenceException>(() =>
         {

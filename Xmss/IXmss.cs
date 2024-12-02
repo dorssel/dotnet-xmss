@@ -10,9 +10,9 @@ public interface IXmss
 
     public Version NativeLibraryVersion { get; }
 
-    public void GeneratePrivateKey(XmssParameterSet parameterSet, bool enableIndexObfuscation);
+    public void GeneratePrivateKey(IXmssStateManager stateManager, XmssParameterSet parameterSet, bool enableIndexObfuscation);
 
-    public void LoadPrivateKey();
+    public void ImportPrivateKey(IXmssStateManager stateManager);
 
     public byte[] Sign(ReadOnlySpan<byte> data);
 
