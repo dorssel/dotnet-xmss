@@ -55,7 +55,7 @@ SPDX-License-Identifier: MIT
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GitVersion.MsBuild" PrivateAssets="all" />
+    <PackageReference Include="Dorssel.GitVersion.MsBuild" />
   </ItemGroup>
 
   <Target Name="SetCopyright" AfterTargets="GetVersion">
@@ -69,10 +69,7 @@ SPDX-License-Identifier: MIT
 
   <Target Name="SetPackageVersion" AfterTargets="GetVersion">
     <PropertyGroup>
-      <!-- Default to (obviously bogus) pre-release version number in case GitVersion is not available (e.g., Visual Studio). -->
-      <PackageVersion>0.9.999</PackageVersion>
-      <!-- This must be used when building on GitHub, or when building locally with GitVersion available. -->
-      <PackageVersion Condition="$(ContinuousIntegrationBuild) Or ($(GitVersion_MajorMinorPatch) != '')">$(GitVersion_MajorMinorPatch)</PackageVersion>
+      <PackageVersion>$(GitVersion_MajorMinorPatch)</PackageVersion>
     </PropertyGroup>
   </Target>
   
