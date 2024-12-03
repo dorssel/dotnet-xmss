@@ -82,6 +82,7 @@ jobs:
 
       - name: Restore dependencies
         run: |
+          dotnet tool restore
           dotnet workload restore
           dotnet restore
 

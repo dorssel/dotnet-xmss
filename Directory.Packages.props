@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 <Project>
   <ItemGroup>
     <!-- all -->
-    <PackageVersion Include="GitVersion.MsBuild" Version="6.0.5" />
+    <PackageVersion Include="Dorssel.GitVersion.MsBuild" Version="1.1.0" PrivateAssets="all" />
     <!-- example WebApp -->
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.0" PrivateAssets="all" />
