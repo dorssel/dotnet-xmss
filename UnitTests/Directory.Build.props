@@ -18,7 +18,6 @@ SPDX-License-Identifier: MIT
   <PropertyGroup>
     <!-- Updates to transitive MSTest.Sdk dependencies -->
     <MicrosoftNETTestSdkVersion>17.12.0</MicrosoftNETTestSdkVersion>
-    <MicrosoftTestingExtensionsCodeCoverageVersion>17.13.0</MicrosoftTestingExtensionsCodeCoverageVersion>
   </PropertyGroup>
 
   <ItemGroup>
