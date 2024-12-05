@@ -12,6 +12,10 @@ public interface IXmss
 
     public void GeneratePrivateKey(IXmssStateManager stateManager, XmssParameterSet parameterSet, bool enableIndexObfuscation);
 
+    public bool RequiresPublicKeyGeneration { get; }
+
+    public Task GeneratePublicKeyAsync(IProgress<double>? progress, CancellationToken cancellationToken);
+
     public void ImportPrivateKey(IXmssStateManager stateManager);
 
     public byte[] Sign(ReadOnlySpan<byte> data);

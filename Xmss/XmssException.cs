@@ -27,6 +27,10 @@ public class XmssException
     {
     }
 
+    internal XmssException(XmssError error, Exception innerException) : base(UnsafeNativeMethods.xmss_error_to_description(error), innerException)
+    {
+    }
+
     [StackTraceHidden]
     internal static void ThrowIfNotOkay(XmssError error)
     {

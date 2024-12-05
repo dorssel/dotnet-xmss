@@ -7,8 +7,7 @@ namespace Dorssel.Security.Cryptography;
 [Flags]
 public enum XmssKeyParts
 {
-    ParameterSet = 0b0001,
-    PrivateStateless = 0b0010,
-    PrivateStateful = 0b0100,
-    Public = 0b1000,
+    PrivateStateless = 0b001,
+    PrivateStateful = 0b010,
+    Public = 0b100,
 }
