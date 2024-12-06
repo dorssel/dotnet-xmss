@@ -14,7 +14,7 @@ public interface IXmss
 
     public bool RequiresPublicKeyGeneration { get; }
 
-    public Task GeneratePublicKeyAsync(IProgress<double>? progress, CancellationToken cancellationToken);
+    public Task GeneratePublicKeyAsync(Action<double>? progress = null, CancellationToken cancellationToken = default);
 
     public void ImportPrivateKey(IXmssStateManager stateManager);
 

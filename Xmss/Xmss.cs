@@ -325,7 +325,7 @@ public sealed class Xmss
         }
     }
 
-    public async Task GeneratePublicKeyAsync(IProgress<double>? progress, CancellationToken cancellationToken)
+    public async Task GeneratePublicKeyAsync(Action<double>? progress = null, CancellationToken cancellationToken = default)
     {
         if (StateManager is null || KeyContext is null)
         {
@@ -354,7 +354,7 @@ public sealed class Xmss
         var completed = 0;
         while (!cancellationToken.IsCancellationRequested && completed < 1024)
         {
-            while (tasks.Count < Environment.ProcessorCount / 2 && index < 1024)
+            while (tasks.Count < Environment.ProcessorCount && index < 1024)
             {
                 var nextTaskIndex = index;
                 tasks.Add(Task.Run(() =>
@@ -375,7 +375,7 @@ public sealed class Xmss
                 return true;
             });
             Debug.WriteLine(completed);
-            progress?.Report(99.0 * completed / 1024);
+            progress?.Invoke(99.0 * completed / 1024);
         }
 
         using var publicKeyInternalBlob = new SafeXmssPublicKeyInternalBlobHandle();
@@ -385,8 +385,8 @@ public sealed class Xmss
                 ref keyGenerationContext.AsPointerRef(), ref KeyContext.AsRef());
             XmssException.ThrowIfNotOkay(result);
         }
-        // StateManager.Store(XmssKeyParts.Public, publicKeyInternalBlob.Data);
+        StateManager.Store(XmssKeyParts.Public, publicKeyInternalBlob.Data);
         RequiresPublicKeyGeneration = false;
-        progress?.Report(100.0);
+        progress?.Invoke(100.0);
     }
 }
