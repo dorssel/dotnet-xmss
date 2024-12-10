@@ -6,7 +6,7 @@ using Dorssel.Security.Cryptography.Internal;
 
 namespace Dorssel.Security.Cryptography.InteropServices;
 
-sealed class SafeXmssKeyGenerationContextHandle : SafeXmssHandle<XmssKeyGenerationContext>
+sealed class CriticalXmssKeyGenerationContextHandle : CriticalXmssHandle<XmssKeyGenerationContext>
 {
     protected override unsafe void Free(XmssKeyGenerationContext* pointer)
     {

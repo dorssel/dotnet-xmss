@@ -17,12 +17,12 @@ SPDX-License-Identifier: MIT
 
     <IsPackable>true</IsPackable>
     <PackageId>Dorssel.Security.Cryptography.Xmss</PackageId>
-    
+
     <!-- For now, suppress missing documentation. -->
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
 
-	<ItemGroup>
+  <ItemGroup>
     <Content Include="runtimes\**">
       <!-- Required for running unit tests and examples within this repository. -->
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -30,7 +30,7 @@ SPDX-License-Identifier: MIT
       <Pack>true</Pack>
       <PackagePath>%(Identity)</PackagePath>
     </Content>
-	</ItemGroup>
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\LICENSE.txt" Pack="true" PackagePath="" Visible="false" />
@@ -38,5 +38,5 @@ SPDX-License-Identifier: MIT
     <None Include="buildTransitive\Dorssel.Security.Cryptography.Xmss.props" PackagePath="buildTransitive" Pack="true" />
     <None Include="buildTransitive\Dorssel.Security.Cryptography.Xmss.targets" PackagePath="buildTransitive" Pack="true" />
   </ItemGroup>
-  
+
 </Project>

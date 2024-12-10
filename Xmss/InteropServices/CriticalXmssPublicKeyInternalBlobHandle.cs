@@ -6,11 +6,11 @@ using Dorssel.Security.Cryptography.Internal;
 
 namespace Dorssel.Security.Cryptography.InteropServices;
 
-sealed class SafeXmssPublicKeyInternalBlobHandle : SafeBlobHandle<XmssPublicKeyInternalBlob>
+sealed class CriticalXmssPublicKeyInternalBlobHandle() : CriticalXmssBlobHandle<XmssPublicKeyInternalBlob>(false)
 {
-    public static SafeXmssPublicKeyInternalBlobHandle Alloc(XmssCacheType cacheType, byte cacheLevel, XmssParameterSet parameterSet)
+    public static CriticalXmssPublicKeyInternalBlobHandle Alloc(XmssCacheType cacheType, byte cacheLevel, XmssParameterSet parameterSet)
     {
-        return Alloc<SafeXmssPublicKeyInternalBlobHandle>(
+        return Alloc<CriticalXmssPublicKeyInternalBlobHandle>(
             Defines.XMSS_PUBLIC_KEY_INTERNAL_BLOB_SIZE(cacheType, cacheLevel, (XmssParameterSetOID)parameterSet));
     }
 }

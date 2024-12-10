@@ -4,11 +4,14 @@
 
 root = true
 
+[*.{cs,vb}]
+end_of_line = crlf
+
 [*]
+charset = utf-8
 trim_trailing_whitespace = true
 guidelines = 120 1px solid 90ff8000, 160 1px solid 90ff0000
 
-end_of_line = crlf
 indent_size = 4
 indent_style = space
 insert_final_newline = true
@@ -111,21 +114,21 @@ dotnet_naming_rule.non_field_members_should_be_pascal_case.style = pascal_case
 dotnet_naming_rule.non_field_members_should_be_pascal_case.symbols = non_field_members
 dotnet_naming_style.begins_with_i.capitalization = pascal_case
 dotnet_naming_style.begins_with_i.required_prefix = I
-dotnet_naming_style.begins_with_i.required_suffix = 
-dotnet_naming_style.begins_with_i.word_separator = 
+dotnet_naming_style.begins_with_i.required_suffix =
+dotnet_naming_style.begins_with_i.word_separator =
 dotnet_naming_style.pascal_case.capitalization = pascal_case
-dotnet_naming_style.pascal_case.required_prefix = 
-dotnet_naming_style.pascal_case.required_suffix = 
-dotnet_naming_style.pascal_case.word_separator = 
+dotnet_naming_style.pascal_case.required_prefix =
+dotnet_naming_style.pascal_case.required_suffix =
+dotnet_naming_style.pascal_case.word_separator =
 dotnet_naming_symbols.interface.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
 dotnet_naming_symbols.interface.applicable_kinds = interface
-dotnet_naming_symbols.interface.required_modifiers = 
+dotnet_naming_symbols.interface.required_modifiers =
 dotnet_naming_symbols.non_field_members.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
 dotnet_naming_symbols.non_field_members.applicable_kinds = property, event, method
-dotnet_naming_symbols.non_field_members.required_modifiers = 
+dotnet_naming_symbols.non_field_members.required_modifiers =
 dotnet_naming_symbols.types.applicable_kinds = class, struct, interface, enum
 dotnet_naming_symbols.types.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
-dotnet_naming_symbols.types.required_modifiers = 
+dotnet_naming_symbols.types.required_modifiers =
 dotnet_style_allow_multiple_blank_lines_experimental = true:suggestion
 dotnet_style_allow_statement_immediately_after_block_experimental = true:suggestion
 dotnet_style_coalesce_expression = true:suggestion
@@ -158,30 +161,52 @@ dotnet_style_qualification_for_property = false:suggestion
 dotnet_style_readonly_field = true:suggestion
 dotnet_style_require_accessibility_modifiers = omit_if_default:suggestion
 
-[*.{html,css,razor}]
+[*.{cs,razor}]
 charset = utf-8-bom
-end_of_line = unset
 
 # Markdown
 # => use '\', *not* double-white-space ('  ') at end of line for line break.
 [*.md]
-end_of_line = unset
+indent_size = unset
 
-[*.{csproj,props,targets,wixproj}]
-indent_size = 2
-end_of_line = unset
+# Maintained by Visual Studio
+[*.sln]
+indent_style = tab
 
-[*.yml]
+# Maintained by Visual Studio
+[*.{pubxml,wixproj}]
+charset = utf-8-bom
 indent_size = 2
-end_of_line = unset
+insert_final_newline = false
+
+[*.{csproj,props,targets}]
+charset = utf-8-bom
+indent_size = 2
+
+[*.{manifest,props,targets,wixproj}]
+charset = utf-8-bom
+indent_size = 2
+
+[*.{json,yaml,yml}]
+indent_size = 2
 
 [*.sh]
 charset = utf-8
 end_of_line = lf
 
-[Directory.Packages.props]
+[*.css]
+indent_size = 2
+
+# Maintained by Visual Studio and Dependabot
+[{global.json,dotnet-tools.json,Directory.Packages.props}]
+charset = utf-8
 insert_final_newline = false
 
-[{global.json,dotnet-tools.json}]
-indent_size = 2
-insert_final_newline = false
+# Maintained by git, LF required for hash consistency
+[.gitmodules]
+indent_style = tab
+end_of_line = lf
+
+# LF required for hash consistency
+[runtime-*.yml]
+end_of_line=lf

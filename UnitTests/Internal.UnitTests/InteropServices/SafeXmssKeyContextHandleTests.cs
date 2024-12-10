@@ -44,7 +44,7 @@ sealed unsafe class SafeXmssKeyContextHandleTests
     [TestMethod]
     public void AsRef_Valid()
     {
-        using var keyContext = new SafeXmssKeyContextHandle();
+        using var keyContext = new CriticalXmssKeyContextHandle();
         keyContext.AsPointerRef() = CreateKeyContextPointer();
 
         _ = keyContext.AsRef().ToString();
@@ -53,7 +53,7 @@ sealed unsafe class SafeXmssKeyContextHandleTests
     [TestMethod]
     public void AsRef_Null()
     {
-        using var keyContext = new SafeXmssKeyContextHandle();
+        using var keyContext = new CriticalXmssKeyContextHandle();
 
         _ = Assert.ThrowsException<NullReferenceException>(() =>
         {

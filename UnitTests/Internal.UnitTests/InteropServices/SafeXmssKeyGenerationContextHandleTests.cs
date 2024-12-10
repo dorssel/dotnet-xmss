@@ -51,9 +51,9 @@ sealed unsafe class SafeXmssKeyGenerationContextHandleTests
     public void AsRef_Valid()
     {
         // We need to keep the XmssKeyContext alive while handling the XmssKeyGenerationContext.
-        using var keyContext = new SafeXmssKeyContextHandle();
+        using var keyContext = new CriticalXmssKeyContextHandle();
 
-        using var keyGenerationContext = new SafeXmssKeyGenerationContextHandle();
+        using var keyGenerationContext = new CriticalXmssKeyGenerationContextHandle();
         keyGenerationContext.AsPointerRef() = CreateKeyGenerationContextPointer(ref keyContext.AsPointerRef());
 
         _ = keyGenerationContext.AsRef().ToString();
@@ -62,7 +62,7 @@ sealed unsafe class SafeXmssKeyGenerationContextHandleTests
     [TestMethod]
     public void AsRef_Null()
     {
-        using var keyGenerationContext = new SafeXmssKeyGenerationContextHandle();
+        using var keyGenerationContext = new CriticalXmssKeyGenerationContextHandle();
 
         _ = Assert.ThrowsException<NullReferenceException>(() =>
         {

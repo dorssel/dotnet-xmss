@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 using Dorssel.Security.Cryptography;
+using System.Security.Cryptography;
 
 static class Program
 {
@@ -15,29 +16,75 @@ static class Program
 
     static void Main()
     {
+        /*
         {
-            using var xmss = new Xmss();
+            using var ec = ECDsa.Create();
+            var parameters = ec.ExportParameters(false);
+            using var ec2 = ECDsa.Create(parameters);
+            var signature = ec2.SignData([1, 2, 3, 4], HashAlgorithmName.SHA256);
+            _ = signature;
+        }
+        */
+        {
+            using var xmss = Xmss.Create();
             Console.WriteLine($"Native headers version: {xmss.NativeHeadersVersion}");
             Console.WriteLine($"Native library version: {xmss.NativeLibraryVersion}");
         }
-#if true
         {
-            using var stateManager = new XmssFileStateManager(@"C:\test");
-            stateManager.Delete();
+            Xmss.RegisterWithCryptoConfig();
+#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+            var alg = CryptoConfig.CreateFromName("XMSS");
+#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+            var oid = CryptoConfig.MapNameToOID("XMSS");
+        }
+        {
+            // generate new key
+
+            var stateManager = new XmssFileStateManager(@"C:\test");
+            stateManager.SecureDelete();
             using var xmss = new Xmss();
             xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
-        }
-#endif
-        {
-            using var stateManager = new XmssFileStateManager(@"C:\test");
-            using var xmss = new Xmss();
-            var progressLock = new object();
-            xmss.ImportPrivateKey(stateManager);
-            if (xmss.RequiresPublicKeyGeneration)
             {
-                xmss.GeneratePublicKeyAsync(progress => Console.Write($"\r{(int)progress,3}%")).Wait();
+                // this is special for XMSS, a long-running (cancelable) process
+
+                using var cancellationTokenSource = new CancellationTokenSource();
+                Console.CancelKeyPress += (sender, args) =>
+                {
+                    cancellationTokenSource.Cancel();
+                    args.Cancel = true;
+                };
+
+                var oldPercentage = 0;
+                try
+                {
+                    xmss.GeneratePublicKeyAsync(progress =>
+                    {
+                        if (oldPercentage < (int)progress)
+                        {
+                            oldPercentage = (int)progress;
+                            Console.Write($"\r{(int)progress,3}%");
+                        }
+                    }, cancellationTokenSource.Token).Wait();
+                }
+                catch (AggregateException ex) when (ex.GetBaseException() is OperationCanceledException)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("Canceled");
+                    return;
+                }
             }
+            Console.WriteLine();
             _ = xmss.Sign([1, 2, 3]);
+            _ = xmss.Sign([4, 5, 6]);
+        }
+        {
+            // reuse same key
+
+            using var xmss = new Xmss();
+            xmss.ImportPrivateKey(new XmssFileStateManager(@"C:\test"));
+            var message = new byte[] { 7, 8, 9 };
+            var signature = xmss.Sign(message);
+            Console.WriteLine($"verification: {xmss.Verify(message, signature)}");
         }
     }
 }

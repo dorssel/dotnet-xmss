@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: MIT
 
 using System.Buffers;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using Dorssel.Security.Cryptography.Internal;
 using Dorssel.Security.Cryptography.InteropServices;
@@ -18,6 +20,39 @@ public sealed class Xmss
     {
         LegalKeySizesValue = [new(256, 256, 0)];
         KeySizeValue = 256;
+    }
+
+    public static new Xmss Create()
+    {
+        return new Xmss();
+    }
+
+    [UnsupportedOSPlatform("browser")]
+    [Obsolete("Cryptographic factory methods accepting an algorithm name are obsolete. Use the parameterless Create factory method on the algorithm type instead.")]
+    [RequiresUnreferencedCode("The default algorithm implementations might be removed, use strong type references like 'Xmss.Create()' instead.")]
+    public static new Xmss? Create(string algorithm)
+    {
+        ArgumentNullException.ThrowIfNull(algorithm);
+
+        RegisterWithCryptoConfig();
+        return CryptoConfig.CreateFromName(algorithm) as Xmss;
+    }
+
+    static readonly object RegistrationLock = new();
+    static bool TriedRegisterOnce;
+
+    [UnsupportedOSPlatform("browser")]
+    public static void RegisterWithCryptoConfig()
+    {
+        lock (RegistrationLock)
+        {
+            if (!TriedRegisterOnce)
+            {
+                TriedRegisterOnce = true;
+                CryptoConfig.AddAlgorithm(typeof(Xmss), "XMSS");
+                CryptoConfig.AddOID("1.3.6.1.5.5.7.6.34", "XMSS");
+            }
+        }
     }
 
     public XmssParameterSet ParameterSet { get; private set; } = XmssParameterSet.None;
@@ -37,19 +72,24 @@ public sealed class Xmss
     };
 
     bool IsDisposed;
-    IXmssStateManager? StateManager;
-    SafeXmssKeyContextHandle? KeyContext;
+    XmssPrivateKey? PrivateKey;
+    XmssPublicKey PublicKey;
 
     protected override void Dispose(bool disposing)
     {
         if (!IsDisposed)
         {
-            KeyContext?.Dispose();
-            StateManager?.Dispose();
+            PrivateKey?.Dispose();
+            PrivateKey = null;
+            HasPublicKey = false;
             IsDisposed = true;
         }
         base.Dispose(disposing);
     }
+
+    public bool HasPrivateKey => PrivateKey is not null;
+
+    public bool HasPublicKey { get; private set; }
 
     public void GeneratePrivateKey(IXmssStateManager stateManager, XmssParameterSet parameterSet, bool enableIndexObfuscation)
     {
@@ -61,46 +101,55 @@ public sealed class Xmss
 
         unsafe
         {
-            using var signingContext = new SafeXmssSigningContextHandle();
+            var keyContext = new CriticalXmssKeyContextHandle();
+            var privateKeyStatefulBlob = new CriticalXmssPrivateKeyStatefulBlobHandle();
+            try
             {
-                result = UnsafeNativeMethods.xmss_context_initialize(ref signingContext.AsPointerRef(), (XmssParameterSetOID)parameterSet,
-                    &UnmanagedFunctions.Realloc, &UnmanagedFunctions.Free, &UnmanagedFunctions.Zeroize);
-                XmssException.ThrowIfNotOkay(result);
-            }
-
-            // Private key
-            using var keyContext = new SafeXmssKeyContextHandle();
-            using var privateKeyStatelessBlob = new SafeXmssPrivateKeyStatelessBlobHandle();
-            using var privateKeyStatefulBlob = new SafeXmssPrivateKeyStatefulBlobHandle();
-            {
-                XmssBuffer secure_random;
-                XmssBuffer random = new();
-                fixed (byte* secureRandomPtr = RandomNumberGenerator.GetBytes(96))
-                fixed (byte* randomPtr = RandomNumberGenerator.GetBytes(32))
+                using var signingContext = new CriticalXmssSigningContextHandle();
                 {
-                    secure_random.data = secureRandomPtr;
-                    secure_random.data_size = 96;
-                    random.data = randomPtr;
-                    random.data_size = 32;
-
-                    result = UnsafeNativeMethods.xmss_generate_private_key(ref keyContext.AsPointerRef(), ref privateKeyStatelessBlob.AsPointerRef(),
-                        ref privateKeyStatefulBlob.AsPointerRef(), secure_random, enableIndexObfuscation
-                            ? XmssIndexObfuscationSetting.XMSS_INDEX_OBFUSCATION_ON : XmssIndexObfuscationSetting.XMSS_INDEX_OBFUSCATION_OFF,
-                        random, signingContext.AsRef());
+                    result = UnsafeNativeMethods.xmss_context_initialize(ref signingContext.AsPointerRef(), (XmssParameterSetOID)parameterSet,
+                        &UnmanagedFunctions.Realloc, &UnmanagedFunctions.Free, &UnmanagedFunctions.Zeroize);
                     XmssException.ThrowIfNotOkay(result);
                 }
+
+                // Private key
+                using var privateKeyStatelessBlob = new CriticalXmssPrivateKeyStatelessBlobHandle();
+                {
+                    XmssBuffer secure_random;
+                    XmssBuffer random = new();
+                    fixed (byte* secureRandomPtr = RandomNumberGenerator.GetBytes(96))
+                    fixed (byte* randomPtr = RandomNumberGenerator.GetBytes(32))
+                    {
+                        secure_random.data = secureRandomPtr;
+                        secure_random.data_size = 96;
+                        random.data = randomPtr;
+                        random.data_size = 32;
+
+                        result = UnsafeNativeMethods.xmss_generate_private_key(ref keyContext.AsPointerRef(), ref privateKeyStatelessBlob.AsPointerRef(),
+                            ref privateKeyStatefulBlob.AsPointerRef(), secure_random, enableIndexObfuscation
+                                ? XmssIndexObfuscationSetting.XMSS_INDEX_OBFUSCATION_ON : XmssIndexObfuscationSetting.XMSS_INDEX_OBFUSCATION_OFF,
+                            random, signingContext.AsRef());
+                        XmssException.ThrowIfNotOkay(result);
+                    }
+                }
+
+                stateManager.Store(XmssKeyParts.PrivateStateless, [], privateKeyStatelessBlob.Data);
+                stateManager.Store(XmssKeyParts.PrivateStateful, [], privateKeyStatefulBlob.Data);
+
+                PrivateKey?.Dispose();
+                ParameterSet = parameterSet;
+                PrivateKey = new(stateManager, keyContext, privateKeyStatefulBlob);
+                keyContext = null;
+                privateKeyStatefulBlob = null;
+                HasPublicKey = false;
             }
-
-            stateManager.Store(XmssKeyParts.PrivateStateless, privateKeyStatelessBlob.Data);
-            stateManager.Store(XmssKeyParts.PrivateStateful, privateKeyStatefulBlob.Data);
-            RequiresPublicKeyGeneration = true;
-
-            StateManager = stateManager;
-            KeyContext = keyContext;
+            finally
+            {
+                keyContext?.Dispose();
+                privateKeyStatefulBlob?.Dispose();
+            }
         }
     }
-
-    public bool RequiresPublicKeyGeneration { get; private set; }
 
     public void ImportPrivateKey(IXmssStateManager stateManager)
     {
@@ -111,63 +160,76 @@ public sealed class Xmss
 
         unsafe
         {
-            using var privateKeyStatelessBlob = SafeXmssPrivateKeyStatelessBlobHandle.Alloc();
-            using var privateKeyStatefulBlob = SafeXmssPrivateKeyStatefulBlobHandle.Alloc();
-            stateManager.Load(XmssKeyParts.PrivateStateless, privateKeyStatelessBlob.Data);
-            stateManager.Load(XmssKeyParts.PrivateStateful, privateKeyStatefulBlob.Data);
-
-            foreach (var oid in Enum.GetValues<XmssParameterSetOID>())
+            var privateKeyStatefulBlob = CriticalXmssPrivateKeyStatefulBlobHandle.Alloc();
+            try
             {
-                using var signingContext = new SafeXmssSigningContextHandle();
-                result = UnsafeNativeMethods.xmss_context_initialize(ref signingContext.AsPointerRef(), oid,
-                    &UnmanagedFunctions.Realloc, &UnmanagedFunctions.Free, &UnmanagedFunctions.Zeroize);
-                XmssException.ThrowIfNotOkay(result);
+                using var privateKeyStatelessBlob = CriticalXmssPrivateKeyStatelessBlobHandle.Alloc();
+                stateManager.Load(XmssKeyParts.PrivateStateless, privateKeyStatelessBlob.Data);
+                stateManager.Load(XmssKeyParts.PrivateStateful, privateKeyStatefulBlob.Data);
 
-                var keyContext = new SafeXmssKeyContextHandle();
-                try
+                foreach (var oid in Enum.GetValues<XmssParameterSetOID>())
                 {
-                    result = UnsafeNativeMethods.xmss_load_private_key(ref keyContext.AsPointerRef(),
-                        privateKeyStatelessBlob.AsRef(), privateKeyStatefulBlob.AsRef(), signingContext.AsRef());
-
-                    if (result == XmssError.XMSS_OKAY)
+                    CriticalXmssKeyContextHandle? keyContext = new();
+                    try
                     {
-                        StateManager?.Dispose();
-                        KeyContext?.Dispose();
+                        using var signingContext = new CriticalXmssSigningContextHandle();
+                        result = UnsafeNativeMethods.xmss_context_initialize(ref signingContext.AsPointerRef(), oid,
+                            &UnmanagedFunctions.Realloc, &UnmanagedFunctions.Free, &UnmanagedFunctions.Zeroize);
+                        XmssException.ThrowIfNotOkay(result);
 
-                        ParameterSet = (XmssParameterSet)oid;
-                        KeyContext = keyContext;
-                        keyContext = null;
-                        StateManager = stateManager;
+                        result = UnsafeNativeMethods.xmss_load_private_key(ref keyContext.AsPointerRef(),
+                            privateKeyStatelessBlob.AsRef(), privateKeyStatefulBlob.AsRef(), signingContext.AsRef());
+                        signingContext.Dispose();
 
-                        // Now try to load the internal public key part, but failure is not fatal.
-                        try
+                        if (result == XmssError.XMSS_OKAY)
                         {
+                            PrivateKey?.Dispose();
+                            ParameterSet = (XmssParameterSet)oid;
+                            PrivateKey = new(stateManager, keyContext, privateKeyStatefulBlob);
+                            keyContext = null;
+                            privateKeyStatefulBlob = null;
+                            HasPublicKey = false;
+
+                            // Now try to load the internal public key part, but failure is not fatal.
                             try
                             {
-                                using var publicKeyInternalBlob = SafeXmssPublicKeyInternalBlobHandle.Alloc(XmssCacheType.XMSS_CACHE_TOP, 0, ParameterSet);
-                                stateManager.Load(XmssKeyParts.Public, publicKeyInternalBlob.Data);
-                                // The cache will be automatically freed with the key context; we don't need it.
-                                XmssInternalCache* cache = null;
-                                _ = UnsafeNativeMethods.xmss_load_public_key(ref cache, ref KeyContext.AsRef(), publicKeyInternalBlob.AsRef());
+                                try
+                                {
+                                    using var publicKeyInternalBlob = CriticalXmssPublicKeyInternalBlobHandle.Alloc(XmssCacheType.XMSS_CACHE_TOP, 0,
+                                        ParameterSet);
+                                    stateManager.Load(XmssKeyParts.Public, publicKeyInternalBlob.Data);
+                                    // The cache will be automatically freed with the key context; we don't need it.
+                                    XmssInternalCache* cache = null;
+                                    result = UnsafeNativeMethods.xmss_load_public_key(ref cache, ref PrivateKey.KeyContext.AsRef(),
+                                        publicKeyInternalBlob.AsRef());
+                                    XmssException.ThrowIfNotOkay(result);
+
+                                    result = UnsafeNativeMethods.xmss_export_public_key(out PublicKey, PrivateKey.KeyContext.AsRef());
+                                    XmssException.ThrowIfNotOkay(result);
+                                    HasPublicKey = true;
+                                }
+                                catch (Exception ex) when (ex is not XmssException)
+                                {
+                                    throw new XmssException(XmssError.XMSS_ERR_INVALID_BLOB, ex);
+                                }
                             }
-                            catch (Exception ex)
-                            {
-                                RequiresPublicKeyGeneration = true;
-                                throw new XmssException(XmssError.XMSS_ERR_INVALID_BLOB, ex);
-                            }
+                            catch (XmssException) { }
+                            return;
                         }
-                        catch (XmssException) { }
-                        return;
+                    }
+                    finally
+                    {
+                        keyContext?.Dispose();
                     }
                 }
-                finally
-                {
-                    keyContext?.Dispose();
-                }
-            }
 
-            // None of the OIDs worked.
-            throw new XmssException(XmssError.XMSS_ERR_INVALID_BLOB);
+                // None of the OIDs worked.
+                throw new XmssException(XmssError.XMSS_ERR_INVALID_BLOB);
+            }
+            finally
+            {
+                privateKeyStatefulBlob?.Dispose();
+            }
         }
     }
 
@@ -200,7 +262,7 @@ public sealed class Xmss
 
     public bool TrySign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten)
     {
-        if (StateManager is null || KeyContext is null)
+        if (PrivateKey is null)
         {
             throw new InvalidOperationException("No private key.");
         }
@@ -214,38 +276,52 @@ public sealed class Xmss
 
         unsafe
         {
-            // request signature
-            using var privateKeyStatefulBlob = new SafeXmssPrivateKeyStatefulBlobHandle();
-            result = UnsafeNativeMethods.xmss_request_future_signatures(ref privateKeyStatefulBlob.AsPointerRef(), ref KeyContext.AsRef(), 1);
-            XmssException.ThrowIfNotOkay(result);
-
-            // store state
-            StateManager.Store(XmssKeyParts.PrivateStateful, new(privateKeyStatefulBlob.AsRef().data, (int)privateKeyStatefulBlob.AsRef().data_size));
-
-            // sign
-            using var signatureBlob = new SafeXmssSignatureBlobHandle();
-            fixed (byte* dataPtr = data)
+            var privateKeyStatefulBlob = new CriticalXmssPrivateKeyStatefulBlobHandle();
+            try
             {
-                result = UnsafeNativeMethods.xmss_sign_message(ref signatureBlob.AsPointerRef(), ref KeyContext.AsRef(),
-                    new() { data = dataPtr, data_size = (nuint)data.Length });
+                // request signature
+                result = UnsafeNativeMethods.xmss_request_future_signatures(ref privateKeyStatefulBlob.AsPointerRef(), ref PrivateKey.KeyContext.AsRef(), 1);
                 XmssException.ThrowIfNotOkay(result);
+
+                // store state
+                PrivateKey.StateManager.Store(XmssKeyParts.PrivateStateful, PrivateKey.StatefulBlob.Data, privateKeyStatefulBlob.Data);
+                PrivateKey.StatefulBlob = privateKeyStatefulBlob;
+                privateKeyStatefulBlob = null;
+
+                // sign
+                using var signatureBlob = new CriticalXmssSignatureBlobHandle();
+                fixed (byte* dataPtr = data)
+                {
+                    result = UnsafeNativeMethods.xmss_sign_message(ref signatureBlob.AsPointerRef(), ref PrivateKey.KeyContext.AsRef(),
+                        new() { data = dataPtr, data_size = (nuint)data.Length });
+                    XmssException.ThrowIfNotOkay(result);
+                }
+                if (signatureBlob.AsRef().data_size > (nuint)destination.Length)
+                {
+                    throw new XmssException(XmssError.XMSS_ERR_FAULT_DETECTED);
+                }
+                var signature = new ReadOnlySpan<byte>(signatureBlob.AsRef().data, (int)signatureBlob.AsRef().data_size);
+                signature.CopyTo(destination);
+                bytesWritten = signature.Length;
+                return true;
             }
-            if (signatureBlob.AsRef().data_size > (nuint)destination.Length)
+            finally
             {
-                throw new XmssException(XmssError.XMSS_ERR_FAULT_DETECTED);
+#pragma warning disable CA1508 // Avoid dead conditional code
+                privateKeyStatefulBlob?.Dispose();
+#pragma warning restore CA1508 // Avoid dead conditional code
             }
-            var signature = new ReadOnlySpan<byte>(signatureBlob.AsRef().data, (int)signatureBlob.AsRef().data_size);
-            signature.CopyTo(destination);
-            bytesWritten = signature.Length;
-            return true;
         }
     }
-
-    XmssPublicKey PublicKey;
 
     public bool Verify(Stream data, ReadOnlySpan<byte> signature)
     {
         ArgumentNullException.ThrowIfNull(data);
+
+        if (!HasPublicKey)
+        {
+            throw new InvalidOperationException("No public key.");
+        }
 
         // 1088 is the Least Common Multiple of the block sizes for SHA-256 (64) and SHAKE256/256 (136).
         // The result (16320) is slightly less than 16 kiB (16384).
@@ -325,68 +401,103 @@ public sealed class Xmss
         }
     }
 
-    public async Task GeneratePublicKeyAsync(Action<double>? progress = null, CancellationToken cancellationToken = default)
+    public async Task GeneratePublicKeyAsync(Action<double>? reportPercentage = null, CancellationToken cancellationToken = default)
     {
-        if (StateManager is null || KeyContext is null)
+        if (PrivateKey is null)
         {
             throw new InvalidOperationException("No private key.");
         }
-        if (!RequiresPublicKeyGeneration)
+        if (HasPublicKey)
         {
             throw new InvalidOperationException("Public key already generated.");
         }
 
         XmssError result;
 
-        using var keyGenerationContext = new SafeXmssKeyGenerationContextHandle();
+        using var keyGenerationContext = new CriticalXmssKeyGenerationContextHandle();
+        var totalTaskCount = 1 << Defines.XMSS_TREE_DEPTH(ParameterSet.AsOID());
         unsafe
         {
             // The caches will be automatically freed with the generation context; we don't need them.
             XmssInternalCache* cache = null;
             XmssInternalCache* generationCache = null;
             result = UnsafeNativeMethods.xmss_generate_public_key(ref keyGenerationContext.AsPointerRef(), ref cache, ref generationCache,
-                KeyContext.AsRef(), XmssCacheType.XMSS_CACHE_TOP, 0, 1024);
+                PrivateKey.KeyContext.AsRef(), XmssCacheType.XMSS_CACHE_TOP, 0, (uint)totalTaskCount);
             XmssException.ThrowIfNotOkay(result);
         }
 
         var tasks = new HashSet<Task>();
         var index = 0;
         var completed = 0;
-        while (!cancellationToken.IsCancellationRequested && completed < 1024)
+        var lastReported = 0;
+        var concurrentTaskCount = RuntimeInformation.ProcessArchitecture == Architecture.Wasm ? 1 : Environment.ProcessorCount;
+        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        Exception? taskException = null;
+        while (!cancellationTokenSource.IsCancellationRequested && completed < totalTaskCount)
         {
-            while (tasks.Count < Environment.ProcessorCount && index < 1024)
+            while (tasks.Count < concurrentTaskCount && index < totalTaskCount)
             {
                 var nextTaskIndex = index;
-                tasks.Add(Task.Run(() =>
+                _ = tasks.Add(Task.Run(() =>
                 {
                     result = UnsafeNativeMethods.xmss_calculate_public_key_part(ref keyGenerationContext.AsRef(), (uint)nextTaskIndex);
                     XmssException.ThrowIfNotOkay(result);
-                }, cancellationToken));
+                }, cancellationTokenSource.Token));
                 ++index;
             }
-            await Task.WhenAny([.. tasks]).ConfigureAwait(false);
-            tasks.RemoveWhere((task) =>
+            _ = await Task.WhenAny([.. tasks]).ConfigureAwait(false);
+            _ = tasks.RemoveWhere((task) =>
             {
                 if (!task.IsCompleted)
                 {
+                    // not done yet
                     return false;
                 }
-                ++completed;
+                if (task.Exception is null)
+                {
+                    // success
+                    ++completed;
+                }
+                else
+                {
+                    // failed, remember the first failure and cancel others
+                    taskException ??= task.Exception;
+                    cancellationTokenSource.Cancel();
+                }
                 return true;
             });
-            Debug.WriteLine(completed);
-            progress?.Invoke(99.0 * completed / 1024);
+            if (completed > lastReported)
+            {
+                reportPercentage?.Invoke(99.0 * completed / totalTaskCount);
+                lastReported = completed;
+            }
+            if (RuntimeInformation.ProcessArchitecture == Architecture.Wasm)
+            {
+                // WASM is (still) single-threaded; give the UI a chance
+                await Task.Delay(TimeSpan.FromMilliseconds(1), cancellationToken).ConfigureAwait(false);
+            }
+        }
+        await Task.WhenAll(tasks).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+        if (taskException is not null)
+        {
+            throw taskException;
         }
 
-        using var publicKeyInternalBlob = new SafeXmssPublicKeyInternalBlobHandle();
+        using var publicKeyInternalBlob = new CriticalXmssPublicKeyInternalBlobHandle();
         unsafe
         {
             result = UnsafeNativeMethods.xmss_finish_calculate_public_key(ref publicKeyInternalBlob.AsPointerRef(),
-                ref keyGenerationContext.AsPointerRef(), ref KeyContext.AsRef());
+                ref keyGenerationContext.AsPointerRef(), ref PrivateKey.KeyContext.AsRef());
             XmssException.ThrowIfNotOkay(result);
         }
-        StateManager.Store(XmssKeyParts.Public, publicKeyInternalBlob.Data);
-        RequiresPublicKeyGeneration = false;
-        progress?.Invoke(100.0);
+        PrivateKey.StateManager.DeletePublicPart();
+        PrivateKey.StateManager.Store(XmssKeyParts.Public, [], publicKeyInternalBlob.Data);
+
+        result = UnsafeNativeMethods.xmss_export_public_key(out PublicKey, PrivateKey.KeyContext.AsRef());
+        XmssException.ThrowIfNotOkay(result);
+        HasPublicKey = true;
+
+        reportPercentage?.Invoke(100.0);
     }
 }

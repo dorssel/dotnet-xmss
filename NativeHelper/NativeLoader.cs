@@ -14,7 +14,6 @@ namespace NativeHelper;
 public static class NativeLoader
 {
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="assembly">An assembly that has the runtimes installed in its directory; defaults to the Xmss assembly.</param>
     public static void Setup(Assembly? assembly = null)
