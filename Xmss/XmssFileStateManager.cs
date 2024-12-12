@@ -20,11 +20,35 @@ public sealed class XmssFileStateManager(string path)
         return Path.Combine(Folder, FileNames[part]);
     }
 
-    public XmssKeyParts AvailableKeyParts => XmssKeyParts.PrivateStateless | XmssKeyParts.PrivateStateful | XmssKeyParts.Public;
-
-    public void Store(XmssKeyParts part, ReadOnlySpan<byte> data)
+    public void Store(XmssKeyParts part, ReadOnlySpan<byte> expected, ReadOnlySpan<byte> data)
     {
-        using var file = File.Create(GetPartPath(part));
+        using var file = File.Open(GetPartPath(part), FileMode.OpenOrCreate);
+        if (!expected.IsEmpty)
+        {
+            if (file.Length != expected.Length)
+            {
+                throw new ArgumentException("Expected size mismatch.", nameof(expected));
+            }
+            var current = new byte[expected.Length];
+            file.ReadExactly(current);
+            if (!expected.SequenceEqual(current))
+            {
+                throw new ArgumentException("Expected content mismatch.", nameof(expected));
+            }
+            file.Position = 0;
+        }
+        else if (file.Length != 0)
+        {
+            throw new ArgumentException("Expected size mismatch.", nameof(expected));
+        }
+        if (file.Length > data.Length)
+        {
+            // truncate after first zeroizing the surplus
+            file.Position = data.Length;
+            file.Write(new byte[file.Length - data.Length]);
+            file.SetLength(data.Length);
+            file.Position = 0;
+        }
         file.Write(data);
         file.Flush();
     }
@@ -39,24 +63,16 @@ public sealed class XmssFileStateManager(string path)
         file.ReadExactly(destination);
     }
 
-    public void Lock()
+    public void SecureDelete()
     {
-        throw new NotImplementedException();
-    }
-
-    public void Unlock()
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Delete()
-    {
+        // TODO: zeroize data if files exist
         File.Delete(GetPartPath(XmssKeyParts.PrivateStateless));
         File.Delete(GetPartPath(XmssKeyParts.PrivateStateful));
-        File.Delete(GetPartPath(XmssKeyParts.Public));
+        DeletePublicPart();
     }
 
-    public void Dispose()
+    public void DeletePublicPart()
     {
+        File.Delete(GetPartPath(XmssKeyParts.Public));
     }
 }

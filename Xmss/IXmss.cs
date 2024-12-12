@@ -10,11 +10,13 @@ public interface IXmss
 
     public Version NativeLibraryVersion { get; }
 
+    public bool HasPrivateKey { get; }
+
+    public bool HasPublicKey { get; }
+
     public void GeneratePrivateKey(IXmssStateManager stateManager, XmssParameterSet parameterSet, bool enableIndexObfuscation);
 
-    public bool RequiresPublicKeyGeneration { get; }
-
-    public Task GeneratePublicKeyAsync(Action<double>? progress = null, CancellationToken cancellationToken = default);
+    public Task GeneratePublicKeyAsync(Action<double>? reportPercentage = null, CancellationToken cancellationToken = default);
 
     public void ImportPrivateKey(IXmssStateManager stateManager);
 

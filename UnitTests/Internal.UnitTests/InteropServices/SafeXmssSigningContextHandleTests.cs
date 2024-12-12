@@ -24,7 +24,7 @@ sealed unsafe class SafeXmssSigningContextHandleTests
     [TestMethod]
     public void AsRef_Valid()
     {
-        using var sigingContext = new SafeXmssSigningContextHandle();
+        using var sigingContext = new CriticalXmssSigningContextHandle();
         sigingContext.AsPointerRef() = CreateSigningContextPointer();
 
         _ = sigingContext.AsRef().ToString();
@@ -33,7 +33,7 @@ sealed unsafe class SafeXmssSigningContextHandleTests
     [TestMethod]
     public void AsRef_Null()
     {
-        using var sigingContext = new SafeXmssSigningContextHandle();
+        using var sigingContext = new CriticalXmssSigningContextHandle();
 
         _ = Assert.ThrowsException<NullReferenceException>(() =>
         {

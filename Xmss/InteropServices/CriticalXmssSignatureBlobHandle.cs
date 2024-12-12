@@ -6,6 +6,6 @@ using Dorssel.Security.Cryptography.Internal;
 
 namespace Dorssel.Security.Cryptography.InteropServices;
 
-sealed class SafeXmssSignatureBlobHandle : SafeBlobHandle<XmssSignatureBlob>
+sealed class CriticalXmssSignatureBlobHandle() : CriticalXmssBlobHandle<XmssSignatureBlob>(false)
 {
 }

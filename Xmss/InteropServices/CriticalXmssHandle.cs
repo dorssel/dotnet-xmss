@@ -6,10 +6,10 @@ using System.Runtime.InteropServices;
 
 namespace Dorssel.Security.Cryptography.InteropServices;
 
-abstract class SafeXmssHandle<T> : SafeHandle where T : unmanaged
+abstract class CriticalXmssHandle<T> : CriticalHandle where T : unmanaged
 {
-    private protected unsafe SafeXmssHandle()
-        : base(0, true)
+    private protected unsafe CriticalXmssHandle()
+        : base(0)
     {
     }
 
