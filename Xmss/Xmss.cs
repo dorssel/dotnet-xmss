@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: MIT
 
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Diagnostics.CodeAnalysis;
+using System.Formats.Asn1;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
@@ -16,6 +18,9 @@ public sealed class Xmss
     : AsymmetricAlgorithm
     , IXmss
 {
+    // see https://datatracker.ietf.org/doc/draft-ietf-lamps-x509-shbs/
+    public static readonly Oid IdAlgXmssHashsig = new("1.3.6.1.5.5.7.6.34", "id-alg-xmss-hashsig");
+
     public Xmss()
     {
         LegalKeySizesValue = [new(256, 256, 0)];
@@ -49,8 +54,8 @@ public sealed class Xmss
             if (!TriedRegisterOnce)
             {
                 TriedRegisterOnce = true;
-                CryptoConfig.AddAlgorithm(typeof(Xmss), "XMSS");
-                CryptoConfig.AddOID("1.3.6.1.5.5.7.6.34", "XMSS");
+                CryptoConfig.AddAlgorithm(typeof(Xmss), IdAlgXmssHashsig.FriendlyName!, "XMSS");
+                CryptoConfig.AddOID(IdAlgXmssHashsig.Value!, IdAlgXmssHashsig.FriendlyName!, "XMSS");
             }
         }
     }
@@ -262,6 +267,8 @@ public sealed class Xmss
 
     public bool TrySign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten)
     {
+        ObjectDisposedException.ThrowIf(IsDisposed, typeof(Xmss));
+
         if (PrivateKey is null)
         {
             throw new InvalidOperationException("No private key.");
@@ -317,6 +324,7 @@ public sealed class Xmss
     public bool Verify(Stream data, ReadOnlySpan<byte> signature)
     {
         ArgumentNullException.ThrowIfNull(data);
+        ObjectDisposedException.ThrowIf(IsDisposed, typeof(Xmss));
 
         if (!HasPublicKey)
         {
@@ -370,6 +378,8 @@ public sealed class Xmss
 
     public bool Verify(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
     {
+        ObjectDisposedException.ThrowIf(IsDisposed, typeof(Xmss));
+
         unsafe
         {
             fixed (byte* signaturePtr = signature)
@@ -403,6 +413,8 @@ public sealed class Xmss
 
     public async Task GeneratePublicKeyAsync(Action<double>? reportPercentage = null, CancellationToken cancellationToken = default)
     {
+        ObjectDisposedException.ThrowIf(IsDisposed, typeof(Xmss));
+
         if (PrivateKey is null)
         {
             throw new InvalidOperationException("No private key.");
@@ -499,5 +511,116 @@ public sealed class Xmss
         HasPublicKey = true;
 
         reportPercentage?.Invoke(100.0);
+    }
+
+    public override byte[] ExportSubjectPublicKeyInfo()
+    {
+        var result = new byte[256];
+        return TryExportSubjectPublicKeyInfo(result, out var bytesWritten) ? result[0..bytesWritten]
+            : throw new XmssException(XmssError.XMSS_ERR_FAULT_DETECTED);
+    }
+
+    public override bool TryExportSubjectPublicKeyInfo(Span<byte> destination, out int bytesWritten)
+    {
+        ObjectDisposedException.ThrowIf(IsDisposed, typeof(Xmss));
+
+        if (!HasPublicKey)
+        {
+            throw new InvalidOperationException("No public key.");
+        }
+
+        var asnWriter = new AsnWriter(AsnEncodingRules.DER);
+        {
+            using var outer = asnWriter.PushSequence();
+            {
+                using var identifier = asnWriter.PushSequence();
+                asnWriter.WriteObjectIdentifier(IdAlgXmssHashsig.Value!);
+                // PARAMS ARE absent
+            }
+            unsafe
+            {
+                fixed (XmssPublicKey* publicKeyPtr = &PublicKey)
+                {
+                    asnWriter.WriteBitString(new(publicKeyPtr, sizeof(XmssPublicKey)));
+                }
+            }
+        }
+        return asnWriter.TryEncode(destination, out bytesWritten);
+    }
+
+    public override void ImportSubjectPublicKeyInfo(ReadOnlySpan<byte> source, out int bytesRead)
+    {
+        ObjectDisposedException.ThrowIf(IsDisposed, typeof(Xmss));
+
+        XmssParameterSetOID parameterSetOID;
+        XmssPublicKey publicKey;
+
+        try
+        {
+            var outer = new AsnReader(source.ToArray(), AsnEncodingRules.DER);
+            {
+                var inner = outer.ReadSequence();
+                {
+                    var identifier = inner.ReadSequence();
+                    var oid = new Oid(identifier.ReadObjectIdentifier());
+                    if (oid.Value != IdAlgXmssHashsig.Value)
+                    {
+                        throw new CryptographicException($"Invalid public key OID ({oid}), expected {IdAlgXmssHashsig}.");
+                    }
+                    if (identifier.HasData)
+                    {
+                        // unexpected extra data
+                        throw new CryptographicException("Invalid SubjectPublicKeyInfo format.");
+                    }
+                }
+                var bytes = inner.ReadBitString(out var unusedBitCount);
+                if (unusedBitCount != 0)
+                {
+                    throw new CryptographicException("Invalid SubjectPublicKeyInfo format.");
+                }
+                if (bytes.Length < sizeof(XmssParameterSetOID))
+                {
+                    throw new CryptographicException("Invalid SubjectPublicKeyInfo format.");
+                }
+                parameterSetOID = (XmssParameterSetOID)BinaryPrimitives.ReadUInt32BigEndian(bytes);
+                if (!Enum.IsDefined(parameterSetOID))
+                {
+                    throw new CryptographicException($"Unsupported parameter set ({parameterSetOID}).");
+                }
+                unsafe
+                {
+                    if (bytes.Length < sizeof(XmssPublicKey))
+                    {
+                        throw new CryptographicException("Invalid SubjectPublicKeyInfo format.");
+                    }
+                    bytes[..sizeof(XmssPublicKey)].CopyTo(new Span<byte>(&publicKey, sizeof(XmssPublicKey)));
+                }
+                if (inner.HasData)
+                {
+                    // unexpected extra data
+                    throw new CryptographicException("Invalid SubjectPublicKeyInfo format.");
+                }
+            }
+            if (outer.HasData)
+            {
+                // unexpected extra data
+                throw new CryptographicException("Invalid SubjectPublicKeyInfo format.");
+            }
+        }
+        catch (AsnContentException ex)
+        {
+            throw new CryptographicException("Invalid SubjectPublicKeyInfo format.", ex);
+        }
+
+        PrivateKey?.Dispose();
+        PrivateKey = null;
+        ParameterSet = (XmssParameterSet)parameterSetOID;
+        PublicKey = publicKey;
+        HasPublicKey = true;
+
+        unsafe
+        {
+            bytesRead = sizeof(XmssPublicKey);
+        }
     }
 }

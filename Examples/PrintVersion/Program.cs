@@ -74,17 +74,27 @@ static class Program
                 }
             }
             Console.WriteLine();
+            Console.WriteLine(xmss.ExportSubjectPublicKeyInfoPem());
             _ = xmss.Sign([1, 2, 3]);
             _ = xmss.Sign([4, 5, 6]);
         }
+        var message = new byte[] { 7, 8, 9 };
+        byte[] signature;
+        string publicKeyPem;
         {
             // reuse same key
 
             using var xmss = new Xmss();
             xmss.ImportPrivateKey(new XmssFileStateManager(@"C:\test"));
-            var message = new byte[] { 7, 8, 9 };
-            var signature = xmss.Sign(message);
+            signature = xmss.Sign(message);
+            publicKeyPem = xmss.ExportSubjectPublicKeyInfoPem();
             Console.WriteLine($"verification: {xmss.Verify(message, signature)}");
+        }
+        {
+            // verify using public key only
+            using var xmss = new Xmss();
+            xmss.ImportFromPem(publicKeyPem);
+            Console.WriteLine($"verification (pubkey only): {xmss.Verify(message, signature)}");
         }
     }
 }
