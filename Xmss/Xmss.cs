@@ -2,13 +2,18 @@
 //
 // SPDX-License-Identifier: MIT
 
+using System;
 using System.Buffers;
 using System.Buffers.Binary;
+using System.Buffers.Text;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Formats.Asn1;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using Dorssel.Security.Cryptography.Internal;
 using Dorssel.Security.Cryptography.InteropServices;
 
@@ -16,11 +21,7 @@ namespace Dorssel.Security.Cryptography;
 
 public sealed class Xmss
     : AsymmetricAlgorithm
-    , IXmss
 {
-    // see https://datatracker.ietf.org/doc/draft-ietf-lamps-x509-shbs/
-    public static readonly Oid IdAlgXmssHashsig = new("1.3.6.1.5.5.7.6.34", "id-alg-xmss-hashsig");
-
     public Xmss()
     {
         LegalKeySizesValue = [new(256, 256, 0)];
@@ -30,6 +31,19 @@ public sealed class Xmss
     public static new Xmss Create()
     {
         return new Xmss();
+    }
+
+    public static Version NativeHeadersVersion => new(Defines.XMSS_LIBRARY_VERSION_MAJOR, Defines.XMSS_LIBRARY_VERSION_MINOR,
+                Defines.XMSS_LIBRARY_VERSION_PATCH);
+
+    public static Version NativeLibraryVersion
+    {
+        get
+        {
+            var nativeVersion = SafeNativeMethods.xmss_library_get_version();
+            return new(Defines.XMSS_LIBRARY_GET_VERSION_MAJOR(nativeVersion),
+                Defines.XMSS_LIBRARY_GET_VERSION_MINOR(nativeVersion), Defines.XMSS_LIBRARY_GET_VERSION_PATCH(nativeVersion));
+        }
     }
 
     [UnsupportedOSPlatform("browser")]
@@ -46,6 +60,13 @@ public sealed class Xmss
     static readonly object RegistrationLock = new();
     static bool TriedRegisterOnce;
 
+    // See https://datatracker.ietf.org/doc/draft-ietf-lamps-x509-shbs/.
+    // Appendix B suggests the FriendlyName is "xmss" (lowercase); the others are "extra".
+    public static readonly string[] IdAlgXmssHashsigNames = ["xmss", "id-alg-xmss-hashsig", "XMSS"];
+
+    // See https://iana.org/assignments/xmss-extended-hash-based-signatures/.
+    public static readonly Oid IdAlgXmssHashsig = new("1.3.6.1.5.5.7.6.34", IdAlgXmssHashsigNames.First());
+
     [UnsupportedOSPlatform("browser")]
     public static void RegisterWithCryptoConfig()
     {
@@ -54,8 +75,8 @@ public sealed class Xmss
             if (!TriedRegisterOnce)
             {
                 TriedRegisterOnce = true;
-                CryptoConfig.AddAlgorithm(typeof(Xmss), IdAlgXmssHashsig.FriendlyName!, "XMSS");
-                CryptoConfig.AddOID(IdAlgXmssHashsig.Value!, IdAlgXmssHashsig.FriendlyName!, "XMSS");
+                CryptoConfig.AddAlgorithm(typeof(Xmss), IdAlgXmssHashsigNames);
+                CryptoConfig.AddOID(IdAlgXmssHashsig.Value!, IdAlgXmssHashsigNames);
             }
         }
     }
@@ -92,15 +113,44 @@ public sealed class Xmss
         base.Dispose(disposing);
     }
 
+    [MemberNotNullWhen(true, nameof(PrivateKey))]
     public bool HasPrivateKey => PrivateKey is not null;
 
     public bool HasPublicKey { get; private set; }
+
+    [StackTraceHidden]
+    [MemberNotNull(nameof(PrivateKey))]
+    void ThrowIfNoPrivateKey()
+    {
+        if (!HasPrivateKey)
+        {
+            throw new InvalidOperationException("No private key.");
+        }
+    }
+
+    [StackTraceHidden]
+    void ThrowIfNoPublicKey()
+    {
+        if (!HasPublicKey)
+        {
+            throw new InvalidOperationException("No public key.");
+        }
+    }
+
+    [StackTraceHidden]
+    static void ThrowIfUnsupportedAlgorithmOid(Oid algorithmOid)
+    {
+        if (algorithmOid.Value != IdAlgXmssHashsig.Value)
+        {
+            throw new CryptographicException($"Invalid public key algorithm OID ({algorithmOid.Value}), expected {IdAlgXmssHashsig.Value}.");
+        }
+    }
 
     public void GeneratePrivateKey(IXmssStateManager stateManager, XmssParameterSet parameterSet, bool enableIndexObfuscation)
     {
         ArgumentNullException.ThrowIfNull(stateManager);
 
-        ObjectDisposedException.ThrowIf(IsDisposed, typeof(Xmss));
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
 
         XmssError result;
 
@@ -159,7 +209,7 @@ public sealed class Xmss
     public void ImportPrivateKey(IXmssStateManager stateManager)
     {
         ArgumentNullException.ThrowIfNull(stateManager);
-        ObjectDisposedException.ThrowIf(IsDisposed, typeof(Xmss));
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
 
         XmssError result;
 
@@ -238,19 +288,6 @@ public sealed class Xmss
         }
     }
 
-    public Version NativeHeadersVersion => new(Defines.XMSS_LIBRARY_VERSION_MAJOR, Defines.XMSS_LIBRARY_VERSION_MINOR,
-                Defines.XMSS_LIBRARY_VERSION_PATCH);
-
-    public Version NativeLibraryVersion
-    {
-        get
-        {
-            var nativeVersion = SafeNativeMethods.xmss_library_get_version();
-            return new(Defines.XMSS_LIBRARY_GET_VERSION_MAJOR(nativeVersion),
-                Defines.XMSS_LIBRARY_GET_VERSION_MINOR(nativeVersion), Defines.XMSS_LIBRARY_GET_VERSION_PATCH(nativeVersion));
-        }
-    }
-
     public byte[] Sign(ReadOnlySpan<byte> data)
     {
         var signature = new byte[Defines.XMSS_SIGNATURE_SIZE(ParameterSet.AsOID())];
@@ -267,12 +304,8 @@ public sealed class Xmss
 
     public bool TrySign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten)
     {
-        ObjectDisposedException.ThrowIf(IsDisposed, typeof(Xmss));
-
-        if (PrivateKey is null)
-        {
-            throw new InvalidOperationException("No private key.");
-        }
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+        ThrowIfNoPrivateKey();
 
         if (destination.Length < Defines.XMSS_SIGNATURE_SIZE(ParameterSet.AsOID()))
         {
@@ -324,12 +357,8 @@ public sealed class Xmss
     public bool Verify(Stream data, ReadOnlySpan<byte> signature)
     {
         ArgumentNullException.ThrowIfNull(data);
-        ObjectDisposedException.ThrowIf(IsDisposed, typeof(Xmss));
-
-        if (!HasPublicKey)
-        {
-            throw new InvalidOperationException("No public key.");
-        }
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+        ThrowIfNoPublicKey();
 
         // 1088 is the Least Common Multiple of the block sizes for SHA-256 (64) and SHAKE256/256 (136).
         // The result (16320) is slightly less than 16 kiB (16384).
@@ -378,7 +407,7 @@ public sealed class Xmss
 
     public bool Verify(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
     {
-        ObjectDisposedException.ThrowIf(IsDisposed, typeof(Xmss));
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
 
         unsafe
         {
@@ -413,12 +442,9 @@ public sealed class Xmss
 
     public async Task GeneratePublicKeyAsync(Action<double>? reportPercentage = null, CancellationToken cancellationToken = default)
     {
-        ObjectDisposedException.ThrowIf(IsDisposed, typeof(Xmss));
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+        ThrowIfNoPrivateKey();
 
-        if (PrivateKey is null)
-        {
-            throw new InvalidOperationException("No private key.");
-        }
         if (HasPublicKey)
         {
             throw new InvalidOperationException("Public key already generated.");
@@ -513,6 +539,28 @@ public sealed class Xmss
         reportPercentage?.Invoke(100.0);
     }
 
+    public byte[] ExportRfcPublicKey()
+    {
+        var result = new byte[Defines.XMSS_PUBLIC_KEY_SIZE];
+        return TryExportRfcPublicKey(result, out var bytesWritten) && bytesWritten == Defines.XMSS_PUBLIC_KEY_SIZE ? result
+            : throw new XmssException(XmssError.XMSS_ERR_FAULT_DETECTED);
+    }
+
+    public byte[] ExportAsnPublicKey()
+    {
+        var result = new byte[256];
+        return TryExportAsnPublicKey(result, out var bytesWritten) ? result[0..bytesWritten]
+            : throw new XmssException(XmssError.XMSS_ERR_FAULT_DETECTED);
+    }
+
+    [Obsolete("XMSS public keys as standalone ASN.1 PEM are not standardized; consider using ExportSubjectPublicKeyInfoPem() instead.")]
+    public string ExportAsnPublicKeyPem()
+    {
+        var result = new char[1024];
+        return TryExportAsnPublicKeyPem(result, out var charsWritten) ? new(result[0..charsWritten])
+            : throw new XmssException(XmssError.XMSS_ERR_FAULT_DETECTED);
+    }
+
     public override byte[] ExportSubjectPublicKeyInfo()
     {
         var result = new byte[256];
@@ -520,14 +568,62 @@ public sealed class Xmss
             : throw new XmssException(XmssError.XMSS_ERR_FAULT_DETECTED);
     }
 
+    public bool TryExportRfcPublicKey(Span<byte> destination, out int bytesWritten)
+    {
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+        ThrowIfNoPublicKey();
+
+        if (destination.Length < Defines.XMSS_PUBLIC_KEY_SIZE)
+        {
+            bytesWritten = 0;
+            return false;
+        }
+        unsafe
+        {
+            fixed (XmssPublicKey* publicKeyPtr = &PublicKey)
+            fixed (byte* destinationPtr = destination)
+            {
+                Buffer.MemoryCopy(publicKeyPtr, destinationPtr, destination.Length, Defines.XMSS_PUBLIC_KEY_SIZE);
+            }
+        }
+        bytesWritten = Defines.XMSS_PUBLIC_KEY_SIZE;
+        return true;
+    }
+
+    public bool TryExportAsnPublicKey(Span<byte> destination, out int bytesWritten)
+    {
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+        ThrowIfNoPublicKey();
+
+        var asnWriter = new AsnWriter(AsnEncodingRules.DER);
+        {
+            unsafe
+            {
+                fixed (XmssPublicKey* publicKeyPtr = &PublicKey)
+                {
+                    asnWriter.WriteOctetString(new(publicKeyPtr, sizeof(XmssPublicKey)));
+                }
+            }
+        }
+        return asnWriter.TryEncode(destination, out bytesWritten);
+    }
+
+    [Obsolete("XMSS public keys as standalone ASN.1 PEM are not standardized; consider using TryExportSubjectPublicKeyInfoPem() instead.")]
+    public bool TryExportAsnPublicKeyPem(Span<char> destination, out int charsWritten)
+    {
+        var buffer = new byte[1024];
+        if (!TryExportAsnPublicKey(buffer, out var bytesWritten))
+        {
+            charsWritten = 0;
+            return false;
+        }
+        return PemEncoding.TryWrite("XMSS PUBLIC KEY", buffer.AsSpan(0, bytesWritten), destination, out charsWritten);
+    }
+
     public override bool TryExportSubjectPublicKeyInfo(Span<byte> destination, out int bytesWritten)
     {
-        ObjectDisposedException.ThrowIf(IsDisposed, typeof(Xmss));
-
-        if (!HasPublicKey)
-        {
-            throw new InvalidOperationException("No public key.");
-        }
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+        ThrowIfNoPublicKey();
 
         var asnWriter = new AsnWriter(AsnEncodingRules.DER);
         {
@@ -548,53 +644,83 @@ public sealed class Xmss
         return asnWriter.TryEncode(destination, out bytesWritten);
     }
 
-    public override void ImportSubjectPublicKeyInfo(ReadOnlySpan<byte> source, out int bytesRead)
+    static void DecodeXmssPublicKey(ReadOnlySpan<byte> source, out XmssPublicKey publicKey,
+        out XmssParameterSet parameterSet, out int bytesRead, bool exact)
     {
-        ObjectDisposedException.ThrowIf(IsDisposed, typeof(Xmss));
+        if (source.Length < sizeof(XmssParameterSetOID))
+        {
+            throw new CryptographicException("Key value too short.");
+        }
+        var parameterSetOID = (XmssParameterSetOID)BinaryPrimitives.ReadUInt32BigEndian(source);
+        if (!Enum.IsDefined(parameterSetOID))
+        {
+            throw new CryptographicException($"Unsupported parameter set ({parameterSetOID}).");
+        }
+        if (source.Length < Defines.XMSS_PUBLIC_KEY_SIZE)
+        {
+            throw new CryptographicException("Key value too short.");
+        }
+        if (exact && source.Length > Defines.XMSS_PUBLIC_KEY_SIZE)
+        {
+            throw new CryptographicException("Key value too long.");
+        }
+        unsafe
+        {
+            fixed (XmssPublicKey* xmssPublicKeyPtr = &publicKey)
+            {
+                source[..sizeof(XmssPublicKey)].CopyTo(new Span<byte>(xmssPublicKeyPtr, Defines.XMSS_PUBLIC_KEY_SIZE));
+            }
+        }
+        bytesRead = Defines.XMSS_PUBLIC_KEY_SIZE;
+        parameterSet = (XmssParameterSet)parameterSetOID;
+    }
 
-        XmssParameterSetOID parameterSetOID;
-        XmssPublicKey publicKey;
+    static void DecodeAsnPublicKey(ReadOnlySpan<byte> source, out XmssPublicKey publicKey,
+        out XmssParameterSet parameterSet, out int bytesRead, bool exact)
+    {
+        byte[] xmssPublicKeyData;
+        int bytesConsumed;
 
         try
         {
+            xmssPublicKeyData = AsnDecoder.ReadOctetString(source, AsnEncodingRules.DER, out bytesConsumed);
+        }
+        catch (AsnContentException ex)
+        {
+            throw new CryptographicException("Invalid ASN.1 format.", ex);
+        }
+
+        DecodeXmssPublicKey(xmssPublicKeyData, out publicKey, out parameterSet, out _, exact);
+        bytesRead = bytesConsumed;
+    }
+
+    static void DecodeSubjectPublicKeyInfo(ReadOnlySpan<byte> source, out XmssPublicKey publicKey,
+        out XmssParameterSet parameterSet, out int bytesRead, bool exact)
+    {
+        byte[] xmssPublicKeyData;
+        int bytesConsumed;
+
+        try
+        {
+            AsnDecoder.ReadSequence(source, AsnEncodingRules.DER, out _, out _, out bytesConsumed);
+            if (exact && bytesConsumed < source.Length)
+            {
+                throw new CryptographicException("SubjectPublicKeyInfo too long.");
+            }
             var outer = new AsnReader(source.ToArray(), AsnEncodingRules.DER);
             {
                 var inner = outer.ReadSequence();
                 {
                     var identifier = inner.ReadSequence();
                     var oid = new Oid(identifier.ReadObjectIdentifier());
-                    if (oid.Value != IdAlgXmssHashsig.Value)
-                    {
-                        throw new CryptographicException($"Invalid public key OID ({oid}), expected {IdAlgXmssHashsig}.");
-                    }
+                    ThrowIfUnsupportedAlgorithmOid(oid);
                     if (identifier.HasData)
                     {
                         // unexpected extra data
                         throw new CryptographicException("Invalid SubjectPublicKeyInfo format.");
                     }
                 }
-                var bytes = inner.ReadBitString(out var unusedBitCount);
-                if (unusedBitCount != 0)
-                {
-                    throw new CryptographicException("Invalid SubjectPublicKeyInfo format.");
-                }
-                if (bytes.Length < sizeof(XmssParameterSetOID))
-                {
-                    throw new CryptographicException("Invalid SubjectPublicKeyInfo format.");
-                }
-                parameterSetOID = (XmssParameterSetOID)BinaryPrimitives.ReadUInt32BigEndian(bytes);
-                if (!Enum.IsDefined(parameterSetOID))
-                {
-                    throw new CryptographicException($"Unsupported parameter set ({parameterSetOID}).");
-                }
-                unsafe
-                {
-                    if (bytes.Length < sizeof(XmssPublicKey))
-                    {
-                        throw new CryptographicException("Invalid SubjectPublicKeyInfo format.");
-                    }
-                    bytes[..sizeof(XmssPublicKey)].CopyTo(new Span<byte>(&publicKey, sizeof(XmssPublicKey)));
-                }
+                xmssPublicKeyData = inner.ReadBitString(out var unusedBitCount);
                 if (inner.HasData)
                 {
                     // unexpected extra data
@@ -612,15 +738,103 @@ public sealed class Xmss
             throw new CryptographicException("Invalid SubjectPublicKeyInfo format.", ex);
         }
 
+        DecodeXmssPublicKey(xmssPublicKeyData, out publicKey, out parameterSet, out _, exact);
+        bytesRead = bytesConsumed;
+    }
+
+    void ImportXmssPublicKey(XmssParameterSet parameterSet, in XmssPublicKey publicKey)
+    {
+        PublicKey = publicKey;
         PrivateKey?.Dispose();
         PrivateKey = null;
-        ParameterSet = (XmssParameterSet)parameterSetOID;
-        PublicKey = publicKey;
+        ParameterSet = parameterSet;
         HasPublicKey = true;
+    }
 
-        unsafe
+    public override void ImportFromPem(ReadOnlySpan<char> input)
+    {
+        var fields = PemEncoding.Find(input);
+        var data = new byte[fields.DecodedDataLength];
+        if (!Convert.TryFromBase64Chars(input[fields.Base64Data], data, out var bytesWritten) || bytesWritten != fields.DecodedDataLength)
         {
-            bytesRead = sizeof(XmssPublicKey);
+            throw new ArgumentException("Invalid PEM format.", nameof(input));
         }
+        switch (input[fields.Label])
+        {
+            case "XMSS PUBLIC KEY":
+                {
+                    DecodeAsnPublicKey(data, out var publicKey, out var parameterSet, out _, true);
+                    ImportXmssPublicKey(parameterSet, publicKey);
+                    return;
+                }
+            case "PUBLIC KEY":
+                {
+                    DecodeSubjectPublicKeyInfo(data, out var publicKey, out var parameterSet, out _, true);
+                    ImportXmssPublicKey(parameterSet, publicKey);
+                    return;
+                }
+            case "CERTIFICATE":
+                {
+                    using var certificate = new X509Certificate2(data);
+                    ImportCertificatePublicKey(certificate);
+                    return;
+                }
+            default:
+                throw new ArgumentException($"Unsupported PEM content: {input[fields.Label]}.");
+        }
+    }
+
+    public void ImportRfcPublicKey(ReadOnlySpan<byte> source, out int bytesRead)
+    {
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+
+        DecodeXmssPublicKey(source, out var publicKey, out var parameterSet, out bytesRead, false);
+        ImportXmssPublicKey(parameterSet, publicKey);
+    }
+
+    public void ImportAsnPublicKey(ReadOnlySpan<byte> source, out int bytesRead)
+    {
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+
+        DecodeAsnPublicKey(source, out var publicKey, out var parameterSet, out var bytesConsumed, false);
+        ImportXmssPublicKey(parameterSet, publicKey);
+        bytesRead = bytesConsumed;
+    }
+
+    public override void ImportSubjectPublicKeyInfo(ReadOnlySpan<byte> source, out int bytesRead)
+    {
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+
+        DecodeSubjectPublicKeyInfo(source, out var publicKey, out var parameterSet, out var bytesConsumed, false);
+        ImportXmssPublicKey(parameterSet, publicKey);
+        bytesRead = bytesConsumed;
+    }
+
+    public void ImportCertificatePublicKey(PublicKey publicKey)
+    {
+        ArgumentNullException.ThrowIfNull(publicKey);
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+
+        ThrowIfUnsupportedAlgorithmOid(publicKey.Oid);
+        DecodeXmssPublicKey(publicKey.EncodedKeyValue.RawData, out var xmssPublicKey, out var parameterSet, out var _, true);
+        ImportXmssPublicKey(parameterSet, xmssPublicKey);
+    }
+
+    public void ImportCertificatePublicKey(X509Certificate certificate)
+    {
+        ArgumentNullException.ThrowIfNull(certificate);
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+
+        ThrowIfUnsupportedAlgorithmOid(new(certificate.GetKeyAlgorithm()));
+        DecodeXmssPublicKey(certificate.GetPublicKey(), out var publicKey, out var parameterSet, out var _, true);
+        ImportXmssPublicKey(parameterSet, publicKey);
+    }
+
+    public void ImportCertificatePublicKey(X509Certificate2 certificate)
+    {
+        ArgumentNullException.ThrowIfNull(certificate);
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+
+        ImportCertificatePublicKey(certificate.PublicKey);
     }
 }

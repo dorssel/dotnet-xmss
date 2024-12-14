@@ -26,9 +26,8 @@ static class Program
         }
         */
         {
-            using var xmss = Xmss.Create();
-            Console.WriteLine($"Native headers version: {xmss.NativeHeadersVersion}");
-            Console.WriteLine($"Native library version: {xmss.NativeLibraryVersion}");
+            Console.WriteLine($"Native headers version: {Xmss.NativeHeadersVersion}");
+            Console.WriteLine($"Native library version: {Xmss.NativeLibraryVersion}");
         }
         {
             Xmss.RegisterWithCryptoConfig();

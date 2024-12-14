@@ -12,16 +12,12 @@ sealed class VersionTests
     [TestMethod]
     public void NativeHeadersVersion()
     {
-        using var xmss = new Xmss();
-
-        Assert.AreEqual(Version.Parse("2.0.0"), xmss.NativeHeadersVersion);
+        Assert.AreEqual(Version.Parse("2.0.0"), Xmss.NativeHeadersVersion);
     }
 
     [TestMethod]
     public void NativeLibraryVersion()
     {
-        using var xmss = new Xmss();
-
-        Assert.AreEqual(Version.Parse("2.0.0"), xmss.NativeLibraryVersion);
+        Assert.AreEqual(Version.Parse("2.0.0"), Xmss.NativeLibraryVersion);
     }
 }
