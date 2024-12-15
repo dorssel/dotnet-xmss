@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
 SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
 
@@ -13,6 +13,8 @@ SPDX-License-Identifier: MIT
 
     <!-- Be strict when testing, even in Release (at the cost of performance) -->
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+
+    <NoWarn>$(NoWarn),IDE0053,IDE0058</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>

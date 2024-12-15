@@ -1,21 +1,19 @@
-﻿// SPDX-FileCopyrightText: 2024 IETF Trust, D. Van Geest, K. Bashiri, S. Fluhrer, S. Gazdag, S. Kousidis
-// SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
+﻿// SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
+// SPDX-FileCopyrightText: 2024 IETF Trust, D. Van Geest, K. Bashiri, S. Fluhrer, S. Gazdag, S. Kousidis
 //
 // SPDX-License-Identifier: MIT
 // SPDX-License-Identifier: LicenseRef-IETF-Trust
 
 using System.Security.Cryptography.X509Certificates;
-using Dorssel.Security.Cryptography;
-using static Dorssel.Security.Cryptography.X509Certificates.XmssCertificateExtensions;
+using System.Text;
 
 namespace UnitTests;
 
-[TestClass]
-sealed class PublicKey_KAT
+static class IetfExampleCertificate
 {
     // See https://datatracker.ietf.org/doc/draft-ietf-lamps-x509-shbs/.
     // Licenced under LicenseRef-IETF-Trust
-    const string IetfVector = """
+    public const string Pem = """
         -----BEGIN CERTIFICATE-----
         MIILSDCCAW+gAwIBAgIUVH5kcCmeA8V6pVx40SeHjFQ1F10wCgYIKwYBBQUHBiIw
         NTELMAkGA1UEBhMCRlIxDjAMBgNVBAcMBVBhcmlzMRYwFAYDVQQKDA1Cb2d1cyBY
@@ -81,60 +79,11 @@ sealed class PublicKey_KAT
         -----END CERTIFICATE-----
         """;
 
-    [TestMethod]
-    public void TestGetXmssPublicKey()
-    {
-        using var certificate = X509Certificate2.CreateFromPem(IetfVector);
-        using var xmss = certificate.GetXmssPublicKey();
-        Assert.IsNotNull(xmss);
-        Assert.IsTrue(xmss.HasPublicKey);
-    }
+    public readonly static X509Certificate Certificate = new(X509CertificateLoader.LoadCertificate(Encoding.ASCII.GetBytes(Pem)));
 
-    [TestMethod]
-    public void TestImportCertificate()
-    {
-        // NOTE: X509Certificate has been superseded by X509Certificate2, so we must use trickery to actually create one.
-        using var certificate2 = X509Certificate2.CreateFromPem(IetfVector);
-#pragma warning disable SYSLIB0057 // Type or member is obsolete
-        using var certificate = new X509Certificate(certificate2.Export(X509ContentType.Cert));
-#pragma warning restore SYSLIB0057 // Type or member is obsolete
+    public readonly static X509Certificate2 Certificate2 = X509CertificateLoader.LoadCertificate(Encoding.ASCII.GetBytes(Pem));
 
-        using var xmss = new Xmss();
-        xmss.ImportCertificatePublicKey(certificate);
-        Assert.IsTrue(xmss.HasPublicKey);
-    }
+    public readonly static PublicKey PublicKey = Certificate2.PublicKey;
 
-    [TestMethod]
-    public void TestImportCertificate2()
-    {
-        using var certificate = X509Certificate2.CreateFromPem(IetfVector);
-        using var xmss = new Xmss();
-        xmss.ImportCertificatePublicKey(certificate);
-        Assert.IsTrue(xmss.HasPublicKey);
-    }
-
-    [TestMethod]
-    public void TestImportAsnPem()
-    {
-        string asnPem;
-        {
-            using var tmpXmss = new Xmss();
-            tmpXmss.ImportFromPem(IetfVector);
-#pragma warning disable CS0618 // Type or member is obsolete
-            asnPem = tmpXmss.ExportAsnPublicKeyPem();
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
-
-        using var xmss = new Xmss();
-        xmss.ImportFromPem(asnPem);
-        Assert.IsTrue(xmss.HasPublicKey);
-    }
-
-    [TestMethod]
-    public void TestImportCertificatePem()
-    {
-        using var xmss = new Xmss();
-        xmss.ImportFromPem(IetfVector);
-        Assert.IsTrue(xmss.HasPublicKey);
-    }
+    public readonly static ReadOnlyMemory<byte> RfcPublicKey = PublicKey.EncodedKeyValue.RawData;
 }

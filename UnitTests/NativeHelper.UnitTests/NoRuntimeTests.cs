@@ -15,7 +15,7 @@ sealed class NoRuntimesTests
         // Ensure that the runtime for this platform does not exist.
         var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         Directory.Move(Path.Combine(baseDir, "runtimes"), Path.Combine(baseDir, "runtimes-moved"));
-        _ = Directory.CreateDirectory(Path.Combine(baseDir, "runtimes"));
+        Directory.CreateDirectory(Path.Combine(baseDir, "runtimes"));
         File.Create(Path.Combine(baseDir, "runtimes", "xmss.so")).Close();
         File.Create(Path.Combine(baseDir, "runtimes", "xmss.dll")).Close();
     }
@@ -31,7 +31,7 @@ sealed class NoRuntimesTests
     [TestMethod]
     public void LoadFails()
     {
-        _ = Assert.ThrowsException<DllNotFoundException>(() =>
+        Assert.ThrowsException<DllNotFoundException>(() =>
         {
             _ = NativeMethods.xmss_library_get_version();
         });

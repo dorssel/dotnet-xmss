@@ -9,9 +9,9 @@ using Dorssel.Security.Cryptography.InteropServices;
 namespace Internal.UnitTests.InteropServices;
 
 [TestClass]
-sealed unsafe class SafeXmssSigningContextHandleTests
+sealed unsafe class CriticalXmssSigningContextHandleTests
 {
-    static unsafe XmssSigningContext* CreateSigningContextPointer()
+    static XmssSigningContext* CreateSigningContextPointer()
     {
         XmssSigningContext* signingContext = null;
         var result = UnsafeNativeMethods.xmss_context_initialize(ref signingContext, XmssParameterSetOID.XMSS_PARAM_SHA2_10_256,
@@ -22,22 +22,9 @@ sealed unsafe class SafeXmssSigningContextHandleTests
     }
 
     [TestMethod]
-    public void AsRef_Valid()
+    public void AsRef_Free()
     {
         using var sigingContext = new CriticalXmssSigningContextHandle();
         sigingContext.AsPointerRef() = CreateSigningContextPointer();
-
-        _ = sigingContext.AsRef().ToString();
-    }
-
-    [TestMethod]
-    public void AsRef_Null()
-    {
-        using var sigingContext = new CriticalXmssSigningContextHandle();
-
-        _ = Assert.ThrowsException<NullReferenceException>(() =>
-        {
-            _ = sigingContext.AsRef().ToString();
-        });
     }
 }

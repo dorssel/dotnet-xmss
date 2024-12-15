@@ -45,7 +45,7 @@ sealed unsafe class StructuresTests
     [TestMethod]
     public void XMSS_PUBLIC_KEY_INTERNAL_BLOB_SIZE()
     {
-        _ = Defines.XMSS_PUBLIC_KEY_INTERNAL_BLOB_SIZE(XmssCacheType.XMSS_CACHE_TOP, 2, XmssParameterSetOID.XMSS_PARAM_SHA2_10_256);
+        Defines.XMSS_PUBLIC_KEY_INTERNAL_BLOB_SIZE(XmssCacheType.XMSS_CACHE_TOP, 2, XmssParameterSetOID.XMSS_PARAM_SHA2_10_256);
     }
 
     [TestMethod]
@@ -71,13 +71,13 @@ sealed unsafe class StructuresTests
     [TestMethod]
     public void XMSS_SIGNATURE_SIZE()
     {
-        _ = Defines.XMSS_SIGNATURE_SIZE(XmssParameterSetOID.XMSS_PARAM_SHA2_10_256);
+        Defines.XMSS_SIGNATURE_SIZE(XmssParameterSetOID.XMSS_PARAM_SHA2_10_256);
     }
 
     [TestMethod]
     public void XMSS_SIGNATURE_BLOB_SIZE()
     {
-        _ = Defines.XMSS_SIGNATURE_BLOB_SIZE(XmssParameterSetOID.XMSS_PARAM_SHA2_10_256);
+        Defines.XMSS_SIGNATURE_BLOB_SIZE(XmssParameterSetOID.XMSS_PARAM_SHA2_10_256);
     }
 
     [TestMethod]
