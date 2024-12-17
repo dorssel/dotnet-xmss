@@ -2,10 +2,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-using System;
 using System.Buffers;
 using System.Buffers.Binary;
-using System.Buffers.Text;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Formats.Asn1;
@@ -13,7 +11,6 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using Dorssel.Security.Cryptography.Internal;
 using Dorssel.Security.Cryptography.InteropServices;
 
@@ -292,14 +289,14 @@ public sealed class Xmss
     {
         var signature = new byte[Defines.XMSS_SIGNATURE_SIZE(ParameterSet.AsOID())];
         var bytesWritten = Sign(data, signature);
-        return bytesWritten == signature.Length ? signature
-            : throw new XmssException(XmssError.XMSS_ERR_FAULT_DETECTED);
+        XmssException.ThrowFaultDetectedIf(bytesWritten != signature.Length);
+        return signature;
     }
 
     public int Sign(ReadOnlySpan<byte> data, Span<byte> destination)
     {
         return TrySign(data, destination, out var bytesWritten) ? bytesWritten
-            : throw new XmssException(XmssError.XMSS_ERR_FAULT_DETECTED);
+            : throw new ArgumentException("Destination is too short.");
     }
 
     public bool TrySign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten)
@@ -309,7 +306,8 @@ public sealed class Xmss
 
         if (destination.Length < Defines.XMSS_SIGNATURE_SIZE(ParameterSet.AsOID()))
         {
-            throw new ArgumentException("Destination is too short.", nameof(destination));
+            bytesWritten = 0;
+            return false;
         }
 
         XmssError result;
@@ -336,10 +334,7 @@ public sealed class Xmss
                         new() { data = dataPtr, data_size = (nuint)data.Length });
                     XmssException.ThrowIfNotOkay(result);
                 }
-                if (signatureBlob.AsRef().data_size > (nuint)destination.Length)
-                {
-                    throw new XmssException(XmssError.XMSS_ERR_FAULT_DETECTED);
-                }
+                XmssException.ThrowFaultDetectedIf(signatureBlob.AsRef().data_size > (nuint)destination.Length);
                 var signature = new ReadOnlySpan<byte>(signatureBlob.AsRef().data, (int)signatureBlob.AsRef().data_size);
                 signature.CopyTo(destination);
                 bytesWritten = signature.Length;
@@ -383,10 +378,7 @@ public sealed class Xmss
                     {
                         result = UnsafeNativeMethods.xmss_verification_update(ref context, bufferPtr, (nuint)bytesRead, out var bufferPtrVerify);
                         XmssException.ThrowIfNotOkay(result);
-                        if (bufferPtrVerify != bufferPtr)
-                        {
-                            throw new XmssException(XmssError.XMSS_ERR_FAULT_DETECTED);
-                        }
+                        XmssException.ThrowFaultDetectedIf(bufferPtrVerify != bufferPtr);
                     }
 
                     result = UnsafeNativeMethods.xmss_verification_check(ref context, PublicKey);
@@ -424,10 +416,7 @@ public sealed class Xmss
 
                 result = UnsafeNativeMethods.xmss_verification_update(ref context, dataPtr, (nuint)data.Length, out var dataPtrVerify);
                 XmssException.ThrowIfNotOkay(result);
-                if (dataPtrVerify != dataPtr)
-                {
-                    throw new XmssException(XmssError.XMSS_ERR_FAULT_DETECTED);
-                }
+                XmssException.ThrowFaultDetectedIf(dataPtrVerify != dataPtr);
 
                 result = UnsafeNativeMethods.xmss_verification_check(ref context, PublicKey);
                 if (result == XmssError.XMSS_ERR_INVALID_SIGNATURE)
@@ -539,33 +528,43 @@ public sealed class Xmss
         reportPercentage?.Invoke(100.0);
     }
 
+    const int AsnPublicKeyLength = 70;
+    const int SubjectPublicKeyInfoLength = 85;
+    const string XmssPublicKeyLabel = "XMSS PUBLIC KEY";
+    const string PublicKeyLabel = "PUBLIC KEY";
+    const string CertificateLabel = "CERTIFICATE";
+
     public byte[] ExportRfcPublicKey()
     {
         var result = new byte[Defines.XMSS_PUBLIC_KEY_SIZE];
-        return TryExportRfcPublicKey(result, out var bytesWritten) && bytesWritten == Defines.XMSS_PUBLIC_KEY_SIZE ? result
-            : throw new XmssException(XmssError.XMSS_ERR_FAULT_DETECTED);
+        XmssException.ThrowFaultDetectedIf(!TryExportRfcPublicKey(result, out var bytesWritten));
+        XmssException.ThrowFaultDetectedIf(bytesWritten != Defines.XMSS_PUBLIC_KEY_SIZE);
+        return result;
     }
 
     public byte[] ExportAsnPublicKey()
     {
-        var result = new byte[256];
-        return TryExportAsnPublicKey(result, out var bytesWritten) ? result[0..bytesWritten]
-            : throw new XmssException(XmssError.XMSS_ERR_FAULT_DETECTED);
+        var result = new byte[AsnPublicKeyLength];
+        XmssException.ThrowFaultDetectedIf(!TryExportAsnPublicKey(result, out var bytesWritten));
+        XmssException.ThrowFaultDetectedIf(bytesWritten != AsnPublicKeyLength);
+        return result;
     }
 
     [Obsolete("XMSS public keys as standalone ASN.1 PEM are not standardized; consider using ExportSubjectPublicKeyInfoPem() instead.")]
     public string ExportAsnPublicKeyPem()
     {
-        var result = new char[1024];
-        return TryExportAsnPublicKeyPem(result, out var charsWritten) ? new(result[0..charsWritten])
-            : throw new XmssException(XmssError.XMSS_ERR_FAULT_DETECTED);
+        // Line endings may differ on different platforms; length will be somewhere beteen 2x and 3x the binary form.
+        var result = new char[3 * AsnPublicKeyLength];
+        XmssException.ThrowFaultDetectedIf(!TryExportAsnPublicKeyPem(result, out var charsWritten));
+        return new(result[..charsWritten]);
     }
 
     public override byte[] ExportSubjectPublicKeyInfo()
     {
-        var result = new byte[256];
-        return TryExportSubjectPublicKeyInfo(result, out var bytesWritten) ? result[0..bytesWritten]
-            : throw new XmssException(XmssError.XMSS_ERR_FAULT_DETECTED);
+        var result = new byte[SubjectPublicKeyInfoLength];
+        XmssException.ThrowFaultDetectedIf(!TryExportSubjectPublicKeyInfo(result, out var bytesWritten));
+        XmssException.ThrowFaultDetectedIf(bytesWritten != SubjectPublicKeyInfoLength);
+        return result;
     }
 
     public bool TryExportRfcPublicKey(Span<byte> destination, out int bytesWritten)
@@ -617,13 +616,16 @@ public sealed class Xmss
             charsWritten = 0;
             return false;
         }
-        return PemEncoding.TryWrite("XMSS PUBLIC KEY", buffer.AsSpan(0, bytesWritten), destination, out charsWritten);
+        return PemEncoding.TryWrite(XmssPublicKeyLabel, buffer.AsSpan(0, bytesWritten), destination, out charsWritten);
     }
 
     public override bool TryExportSubjectPublicKeyInfo(Span<byte> destination, out int bytesWritten)
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
         ThrowIfNoPublicKey();
+
+        // NOTE: new PublicKey(IdAlgXmssHashsig, new([]), new(new Span<byte>(publicKeyPtr, sizeof(XmssPublicKey))));
+        // See https://github.com/dotnet/runtime/issues/110715
 
         var asnWriter = new AsnWriter(AsnEncodingRules.DER);
         {
@@ -683,7 +685,7 @@ public sealed class Xmss
 
         try
         {
-            xmssPublicKeyData = AsnDecoder.ReadOctetString(source, AsnEncodingRules.DER, out bytesConsumed);
+            xmssPublicKeyData = AsnDecoder.ReadOctetString(source, AsnEncodingRules.BER, out bytesConsumed);
         }
         catch (AsnContentException ex)
         {
@@ -697,48 +699,13 @@ public sealed class Xmss
     static void DecodeSubjectPublicKeyInfo(ReadOnlySpan<byte> source, out XmssPublicKey publicKey,
         out XmssParameterSet parameterSet, out int bytesRead, bool exact)
     {
-        byte[] xmssPublicKeyData;
-        int bytesConsumed;
-
-        try
+        var x509publicKey = System.Security.Cryptography.X509Certificates.PublicKey.CreateFromSubjectPublicKeyInfo(source, out var bytesConsumed);
+        if (exact && bytesConsumed < source.Length)
         {
-            AsnDecoder.ReadSequence(source, AsnEncodingRules.DER, out _, out _, out bytesConsumed);
-            if (exact && bytesConsumed < source.Length)
-            {
-                throw new CryptographicException("SubjectPublicKeyInfo too long.");
-            }
-            var outer = new AsnReader(source.ToArray(), AsnEncodingRules.DER);
-            {
-                var inner = outer.ReadSequence();
-                {
-                    var identifier = inner.ReadSequence();
-                    var oid = new Oid(identifier.ReadObjectIdentifier());
-                    ThrowIfUnsupportedAlgorithmOid(oid);
-                    if (identifier.HasData)
-                    {
-                        // unexpected extra data
-                        throw new CryptographicException("Invalid SubjectPublicKeyInfo format.");
-                    }
-                }
-                xmssPublicKeyData = inner.ReadBitString(out var unusedBitCount);
-                if (inner.HasData)
-                {
-                    // unexpected extra data
-                    throw new CryptographicException("Invalid SubjectPublicKeyInfo format.");
-                }
-            }
-            if (outer.HasData)
-            {
-                // unexpected extra data
-                throw new CryptographicException("Invalid SubjectPublicKeyInfo format.");
-            }
+            throw new CryptographicException("SubjectPublicKeyInfo too long.");
         }
-        catch (AsnContentException ex)
-        {
-            throw new CryptographicException("Invalid SubjectPublicKeyInfo format.", ex);
-        }
-
-        DecodeXmssPublicKey(xmssPublicKeyData, out publicKey, out parameterSet, out _, exact);
+        ThrowIfUnsupportedAlgorithmOid(x509publicKey.Oid);
+        DecodeXmssPublicKey(x509publicKey.EncodedKeyValue.RawData, out publicKey, out parameterSet, out var _, true);
         bytesRead = bytesConsumed;
     }
 
@@ -761,19 +728,19 @@ public sealed class Xmss
         }
         switch (input[fields.Label])
         {
-            case "XMSS PUBLIC KEY":
+            case XmssPublicKeyLabel:
                 {
                     DecodeAsnPublicKey(data, out var publicKey, out var parameterSet, out _, true);
                     ImportXmssPublicKey(parameterSet, publicKey);
                     return;
                 }
-            case "PUBLIC KEY":
+            case PublicKeyLabel:
                 {
                     DecodeSubjectPublicKeyInfo(data, out var publicKey, out var parameterSet, out _, true);
                     ImportXmssPublicKey(parameterSet, publicKey);
                     return;
                 }
-            case "CERTIFICATE":
+            case CertificateLabel:
                 {
                     using var certificate = new X509Certificate2(data);
                     ImportCertificatePublicKey(certificate);

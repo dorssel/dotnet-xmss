@@ -19,7 +19,7 @@ sealed class NativeHelperTests
     [TestMethod]
     public void LoadUnknownLibraryFails()
     {
-        _ = Assert.ThrowsException<DllNotFoundException>(() =>
+        Assert.ThrowsException<DllNotFoundException>(() =>
         {
             _ = NativeMethods.unknown_library();
         });

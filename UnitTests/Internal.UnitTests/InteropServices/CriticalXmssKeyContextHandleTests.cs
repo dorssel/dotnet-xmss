@@ -10,15 +10,16 @@ using Dorssel.Security.Cryptography.InteropServices;
 namespace Internal.UnitTests.InteropServices;
 
 [TestClass]
-sealed unsafe class SafeXmssKeyGenerationContextHandleTests
+sealed unsafe class CriticalXmssKeyContextHandleTests
 {
-    static unsafe XmssKeyGenerationContext* CreateKeyGenerationContextPointer(ref XmssKeyContext* keyContext)
+    static XmssKeyContext* CreateKeyContextPointer()
     {
         XmssSigningContext* signingContext = null;
         var result = UnsafeNativeMethods.xmss_context_initialize(ref signingContext, XmssParameterSetOID.XMSS_PARAM_SHA2_10_256,
             &UnmanagedFunctions.Realloc, &UnmanagedFunctions.Free, &UnmanagedFunctions.Zeroize);
         Assert.AreEqual(XmssError.XMSS_OKAY, result);
 
+        XmssKeyContext* keyContext = null;
         XmssPrivateKeyStatelessBlob* privateKeyStatelessBlob = null;
         XmssPrivateKeyStatefulBlob* privateKeyStatefulBlob = null;
         var secureRandomData = stackalloc byte[96];
@@ -29,13 +30,6 @@ sealed unsafe class SafeXmssKeyGenerationContextHandleTests
             in secure_random, XmssIndexObfuscationSetting.XMSS_INDEX_OBFUSCATION_OFF, in random, in *signingContext);
         Assert.AreEqual(XmssError.XMSS_OKAY, result);
 
-        XmssKeyGenerationContext* keyGenerationContext = null;
-        XmssInternalCache* cache = null;
-        XmssInternalCache* generationCache = null;
-        result = UnsafeNativeMethods.xmss_generate_public_key(ref keyGenerationContext, ref cache, ref generationCache,
-            *keyContext, XmssCacheType.XMSS_CACHE_TOP, 0, 1);
-        Assert.AreEqual(XmssError.XMSS_OKAY, result);
-
         // free everything else
         UnsafeNativeMethods.xmss_free_signing_context(signingContext);
         signingContext = null;
@@ -44,29 +38,12 @@ sealed unsafe class SafeXmssKeyGenerationContextHandleTests
         NativeMemory.Free(privateKeyStatefulBlob);
         privateKeyStatefulBlob = null;
 
-        return keyGenerationContext;
+        return keyContext;
     }
 
     [TestMethod]
-    public void AsRef_Valid()
+    public void Free()
     {
-        // We need to keep the XmssKeyContext alive while handling the XmssKeyGenerationContext.
         using var keyContext = new CriticalXmssKeyContextHandle();
-
-        using var keyGenerationContext = new CriticalXmssKeyGenerationContextHandle();
-        keyGenerationContext.AsPointerRef() = CreateKeyGenerationContextPointer(ref keyContext.AsPointerRef());
-
-        _ = keyGenerationContext.AsRef().ToString();
-    }
-
-    [TestMethod]
-    public void AsRef_Null()
-    {
-        using var keyGenerationContext = new CriticalXmssKeyGenerationContextHandle();
-
-        _ = Assert.ThrowsException<NullReferenceException>(() =>
-        {
-            _ = keyGenerationContext.AsRef().ToString();
-        });
     }
 }

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using Dorssel.Security.Cryptography.Internal;
 
@@ -37,6 +38,16 @@ public class XmssException
         if (error != XmssError.XMSS_OKAY)
         {
             throw new XmssException(error);
+        }
+    }
+
+    [StackTraceHidden]
+    [ExcludeFromCodeCoverage(Justification = "Not testable, unless actual faults are injected.")]
+    internal static void ThrowFaultDetectedIf([DoesNotReturnIf(true)] bool condition)
+    {
+        if (condition)
+        {
+            throw new XmssException(XmssError.XMSS_ERR_FAULT_DETECTED);
         }
     }
 }
