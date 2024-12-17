@@ -40,7 +40,7 @@ static class Program
             // generate new key
 
             var stateManager = new XmssFileStateManager(@"C:\test");
-            stateManager.SecureDelete();
+            stateManager.DeleteAll();
             using var xmss = new Xmss();
             xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
             {

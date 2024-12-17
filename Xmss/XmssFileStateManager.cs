@@ -7,55 +7,62 @@ namespace Dorssel.Security.Cryptography;
 public sealed class XmssFileStateManager(string path)
     : IXmssStateManager
 {
-    static readonly Dictionary<XmssKeyParts, string> FileNames = new()
+    static readonly Dictionary<XmssKeyPart, string> FileNames = new()
     {
-        { XmssKeyParts.PrivateStateless, "xmss_private_stateless" },
-        { XmssKeyParts.PrivateStateful, "xmss_private_stateful" },
-        { XmssKeyParts.Public, "xmss_public" },
+        { XmssKeyPart.PrivateStateless, "xmss_private_stateless" },
+        { XmssKeyPart.PrivateStateful, "xmss_private_stateful" },
+        { XmssKeyPart.Public, "xmss_public" },
     };
     readonly string Folder = path;
 
-    string GetPartPath(XmssKeyParts part)
+    bool TryGetPath(XmssKeyPart part, out string partPath)
     {
-        return Path.Combine(Folder, FileNames[part]);
+        if (!FileNames.TryGetValue(part, out var fileName))
+        {
+            partPath = string.Empty;
+            return false;
+        }
+        partPath = Path.Combine(Folder, fileName);
+        return true;
     }
 
-    public void Store(XmssKeyParts part, ReadOnlySpan<byte> expected, ReadOnlySpan<byte> data)
+    string GetPath(XmssKeyPart part)
     {
-        using var file = File.Open(GetPartPath(part), FileMode.OpenOrCreate);
-        if (!expected.IsEmpty)
-        {
-            if (file.Length != expected.Length)
-            {
-                throw new ArgumentException("Expected size mismatch.", nameof(expected));
-            }
-            var current = new byte[expected.Length];
-            file.ReadExactly(current);
-            if (!expected.SequenceEqual(current))
-            {
-                throw new ArgumentException("Expected content mismatch.", nameof(expected));
-            }
-            file.Position = 0;
-        }
-        else if (file.Length != 0)
-        {
-            throw new ArgumentException("Expected size mismatch.", nameof(expected));
-        }
-        if (file.Length > data.Length)
-        {
-            // truncate after first zeroizing the surplus
-            file.Position = data.Length;
-            file.Write(new byte[file.Length - data.Length]);
-            file.SetLength(data.Length);
-            file.Position = 0;
-        }
+        return TryGetPath(part, out var partPath) ? partPath : throw new ArgumentOutOfRangeException(nameof(part));
+    }
+
+    public void Store(XmssKeyPart part, ReadOnlySpan<byte> data)
+    {
+        using var file = File.Open(GetPath(part), FileMode.CreateNew);
         file.Write(data);
         file.Flush();
     }
 
-    public void Load(XmssKeyParts part, Span<byte> destination)
+    public void StoreStatefulPart(ReadOnlySpan<byte> expected, ReadOnlySpan<byte> data)
     {
-        using var file = File.OpenRead(GetPartPath(part));
+        if (data.Length != expected.Length)
+        {
+            throw new ArgumentException("Expected data and new data must have the same size.");
+        }
+        using var file = File.Open(GetPath(XmssKeyPart.PrivateStateful), FileMode.Open);
+        if (file.Length != expected.Length)
+        {
+            throw new ArgumentException("Expected size mismatch.", nameof(expected));
+        }
+        var current = new byte[expected.Length];
+        file.ReadExactly(current);
+        if (!expected.SequenceEqual(current))
+        {
+            throw new ArgumentException("Expected content mismatch.", nameof(expected));
+        }
+        file.Position = 0;
+        file.Write(data);
+        file.Flush();
+    }
+
+    public void Load(XmssKeyPart part, Span<byte> destination)
+    {
+        using var file = File.OpenRead(GetPath(part));
         if (file.Length != destination.Length)
         {
             throw new ArgumentException("File size mismatch.", nameof(destination));
@@ -63,16 +70,35 @@ public sealed class XmssFileStateManager(string path)
         file.ReadExactly(destination);
     }
 
-    public void SecureDelete()
-    {
-        // TODO: zeroize data if files exist
-        File.Delete(GetPartPath(XmssKeyParts.PrivateStateless));
-        File.Delete(GetPartPath(XmssKeyParts.PrivateStateful));
-        DeletePublicPart();
-    }
-
     public void DeletePublicPart()
     {
-        File.Delete(GetPartPath(XmssKeyParts.Public));
+        File.Delete(GetPath(XmssKeyPart.Public));
+    }
+
+    static void SecureDelete(string path)
+    {
+        if (!File.Exists(path))
+        {
+            return;
+        }
+        using var file = File.Open(path, FileMode.Open);
+        var remaining = file.Length;
+        var zeros = new byte[4096];
+        while (remaining > 0)
+        {
+            var count = unchecked((int)Math.Min(remaining, zeros.Length));
+            file.Write(zeros, 0, count);
+            remaining -= count;
+        }
+        file.Flush();
+        file.Close();
+        File.Delete(path);
+    }
+
+    public void DeleteAll()
+    {
+        SecureDelete(GetPath(XmssKeyPart.PrivateStateless));
+        SecureDelete(GetPath(XmssKeyPart.PrivateStateful));
+        DeletePublicPart();
     }
 }

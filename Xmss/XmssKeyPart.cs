@@ -4,10 +4,9 @@
 
 namespace Dorssel.Security.Cryptography;
 
-[Flags]
-public enum XmssKeyParts
+public enum XmssKeyPart
 {
-    PrivateStateless = 1,
+    PrivateStateless,
     PrivateStateful,
     Public,
 }

@@ -185,8 +185,8 @@ public sealed class Xmss
                     }
                 }
 
-                stateManager.Store(XmssKeyParts.PrivateStateless, [], privateKeyStatelessBlob.Data);
-                stateManager.Store(XmssKeyParts.PrivateStateful, [], privateKeyStatefulBlob.Data);
+                stateManager.Store(XmssKeyPart.PrivateStateless, privateKeyStatelessBlob.Data);
+                stateManager.Store(XmssKeyPart.PrivateStateful, privateKeyStatefulBlob.Data);
 
                 PrivateKey?.Dispose();
                 ParameterSet = parameterSet;
@@ -216,8 +216,8 @@ public sealed class Xmss
             try
             {
                 using var privateKeyStatelessBlob = CriticalXmssPrivateKeyStatelessBlobHandle.Alloc();
-                stateManager.Load(XmssKeyParts.PrivateStateless, privateKeyStatelessBlob.Data);
-                stateManager.Load(XmssKeyParts.PrivateStateful, privateKeyStatefulBlob.Data);
+                stateManager.Load(XmssKeyPart.PrivateStateless, privateKeyStatelessBlob.Data);
+                stateManager.Load(XmssKeyPart.PrivateStateful, privateKeyStatefulBlob.Data);
 
                 foreach (var oid in Enum.GetValues<XmssParameterSetOID>())
                 {
@@ -249,7 +249,7 @@ public sealed class Xmss
                                 {
                                     using var publicKeyInternalBlob = CriticalXmssPublicKeyInternalBlobHandle.Alloc(XmssCacheType.XMSS_CACHE_TOP, 0,
                                         ParameterSet);
-                                    stateManager.Load(XmssKeyParts.Public, publicKeyInternalBlob.Data);
+                                    stateManager.Load(XmssKeyPart.Public, publicKeyInternalBlob.Data);
                                     // The cache will be automatically freed with the key context; we don't need it.
                                     XmssInternalCache* cache = null;
                                     result = UnsafeNativeMethods.xmss_load_public_key(ref cache, ref PrivateKey.KeyContext.AsRef(),
@@ -322,7 +322,7 @@ public sealed class Xmss
                 XmssException.ThrowIfNotOkay(result);
 
                 // store state
-                PrivateKey.StateManager.Store(XmssKeyParts.PrivateStateful, PrivateKey.StatefulBlob.Data, privateKeyStatefulBlob.Data);
+                PrivateKey.StateManager.StoreStatefulPart(PrivateKey.StatefulBlob.Data, privateKeyStatefulBlob.Data);
                 PrivateKey.StatefulBlob = privateKeyStatefulBlob;
                 privateKeyStatefulBlob = null;
 
@@ -519,7 +519,7 @@ public sealed class Xmss
             XmssException.ThrowIfNotOkay(result);
         }
         PrivateKey.StateManager.DeletePublicPart();
-        PrivateKey.StateManager.Store(XmssKeyParts.Public, [], publicKeyInternalBlob.Data);
+        PrivateKey.StateManager.Store(XmssKeyPart.Public, publicKeyInternalBlob.Data);
 
         result = UnsafeNativeMethods.xmss_export_public_key(out PublicKey, PrivateKey.KeyContext.AsRef());
         XmssException.ThrowIfNotOkay(result);
