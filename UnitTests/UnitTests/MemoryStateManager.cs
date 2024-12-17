@@ -9,51 +9,57 @@ namespace UnitTests;
 sealed class MemoryStateManager()
     : IXmssStateManager
 {
-    readonly Dictionary<XmssKeyParts, byte[]> State = new()
+    readonly Dictionary<XmssKeyPart, byte[]?> State = new()
     {
-        { XmssKeyParts.PrivateStateless, [] },
-        { XmssKeyParts.PrivateStateful, [] },
-        { XmssKeyParts.Public, [] },
+        { XmssKeyPart.PrivateStateless, null },
+        { XmssKeyPart.PrivateStateful, null },
+        { XmssKeyPart.Public, null },
     };
 
-    public void Store(XmssKeyParts part, ReadOnlySpan<byte> expected, ReadOnlySpan<byte> data)
+    public void Store(XmssKeyPart part, ReadOnlySpan<byte> data)
     {
-        if (!expected.IsEmpty)
+        if (State[part] is not null)
         {
-            if (State[part].Length != expected.Length)
-            {
-                throw new ArgumentException("Expected size mismatch.", nameof(expected));
-            }
-            if (!expected.SequenceEqual(State[part]))
-            {
-                throw new ArgumentException("Expected content mismatch.", nameof(expected));
-            }
-        }
-        else if (State[part].Length != 0)
-        {
-            throw new ArgumentException("Expected size mismatch.", nameof(expected));
+            throw new InvalidOperationException("Part already exists.");
         }
         State[part] = data.ToArray();
     }
 
-    public void Load(XmssKeyParts part, Span<byte> destination)
+    public void StoreStatefulPart(ReadOnlySpan<byte> expected, ReadOnlySpan<byte> data)
     {
-        if (State[part].Length != destination.Length)
+        if (State[XmssKeyPart.PrivateStateful] is not byte[] oldData)
+        {
+            throw new InvalidOperationException("Part does not exists.");
+        }
+        if (!expected.SequenceEqual(oldData))
+        {
+            throw new ArgumentException("Expected content mismatch.", nameof(expected));
+        }
+        State[XmssKeyPart.PrivateStateful] = data.ToArray();
+    }
+
+    public void Load(XmssKeyPart part, Span<byte> destination)
+    {
+        if (State[part] is not byte[] data)
+        {
+            throw new ArgumentException("Part does not exist.", nameof(part));
+        }
+        if (data.Length != destination.Length)
         {
             throw new ArgumentException("Part size mismatch.", nameof(destination));
         }
-        State[part].CopyTo(destination);
-    }
-
-    public void SecureDelete()
-    {
-        State[XmssKeyParts.PrivateStateless] = [];
-        State[XmssKeyParts.PrivateStateful] = [];
-        State[XmssKeyParts.Public] = [];
+        data.CopyTo(destination);
     }
 
     public void DeletePublicPart()
     {
-        State[XmssKeyParts.Public] = [];
+        State[XmssKeyPart.Public] = null;
+    }
+
+    public void DeleteAll()
+    {
+        State[XmssKeyPart.PrivateStateless] = null;
+        State[XmssKeyPart.PrivateStateful] = null;
+        State[XmssKeyPart.Public] = null;
     }
 }
