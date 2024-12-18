@@ -6,12 +6,11 @@ using Dorssel.Security.Cryptography.InteropServices;
 
 namespace Dorssel.Security.Cryptography;
 
-sealed class XmssPrivateKey(IXmssStateManager stateManager, CriticalXmssKeyContextHandle keyContext, CriticalXmssPrivateKeyStatefulBlobHandle statefulBlob)
-        : IDisposable
+sealed class XmssPrivateKey(IXmssStateManager stateManager) : IDisposable
 {
     readonly IXmssStateManager _StateManager = stateManager;
-    readonly CriticalXmssKeyContextHandle _KeyContext = keyContext;
-    CriticalXmssPrivateKeyStatefulBlobHandle _StatefulBlob = statefulBlob;
+    readonly CriticalXmssKeyContextHandle _KeyContext = new();
+    CriticalXmssPrivateKeyStatefulBlobHandle _StatefulBlob = new();
 
     public IXmssStateManager StateManager
     {
@@ -37,12 +36,6 @@ sealed class XmssPrivateKey(IXmssStateManager stateManager, CriticalXmssKeyConte
         {
             ObjectDisposedException.ThrowIf(IsDisposed, this);
             return _StatefulBlob;
-        }
-        set
-        {
-            ObjectDisposedException.ThrowIf(IsDisposed, this);
-            _StatefulBlob.Dispose();
-            _StatefulBlob = value;
         }
     }
 
