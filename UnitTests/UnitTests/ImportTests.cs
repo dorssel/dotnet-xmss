@@ -73,6 +73,23 @@ sealed class ImportTests
     }
 
     [TestMethod]
+    public void ImportPrivateKey_Invalid()
+    {
+        using var xmss = new Xmss();
+        var stateManager = new MemoryStateManager();
+        xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
+
+        // corrupt blob such that not even the parameter set is valid
+        Array.Clear(stateManager.GetPartData(XmssKeyPart.PrivateStateless)!);
+        Array.Clear(stateManager.GetPartData(XmssKeyPart.PrivateStateful)!);
+
+        Assert.ThrowsException<XmssException>(() =>
+        {
+            xmss.ImportPrivateKey(stateManager);
+        });
+    }
+
+    [TestMethod]
     public void ImportRfcPublicKey()
     {
         using var xmss = new Xmss();

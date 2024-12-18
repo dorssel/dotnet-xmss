@@ -19,6 +19,10 @@ sealed class GenerateTests
     public void GeneratePrivateKey(XmssParameterSet parameterSet)
     {
         using var xmss = new Xmss();
+
+        Assert.IsFalse(xmss.HasPrivateKey);
+        Assert.IsFalse(xmss.HasPublicKey);
+
         xmss.GeneratePrivateKey(new MemoryStateManager(), parameterSet, true);
 
         Assert.IsTrue(xmss.HasPrivateKey);
@@ -29,6 +33,10 @@ sealed class GenerateTests
     public void GeneratePrivateKey_AfterPrivateKey()
     {
         using var xmss = new Xmss();
+
+        Assert.IsFalse(xmss.HasPrivateKey);
+        Assert.IsFalse(xmss.HasPublicKey);
+
         xmss.GeneratePrivateKey(new MemoryStateManager(), XmssParameterSet.XMSS_SHA2_10_256, false);
 
         Assert.IsTrue(xmss.HasPrivateKey);
@@ -43,14 +51,74 @@ sealed class GenerateTests
     }
 
     [TestMethod]
-    public async Task GeneratePublicKeyAsync()
+    public async Task GeneratePublicKeyAsync_AndImport()
     {
-        using var xmss = new Xmss();
-        xmss.GeneratePrivateKey(new MemoryStateManager(), XmssParameterSet.XMSS_SHA2_10_256, true);
+        var stateManager = new MemoryStateManager();
 
-        await xmss.GeneratePublicKeyAsync();
+        // generate
+        {
+            using var xmss = new Xmss();
 
-        Assert.IsTrue(xmss.HasPrivateKey);
-        Assert.IsTrue(xmss.HasPublicKey);
+            Assert.IsFalse(xmss.HasPrivateKey);
+            Assert.IsFalse(xmss.HasPublicKey);
+
+            xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, true);
+
+            Assert.IsTrue(xmss.HasPrivateKey);
+            Assert.IsFalse(xmss.HasPublicKey);
+
+            await xmss.GeneratePublicKeyAsync();
+
+            Assert.IsTrue(xmss.HasPrivateKey);
+            Assert.IsTrue(xmss.HasPublicKey);
+        }
+
+        // import
+        {
+            using var xmss = new Xmss();
+
+            Assert.IsFalse(xmss.HasPrivateKey);
+            Assert.IsFalse(xmss.HasPublicKey);
+
+            xmss.ImportPrivateKey(stateManager);
+
+            Assert.IsTrue(xmss.HasPrivateKey);
+            Assert.IsTrue(xmss.HasPublicKey);
+        }
+    }
+
+    [TestMethod]
+    public async Task GeneratePublicKeyAsync_Report_AndGenerateAgain()
+    {
+        var stateManager = new MemoryStateManager();
+
+        // generate
+        {
+            using var xmss = new Xmss();
+
+            Assert.IsFalse(xmss.HasPrivateKey);
+            Assert.IsFalse(xmss.HasPublicKey);
+
+            xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, true);
+
+            Assert.IsTrue(xmss.HasPrivateKey);
+            Assert.IsFalse(xmss.HasPublicKey);
+
+            var lastPercentage = 0.0;
+            await xmss.GeneratePublicKeyAsync((percentage) =>
+            {
+                Assert.IsTrue(percentage > lastPercentage);
+                lastPercentage = percentage;
+            });
+            Assert.AreEqual(100.0, lastPercentage);
+
+            Assert.IsTrue(xmss.HasPrivateKey);
+            Assert.IsTrue(xmss.HasPublicKey);
+
+            await Assert.ThrowsExceptionAsync<InvalidOperationException>(async () =>
+            {
+                await xmss.GeneratePublicKeyAsync();
+            });
+        }
     }
 }

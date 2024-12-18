@@ -16,6 +16,11 @@ sealed class MemoryStateManager()
         { XmssKeyPart.Public, null },
     };
 
+    public byte[]? GetPartData(XmssKeyPart part)
+    {
+        return State[part];
+    }
+
     public void Store(XmssKeyPart part, ReadOnlySpan<byte> data)
     {
         if (State[part] is not null)
