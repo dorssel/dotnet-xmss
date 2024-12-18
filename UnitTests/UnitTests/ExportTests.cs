@@ -11,6 +11,16 @@ namespace UnitTests;
 sealed class ExportTests
 {
     [TestMethod]
+    public void ExportRfcPublicKey()
+    {
+        using var xmss = IetfExampleCertificate.Certificate2.GetXmssPublicKey()!;
+
+        var rfc = xmss.ExportRfcPublicKey();
+
+        CollectionAssert.AreEqual(IetfExampleCertificate.Certificate2.PublicKey.EncodedKeyValue.RawData, rfc);
+    }
+
+    [TestMethod]
     public void ExportAsnPublicKey()
     {
         using var xmss = IetfExampleCertificate.Certificate2.GetXmssPublicKey()!;

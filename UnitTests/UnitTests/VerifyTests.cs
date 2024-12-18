@@ -34,4 +34,14 @@ sealed class VerifyTests
 
         Assert.IsTrue(xmss.Verify(Message, Signature));
     }
+
+    [TestMethod]
+    public void VerifyStream()
+    {
+        using var xmss = new Xmss();
+        xmss.ImportRfcPublicKey(PublicKey, out _);
+
+        using var stream = new MemoryStream(Message);
+        Assert.IsTrue(xmss.Verify(stream, Signature));
+    }
 }
