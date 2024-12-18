@@ -36,6 +36,35 @@ sealed class VerifyTests
     }
 
     [TestMethod]
+    public void Verify_NoKey()
+    {
+        using var xmss = new Xmss();
+
+        Assert.ThrowsException<InvalidOperationException>(() =>
+        {
+            _ = xmss.Verify(Message, Signature);
+        });
+    }
+
+    [TestMethod]
+    public void Verify_SignatureWrongLength()
+    {
+        using var xmss = new Xmss();
+        xmss.ImportRfcPublicKey(PublicKey, out _);
+
+        Assert.IsFalse(xmss.Verify(Message, Signature[..^1].AsSpan()));
+    }
+
+    [TestMethod]
+    public void Verify_SignatureInvalid()
+    {
+        using var xmss = new Xmss();
+        xmss.ImportRfcPublicKey(PublicKey, out _);
+
+        Assert.IsFalse(xmss.Verify([..Message, 1], Signature));
+    }
+
+    [TestMethod]
     public void VerifyStream()
     {
         using var xmss = new Xmss();
@@ -43,5 +72,25 @@ sealed class VerifyTests
 
         using var stream = new MemoryStream(Message);
         Assert.IsTrue(xmss.Verify(stream, Signature));
+    }
+
+    [TestMethod]
+    public void VerifyStream_SignatureWrongLength()
+    {
+        using var xmss = new Xmss();
+        xmss.ImportRfcPublicKey(PublicKey, out _);
+
+        using var stream = new MemoryStream(Message);
+        Assert.IsFalse(xmss.Verify(stream, Signature[..^1].AsSpan()));
+    }
+
+    [TestMethod]
+    public void VerifyStream_SignatureInvalid()
+    {
+        using var xmss = new Xmss();
+        xmss.ImportRfcPublicKey(PublicKey, out _);
+
+        using var stream = new MemoryStream([.. Message, 1]);
+        Assert.IsFalse(xmss.Verify(stream, Signature));
     }
 }

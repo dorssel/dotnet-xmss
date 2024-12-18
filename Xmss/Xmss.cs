@@ -357,11 +357,12 @@ public sealed class Xmss
 
         // 1088 is the Least Common Multiple of the block sizes for SHA-256 (64) and SHAKE256/256 (136).
         // The result (16320) is slightly less than 16 kiB (16384).
-        var buffer = ArrayPool<byte>.Shared.Rent(15 * 1088);
+        var possiblyOversizedBuffer = ArrayPool<byte>.Shared.Rent(15 * 1088);
         try
         {
             unsafe
             {
+                var buffer = possiblyOversizedBuffer.AsSpan(0, 15 * 1088);
                 fixed (byte* signaturePtr = signature)
                 fixed (byte* bufferPtr = buffer)
                 fixed (XmssPublicKey* publicKeyPtr = &PublicKey)
@@ -393,13 +394,14 @@ public sealed class Xmss
         }
         finally
         {
-            ArrayPool<byte>.Shared.Return(buffer);
+            ArrayPool<byte>.Shared.Return(possiblyOversizedBuffer);
         }
     }
 
     public bool Verify(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
+        ThrowIfNoPublicKey();
 
         unsafe
         {
@@ -610,13 +612,7 @@ public sealed class Xmss
     [Obsolete("XMSS public keys as standalone ASN.1 PEM are not standardized; consider using TryExportSubjectPublicKeyInfoPem() instead.")]
     public bool TryExportAsnPublicKeyPem(Span<char> destination, out int charsWritten)
     {
-        var buffer = new byte[1024];
-        if (!TryExportAsnPublicKey(buffer, out var bytesWritten))
-        {
-            charsWritten = 0;
-            return false;
-        }
-        return PemEncoding.TryWrite(XmssPublicKeyLabel, buffer.AsSpan(0, bytesWritten), destination, out charsWritten);
+        return PemEncoding.TryWrite(XmssPublicKeyLabel, ExportAsnPublicKey(), destination, out charsWritten);
     }
 
     public override bool TryExportSubjectPublicKeyInfo(Span<byte> destination, out int bytesWritten)
@@ -658,13 +654,9 @@ public sealed class Xmss
         {
             throw new CryptographicException($"Unsupported parameter set ({parameterSetOID}).");
         }
-        if (source.Length < Defines.XMSS_PUBLIC_KEY_SIZE)
+        if (source.Length != Defines.XMSS_PUBLIC_KEY_SIZE)
         {
-            throw new CryptographicException("Key value too short.");
-        }
-        if (exact && source.Length > Defines.XMSS_PUBLIC_KEY_SIZE)
-        {
-            throw new CryptographicException("Key value too long.");
+            throw new CryptographicException("Key value wrong size.");
         }
         unsafe
         {
@@ -720,34 +712,61 @@ public sealed class Xmss
 
     public override void ImportFromPem(ReadOnlySpan<char> input)
     {
-        var fields = PemEncoding.Find(input);
-        var data = new byte[fields.DecodedDataLength];
-        if (!Convert.TryFromBase64Chars(input[fields.Base64Data], data, out var bytesWritten) || bytesWritten != fields.DecodedDataLength)
+        PemFields? foundFields = default;
+        ReadOnlySpan<char> slice = default;
+        while (PemEncoding.TryFind(input, out var tmpFields))
         {
-            throw new ArgumentException("Invalid PEM format.", nameof(input));
+            switch (input[tmpFields.Label])
+            {
+                case XmssPublicKeyLabel:
+                case PublicKeyLabel:
+                case CertificateLabel:
+                    if (foundFields is not null)
+                    {
+                        throw new ArgumentException("Multiple supported PEMs found.", nameof(input));
+                    }
+                    foundFields = tmpFields;
+                    slice = input;
+                    break;
+            }
+            input = input[tmpFields.Location.End..];
         }
-        switch (input[fields.Label])
+        if (foundFields is null)
         {
-            case XmssPublicKeyLabel:
-                {
-                    DecodeAsnPublicKey(data, out var publicKey, out var parameterSet, out _, true);
-                    ImportXmssPublicKey(parameterSet, publicKey);
-                    return;
-                }
-            case PublicKeyLabel:
-                {
-                    DecodeSubjectPublicKeyInfo(data, out var publicKey, out var parameterSet, out _, true);
-                    ImportXmssPublicKey(parameterSet, publicKey);
-                    return;
-                }
-            case CertificateLabel:
-                {
-                    using var certificate = new X509Certificate2(data);
-                    ImportCertificatePublicKey(certificate);
-                    return;
-                }
-            default:
-                throw new ArgumentException($"Unsupported PEM content: {input[fields.Label]}.");
+            throw new ArgumentException("No supported PEM found.", nameof(input));
+        }
+        var fields = foundFields.Value;
+        var possiblyOversizedData = ArrayPool<byte>.Shared.Rent(fields.DecodedDataLength);
+        try
+        {
+            var data = possiblyOversizedData.AsSpan(0, fields.DecodedDataLength);
+            XmssException.ThrowFaultDetectedIf(!Convert.TryFromBase64Chars(slice[fields.Base64Data], data, out var bytesWritten));
+            XmssException.ThrowFaultDetectedIf(bytesWritten != data.Length);
+            switch (slice[fields.Label])
+            {
+                case XmssPublicKeyLabel:
+                    {
+                        DecodeAsnPublicKey(data, out var publicKey, out var parameterSet, out _, true);
+                        ImportXmssPublicKey(parameterSet, publicKey);
+                        return;
+                    }
+                case PublicKeyLabel:
+                    {
+                        DecodeSubjectPublicKeyInfo(data, out var publicKey, out var parameterSet, out _, true);
+                        ImportXmssPublicKey(parameterSet, publicKey);
+                        return;
+                    }
+                case CertificateLabel:
+                    {
+                        using var certificate = new X509Certificate2(data);
+                        ImportCertificatePublicKey(certificate);
+                        return;
+                    }
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(possiblyOversizedData);
         }
     }
 

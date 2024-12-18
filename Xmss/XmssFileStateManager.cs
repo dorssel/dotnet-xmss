@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+using System.Buffers;
+
 namespace Dorssel.Security.Cryptography;
 
 public sealed class XmssFileStateManager(string path)
@@ -49,11 +51,19 @@ public sealed class XmssFileStateManager(string path)
         {
             throw new ArgumentException("Expected size mismatch.", nameof(expected));
         }
-        var current = new byte[expected.Length];
-        file.ReadExactly(current);
-        if (!expected.SequenceEqual(current))
+        var possiblyOversizedCurrent = ArrayPool<byte>.Shared.Rent(expected.Length);
+        try
         {
-            throw new ArgumentException("Expected content mismatch.", nameof(expected));
+            var current = possiblyOversizedCurrent.AsSpan(0, expected.Length);
+            file.ReadExactly(current);
+            if (!current.SequenceEqual(expected))
+            {
+                throw new ArgumentException("Expected content mismatch.", nameof(expected));
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(possiblyOversizedCurrent);
         }
         file.Position = 0;
         file.Write(data);
@@ -83,12 +93,21 @@ public sealed class XmssFileStateManager(string path)
         }
         using var file = File.Open(path, FileMode.Open);
         var remaining = file.Length;
-        var zeros = new byte[4096];
-        while (remaining > 0)
+        var possiblyOversizedZeros = ArrayPool<byte>.Shared.Rent(4096);
+        try
         {
-            var count = unchecked((int)Math.Min(remaining, zeros.Length));
-            file.Write(zeros, 0, count);
-            remaining -= count;
+            Array.Clear(possiblyOversizedZeros, 0, 4096);
+            var zeros = possiblyOversizedZeros.AsSpan(0, 4096);
+            while (remaining > 0)
+            {
+                var count = unchecked((int)Math.Min(remaining, zeros.Length));
+                file.Write(zeros[..count]);
+                remaining -= count;
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(possiblyOversizedZeros);
         }
         file.Flush();
         file.Close();
