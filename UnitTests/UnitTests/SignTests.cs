@@ -32,4 +32,39 @@ sealed class SignTests
     {
         _ = Xmss.Sign([42]);
     }
+
+    [TestMethod]
+    public void Sign_NoKey()
+    {
+        using var xmss = new Xmss();
+
+        Assert.ThrowsException<InvalidOperationException>(() =>
+        {
+            _ = xmss.Sign([42]);
+        });
+    }
+
+    [TestMethod]
+    public void Sign_Destination()
+    {
+        // oversized
+        var signature = new byte[4096];
+
+        var bytesWritten = Xmss.Sign([42], signature);
+
+        Assert.IsTrue(bytesWritten > 0);
+        Assert.IsTrue(bytesWritten < signature.Length);
+    }
+
+    [TestMethod]
+    public void Sign_Destination_TooShort()
+    {
+        // oversized
+        var signature = new byte[1024];
+
+        Assert.ThrowsException<ArgumentException>(() =>
+        {
+            _ = Xmss.Sign([42], signature);
+        });
+    }
 }
