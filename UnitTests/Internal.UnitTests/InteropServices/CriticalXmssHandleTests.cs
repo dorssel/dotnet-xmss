@@ -32,4 +32,32 @@ sealed unsafe class CriticalXmssHandleTests
 
         Assert.AreEqual(blob.DataLength, (int)blob.AsPointerRef()->data_size);
     }
+
+    [TestMethod]
+    public void SwapWith_ThisClosed()
+    {
+        using var blob = CriticalXmssPrivateKeyStatefulBlobHandle.Alloc();
+        using var other = CriticalXmssPrivateKeyStatefulBlobHandle.Alloc();
+
+        other.Dispose();
+
+        Assert.ThrowsException<ObjectDisposedException>(() =>
+        {
+            blob.SwapWith(other);
+        });
+    }
+
+    [TestMethod]
+    public void SwapWith_OtherClosed()
+    {
+        using var blob = CriticalXmssPrivateKeyStatefulBlobHandle.Alloc();
+        using var other = CriticalXmssPrivateKeyStatefulBlobHandle.Alloc();
+
+        other.Dispose();
+
+        Assert.ThrowsException<ObjectDisposedException>(() =>
+        {
+            blob.SwapWith(other);
+        });
+    }
 }

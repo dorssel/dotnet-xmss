@@ -69,4 +69,11 @@ abstract class CriticalXmssHandle<T> : CriticalHandle where T : unmanaged
         }
         return true;
     }
+
+    public void SwapWith(CriticalXmssHandle<T> other)
+    {
+        ObjectDisposedException.ThrowIf(IsClosed, this);
+        ObjectDisposedException.ThrowIf(other.IsClosed, other);
+        (handle, other.handle) = (other.handle, handle);
+    }
 }

@@ -6,7 +6,7 @@ using Dorssel.Security.Cryptography.Internal;
 
 namespace Dorssel.Security.Cryptography;
 
-#pragma warning disable CA1027 // Mark enums with FlagsAttribute
+#pragma warning disable CA1027 // Mark enums with FlagsAttribute (false positive)
 public enum XmssParameterSet
 #pragma warning restore CA1027 // Mark enums with FlagsAttribute
 {
