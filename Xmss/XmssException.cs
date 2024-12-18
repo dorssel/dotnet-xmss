@@ -50,4 +50,14 @@ public class XmssException
             throw new XmssException(XmssError.XMSS_ERR_FAULT_DETECTED);
         }
     }
+
+    [StackTraceHidden]
+    [ExcludeFromCodeCoverage(Justification = "Not testable, unless actual faults are injected.")]
+    internal static void ThrowFaultDetectedIf(Exception? exception)
+    {
+        if (exception is not null)
+        {
+            throw new XmssException(XmssError.XMSS_ERR_FAULT_DETECTED, exception);
+        }
+    }
 }

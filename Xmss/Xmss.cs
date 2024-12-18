@@ -167,8 +167,7 @@ public sealed class Xmss
             {
                 XmssBuffer secure_random;
                 XmssBuffer random = new();
-                fixed (byte* secureRandomPtr = RandomNumberGenerator.GetBytes(96))
-                fixed (byte* randomPtr = RandomNumberGenerator.GetBytes(32))
+                fixed (byte* secureRandomPtr = RandomNumberGenerator.GetBytes(96), randomPtr = RandomNumberGenerator.GetBytes(32))
                 {
                     secure_random.data = secureRandomPtr;
                     secure_random.data_size = 96;
@@ -426,12 +425,11 @@ public sealed class Xmss
         var index = 0;
         var completed = 0;
         var lastReported = 0;
-        var concurrentTaskCount = RuntimeInformation.ProcessArchitecture == Architecture.Wasm ? 1 : Environment.ProcessorCount;
         using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         Exception? taskException = null;
         while (!cancellationTokenSource.IsCancellationRequested && completed < totalTaskCount)
         {
-            while (tasks.Count < concurrentTaskCount && index < totalTaskCount)
+            while (tasks.Count < Environment.ProcessorCount && index < totalTaskCount)
             {
                 var nextTaskIndex = index;
                 _ = tasks.Add(Task.Run(() =>
@@ -449,17 +447,22 @@ public sealed class Xmss
                     // not done yet
                     return false;
                 }
-                if (task.Exception is null)
-                {
-                    // success
-                    ++completed;
-                }
-                else
-                {
-                    // failed, remember the first failure and cancel others
-                    taskException ??= task.Exception;
-                    cancellationTokenSource.Cancel();
-                }
+                new Action(
+                    [ExcludeFromCodeCoverage(Justification = "Not testable, unless actual faults are injected.")]
+                () =>
+                    {
+                        if (task.Exception is null)
+                        {
+                            // success
+                            ++completed;
+                        }
+                        else
+                        {
+                            // failed, remember the first failure and cancel others
+                            taskException ??= task.Exception;
+                            cancellationTokenSource.Cancel();
+                        }
+                    }).Invoke();
                 return true;
             });
             if (completed > lastReported)
@@ -467,18 +470,20 @@ public sealed class Xmss
                 reportPercentage?.Invoke(99.0 * completed / totalTaskCount);
                 lastReported = completed;
             }
-            if (RuntimeInformation.ProcessArchitecture == Architecture.Wasm)
-            {
-                // WASM is (still) single-threaded; give the UI a chance
-                await Task.Delay(TimeSpan.FromMilliseconds(1), cancellationToken).ConfigureAwait(false);
-            }
+            await new Func<Task>(
+                [ExcludeFromCodeCoverage(Justification = "Not testable; WASM only.")]
+            async () =>
+                {
+                    if (RuntimeInformation.ProcessArchitecture == Architecture.Wasm && Environment.ProcessorCount == 1)
+                    {
+                        // WASM is single-threaded; give the UI a chance
+                        await Task.Delay(TimeSpan.FromMilliseconds(1), cancellationToken).ConfigureAwait(false);
+                    }
+                }).Invoke().ConfigureAwait(false);
         }
         await Task.WhenAll(tasks).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
-        if (taskException is not null)
-        {
-            throw taskException;
-        }
+        XmssException.ThrowFaultDetectedIf(taskException);
 
         using var publicKeyInternalBlob = new CriticalXmssPublicKeyInternalBlobHandle();
         unsafe
