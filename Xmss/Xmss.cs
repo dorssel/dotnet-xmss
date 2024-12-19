@@ -154,7 +154,6 @@ public sealed class Xmss
         unsafe
         {
             using var keyContext = new CriticalXmssKeyContextHandle();
-            using var privateKeyStatefulBlob = new CriticalXmssPrivateKeyStatefulBlobHandle();
             using var signingContext = new CriticalXmssSigningContextHandle();
             {
                 result = UnsafeNativeMethods.xmss_context_initialize(ref signingContext.AsPointerRef(), (XmssParameterSetOID)parameterSet,
@@ -162,24 +161,24 @@ public sealed class Xmss
                 XmssException.ThrowIfNotOkay(result);
             }
 
-            // Private key
             using var privateKeyStatelessBlob = new CriticalXmssPrivateKeyStatelessBlobHandle();
+            using var privateKeyStatefulBlob = new CriticalXmssPrivateKeyStatefulBlobHandle();
             {
-                XmssBuffer secure_random;
-                XmssBuffer random = new();
-                fixed (byte* secureRandomPtr = RandomNumberGenerator.GetBytes(96), randomPtr = RandomNumberGenerator.GetBytes(32))
-                {
-                    secure_random.data = secureRandomPtr;
-                    secure_random.data_size = 96;
-                    random.data = randomPtr;
-                    random.data_size = 32;
+                var allRandomPtr = stackalloc byte[96 + 32];
+                var allRandom = new Span<byte>(allRandomPtr, 96 + 32);
 
-                    result = UnsafeNativeMethods.xmss_generate_private_key(ref keyContext.AsPointerRef(), ref privateKeyStatelessBlob.AsPointerRef(),
-                        ref privateKeyStatefulBlob.AsPointerRef(), secure_random, enableIndexObfuscation
-                            ? XmssIndexObfuscationSetting.XMSS_INDEX_OBFUSCATION_ON : XmssIndexObfuscationSetting.XMSS_INDEX_OBFUSCATION_OFF,
-                        random, signingContext.AsRef());
-                    XmssException.ThrowIfNotOkay(result);
-                }
+                RandomNumberGenerator.Fill(allRandom);
+
+                XmssBuffer secure_random = new() { data = allRandomPtr, data_size = 96 };
+                XmssBuffer random = new() { data = allRandomPtr + 96, data_size = 32 };
+
+                result = UnsafeNativeMethods.xmss_generate_private_key(ref keyContext.AsPointerRef(), ref privateKeyStatelessBlob.AsPointerRef(),
+                    ref privateKeyStatefulBlob.AsPointerRef(), secure_random, enableIndexObfuscation
+                        ? XmssIndexObfuscationSetting.XMSS_INDEX_OBFUSCATION_ON : XmssIndexObfuscationSetting.XMSS_INDEX_OBFUSCATION_OFF,
+                    random, signingContext.AsRef());
+                XmssException.ThrowIfNotOkay(result);
+
+                CryptographicOperations.ZeroMemory(allRandom);
             }
 
             stateManager.Store(XmssKeyPart.PrivateStateless, privateKeyStatelessBlob.Data);
@@ -447,22 +446,24 @@ public sealed class Xmss
                     // not done yet
                     return false;
                 }
-                new Action(
-                    [ExcludeFromCodeCoverage(Justification = "Not testable, unless actual faults are injected.")]
-                () =>
+
+                [ExcludeFromCodeCoverage(Justification = "Not testable, unless actual faults are injected.")]
+                void HandleTaskCompletion()
+                {
+                    if (task.Exception is null)
                     {
-                        if (task.Exception is null)
-                        {
-                            // success
-                            ++completed;
-                        }
-                        else
-                        {
-                            // failed, remember the first failure and cancel others
-                            taskException ??= task.Exception;
-                            cancellationTokenSource.Cancel();
-                        }
-                    }).Invoke();
+                        // success
+                        ++completed;
+                    }
+                    else
+                    {
+                        // failed, remember the first failure and cancel others
+                        taskException ??= task.Exception;
+                        cancellationTokenSource.Cancel();
+                    }
+                }
+
+                HandleTaskCompletion();
                 return true;
             });
             if (completed > lastReported)
@@ -470,16 +471,17 @@ public sealed class Xmss
                 reportPercentage?.Invoke(99.0 * completed / totalTaskCount);
                 lastReported = completed;
             }
-            await new Func<Task>(
-                [ExcludeFromCodeCoverage(Justification = "Not testable; WASM only.")]
-            async () =>
-                {
-                    if (RuntimeInformation.ProcessArchitecture == Architecture.Wasm && Environment.ProcessorCount == 1)
-                    {
-                        // WASM is single-threaded; give the UI a chance
-                        await Task.Delay(TimeSpan.FromMilliseconds(1), cancellationToken).ConfigureAwait(false);
-                    }
-                }).Invoke().ConfigureAwait(false);
+
+            [ExcludeFromCodeCoverage(Justification = "Not testable; WASM only.")]
+            Task OptionalDelayTask()
+            {
+                // WASM is single-threaded; give the UI a chance
+                return RuntimeInformation.ProcessArchitecture == Architecture.Wasm && Environment.ProcessorCount == 1
+                    ? Task.Delay(TimeSpan.FromMilliseconds(1), cancellationToken)
+                    : Task.CompletedTask;
+            }
+
+            await OptionalDelayTask().ConfigureAwait(false);
         }
         await Task.WhenAll(tasks).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
