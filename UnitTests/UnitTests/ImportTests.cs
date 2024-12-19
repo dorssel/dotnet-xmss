@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 
 using System.Security.Cryptography;
-using System.Text;
 using Dorssel.Security.Cryptography;
 
 namespace UnitTests;

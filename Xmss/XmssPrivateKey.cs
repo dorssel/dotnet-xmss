@@ -10,7 +10,7 @@ sealed class XmssPrivateKey(IXmssStateManager stateManager) : IDisposable
 {
     readonly IXmssStateManager _StateManager = stateManager;
     readonly CriticalXmssKeyContextHandle _KeyContext = new();
-    CriticalXmssPrivateKeyStatefulBlobHandle _StatefulBlob = new();
+    readonly CriticalXmssPrivateKeyStatefulBlobHandle _StatefulBlob = new();
 
     public IXmssStateManager StateManager
     {

@@ -17,7 +17,7 @@ public enum XmssParameterSet
     /// TODO
     /// </summary>
     None = 0,
-#pragma warning disable CA1707 // Identifiers should not contain underscores
+#pragma warning disable CA1707 // Identifiers should not contain underscores (matches RFC & IANA registration)
     /// <summary>
     /// TODO
     /// </summary>

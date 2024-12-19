@@ -61,7 +61,7 @@ sealed class VerifyTests
         using var xmss = new Xmss();
         xmss.ImportRfcPublicKey(PublicKey, out _);
 
-        Assert.IsFalse(xmss.Verify([..Message, 1], Signature));
+        Assert.IsFalse(xmss.Verify([.. Message, 1], Signature));
     }
 
     [TestMethod]

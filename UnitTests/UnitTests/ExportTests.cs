@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-using Dorssel.Security.Cryptography;
 using static Dorssel.Security.Cryptography.X509Certificates.XmssCertificateExtensions;
 
 namespace UnitTests;
