@@ -6,6 +6,10 @@ using System.Buffers;
 
 namespace Dorssel.Security.Cryptography;
 
+/// <summary>
+/// TODO
+/// </summary>
+/// <param name="path">TODO</param>
 public sealed class XmssFileStateManager(string path)
     : IXmssStateManager
 {
@@ -33,6 +37,11 @@ public sealed class XmssFileStateManager(string path)
         return TryGetPath(part, out var partPath) ? partPath : throw new ArgumentOutOfRangeException(nameof(part));
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="part">TODO</param>
+    /// <param name="data">TODO</param>
     public void Store(XmssKeyPart part, ReadOnlySpan<byte> data)
     {
         using var file = File.Open(GetPath(part), FileMode.CreateNew);
@@ -40,6 +49,12 @@ public sealed class XmssFileStateManager(string path)
         file.Flush();
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="expected">TODO</param>
+    /// <param name="data">TODO</param>
+    /// <exception cref="ArgumentException">TODO</exception>
     public void StoreStatefulPart(ReadOnlySpan<byte> expected, ReadOnlySpan<byte> data)
     {
         if (data.Length != expected.Length)
@@ -70,6 +85,12 @@ public sealed class XmssFileStateManager(string path)
         file.Flush();
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="part">TODO</param>
+    /// <param name="destination">TODO</param>
+    /// <exception cref="ArgumentException">TODO</exception>
     public void Load(XmssKeyPart part, Span<byte> destination)
     {
         using var file = File.OpenRead(GetPath(part));
@@ -80,6 +101,9 @@ public sealed class XmssFileStateManager(string path)
         file.ReadExactly(destination);
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
     public void DeletePublicPart()
     {
         File.Delete(GetPath(XmssKeyPart.Public));
@@ -114,6 +138,9 @@ public sealed class XmssFileStateManager(string path)
         File.Delete(path);
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
     public void DeleteAll()
     {
         SecureDelete(GetPath(XmssKeyPart.PrivateStateless));

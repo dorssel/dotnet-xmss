@@ -85,6 +85,7 @@ jobs:
           dotnet tool restore
           dotnet workload restore
           dotnet restore
+          dotnet restore Documentation --no-dependencies
 
       - name: Build
         run: |
@@ -114,6 +115,13 @@ jobs:
             **/*.nupkg
             **/*.snupkg
             retention-days: 14
+
+      - name: Upload Documentation Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: Documentation/_site
+          retention-days: 3
 
       - name: Codecov
         uses: codecov/codecov-action@v5

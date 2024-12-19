@@ -29,4 +29,9 @@ libc/*.c   text eol=lf
 
 *.razor   text
 *.html    text
-*.css    text
+*.css     text
+.js       text
+
+# These are part of the nuget package
+LICENSE.txt   text eol=crlf
+README.md     text eol=crlf
