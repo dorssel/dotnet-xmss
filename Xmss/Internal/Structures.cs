@@ -69,7 +69,7 @@ static partial class Defines
     internal static unsafe int XMSS_PUBLIC_KEY_INTERNAL_BLOB_SIZE(XmssCacheType cache_type, byte cache_level, XmssParameterSetOID param_set)
     {
         return sizeof(XmssPublicKeyInternalBlob) + sizeof(XmssValue256) + 4 + 4 + sizeof(XmssValue256) + sizeof(XmssValue256)
-        + 4 + 4 + 4 + 4 + (sizeof(XmssValue256) * XMSS_CACHE_ENTRY_COUNT(cache_type, cache_level, param_set));
+            + 4 + 4 + 4 + 4 + (sizeof(XmssValue256) * XMSS_CACHE_ENTRY_COUNT(cache_type, cache_level, param_set));
     }
 }
 
