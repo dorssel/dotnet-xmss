@@ -16,23 +16,39 @@ using Dorssel.Security.Cryptography.InteropServices;
 
 namespace Dorssel.Security.Cryptography;
 
+/// <summary>
+/// TODO
+/// </summary>
 public sealed class Xmss
     : AsymmetricAlgorithm
 {
+    /// <summary>
+    /// TODO
+    /// </summary>
     public Xmss()
     {
         LegalKeySizesValue = [new(256, 256, 0)];
         KeySizeValue = 256;
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <returns>TODO</returns>
     public static new Xmss Create()
     {
         return new Xmss();
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
     public static Version NativeHeadersVersion => new(Defines.XMSS_LIBRARY_VERSION_MAJOR, Defines.XMSS_LIBRARY_VERSION_MINOR,
                 Defines.XMSS_LIBRARY_VERSION_PATCH);
 
+    /// <summary>
+    /// TODO
+    /// </summary>
     public static Version NativeLibraryVersion
     {
         get
@@ -43,6 +59,11 @@ public sealed class Xmss
         }
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="algorithm">TODO</param>
+    /// <returns>TODO</returns>
     [UnsupportedOSPlatform("browser")]
     [Obsolete("Cryptographic factory methods accepting an algorithm name are obsolete. Use the parameterless Create factory method on the algorithm type instead.")]
     [RequiresUnreferencedCode("The default algorithm implementations might be removed, use strong type references like 'Xmss.Create()' instead.")]
@@ -57,13 +78,22 @@ public sealed class Xmss
     static readonly object RegistrationLock = new();
     static bool TriedRegisterOnce;
 
+    /// <summary>
+    /// TODO
+    /// </summary>
     // See https://datatracker.ietf.org/doc/draft-ietf-lamps-x509-shbs/.
     // Appendix B suggests the FriendlyName is "xmss" (lowercase); the others are "extra".
     public static readonly string[] IdAlgXmssHashsigNames = ["xmss", "id-alg-xmss-hashsig", "XMSS"];
 
+    /// <summary>
+    /// TODO
+    /// </summary>
     // See https://iana.org/assignments/xmss-extended-hash-based-signatures/.
     public static readonly Oid IdAlgXmssHashsig = new("1.3.6.1.5.5.7.6.34", IdAlgXmssHashsigNames.First());
 
+    /// <summary>
+    /// TODO
+    /// </summary>
     [UnsupportedOSPlatform("browser")]
     public static void RegisterWithCryptoConfig()
     {
@@ -78,8 +108,14 @@ public sealed class Xmss
         }
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
     public XmssParameterSet ParameterSet { get; private set; } = XmssParameterSet.None;
 
+    /// <summary>
+    /// TODO
+    /// </summary>
     public override string? SignatureAlgorithm => ParameterSet switch
     {
         // See https://www.iana.org/assignments/xml-security-uris/xml-security-uris.xhtml
@@ -98,6 +134,10 @@ public sealed class Xmss
     XmssPrivateKey? PrivateKey;
     XmssPublicKey PublicKey;
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="disposing">TODO</param>
     protected override void Dispose(bool disposing)
     {
         if (!IsDisposed)
@@ -110,9 +150,15 @@ public sealed class Xmss
         base.Dispose(disposing);
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
     [MemberNotNullWhen(true, nameof(PrivateKey))]
     public bool HasPrivateKey => PrivateKey is not null;
 
+    /// <summary>
+    /// TODO
+    /// </summary>
     public bool HasPublicKey { get; private set; }
 
     [StackTraceHidden]
@@ -143,6 +189,12 @@ public sealed class Xmss
         }
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="stateManager">TODO</param>
+    /// <param name="parameterSet">TODO</param>
+    /// <param name="enableIndexObfuscation">TODO</param>
     public void GeneratePrivateKey(IXmssStateManager stateManager, XmssParameterSet parameterSet, bool enableIndexObfuscation)
     {
         ArgumentNullException.ThrowIfNull(stateManager);
@@ -193,6 +245,11 @@ public sealed class Xmss
         }
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="stateManager">TODO</param>
+    /// <exception cref="XmssException">TODO</exception>
     public void ImportPrivateKey(IXmssStateManager stateManager)
     {
         ArgumentNullException.ThrowIfNull(stateManager);
@@ -259,6 +316,11 @@ public sealed class Xmss
         }
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="data">TODO</param>
+    /// <returns>TODO</returns>
     public byte[] Sign(ReadOnlySpan<byte> data)
     {
         var signature = new byte[Defines.XMSS_SIGNATURE_SIZE(ParameterSet.AsOID())];
@@ -267,12 +329,26 @@ public sealed class Xmss
         return signature;
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="data">TODO</param>
+    /// <param name="destination">TODO</param>
+    /// <returns>TODO</returns>
+    /// <exception cref="ArgumentException">TODO</exception>
     public int Sign(ReadOnlySpan<byte> data, Span<byte> destination)
     {
         return TrySign(data, destination, out var bytesWritten) ? bytesWritten
             : throw new ArgumentException("Destination is too short.");
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="data">TODO</param>
+    /// <param name="destination">TODO</param>
+    /// <param name="bytesWritten">TODO</param>
+    /// <returns>TODO</returns>
     public bool TrySign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten)
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
@@ -314,6 +390,12 @@ public sealed class Xmss
         }
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="data">TODO</param>
+    /// <param name="signature">TODO</param>
+    /// <returns>TODO</returns>
     public bool Verify(Stream data, ReadOnlySpan<byte> signature)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -363,6 +445,12 @@ public sealed class Xmss
         }
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="data">TODO</param>
+    /// <param name="signature">TODO</param>
+    /// <returns>TODO</returns>
     public bool Verify(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
@@ -396,6 +484,13 @@ public sealed class Xmss
         }
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="reportPercentage">TODO</param>
+    /// <param name="cancellationToken">TODO</param>
+    /// <returns>TODO</returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public async Task GeneratePublicKeyAsync(Action<double>? reportPercentage = null, CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
@@ -510,6 +605,10 @@ public sealed class Xmss
     const string PublicKeyLabel = "PUBLIC KEY";
     const string CertificateLabel = "CERTIFICATE";
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <returns>TODO</returns>
     public byte[] ExportRfcPublicKey()
     {
         var result = new byte[Defines.XMSS_PUBLIC_KEY_SIZE];
@@ -518,6 +617,10 @@ public sealed class Xmss
         return result;
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <returns>TODO</returns>
     public byte[] ExportAsnPublicKey()
     {
         var result = new byte[AsnPublicKeyLength];
@@ -526,6 +629,10 @@ public sealed class Xmss
         return result;
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <returns>TODO</returns>
     [Obsolete("XMSS public keys as standalone ASN.1 PEM are not standardized; consider using ExportSubjectPublicKeyInfoPem() instead.")]
     public string ExportAsnPublicKeyPem()
     {
@@ -535,6 +642,10 @@ public sealed class Xmss
         return new(result[..charsWritten]);
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <returns>TODO</returns>
     public override byte[] ExportSubjectPublicKeyInfo()
     {
         var result = new byte[SubjectPublicKeyInfoLength];
@@ -543,6 +654,12 @@ public sealed class Xmss
         return result;
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="destination">TODO</param>
+    /// <param name="bytesWritten">TODO</param>
+    /// <returns>TODO</returns>
     public bool TryExportRfcPublicKey(Span<byte> destination, out int bytesWritten)
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
@@ -565,6 +682,12 @@ public sealed class Xmss
         return true;
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="destination">TODO</param>
+    /// <param name="bytesWritten">TODO</param>
+    /// <returns>TODO</returns>
     public bool TryExportAsnPublicKey(Span<byte> destination, out int bytesWritten)
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
@@ -583,12 +706,24 @@ public sealed class Xmss
         return asnWriter.TryEncode(destination, out bytesWritten);
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="destination">TODO</param>
+    /// <param name="charsWritten">TODO</param>
+    /// <returns>TODO</returns>
     [Obsolete("XMSS public keys as standalone ASN.1 PEM are not standardized; consider using TryExportSubjectPublicKeyInfoPem() instead.")]
     public bool TryExportAsnPublicKeyPem(Span<char> destination, out int charsWritten)
     {
         return PemEncoding.TryWrite(XmssPublicKeyLabel, ExportAsnPublicKey(), destination, out charsWritten);
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="destination">TODO</param>
+    /// <param name="bytesWritten">TODO</param>
+    /// <returns>TODO</returns>
     public override bool TryExportSubjectPublicKeyInfo(Span<byte> destination, out int bytesWritten)
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
@@ -684,6 +819,11 @@ public sealed class Xmss
         HasPublicKey = true;
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="input">TODO</param>
+    /// <exception cref="ArgumentException">TODO</exception>
     public override void ImportFromPem(ReadOnlySpan<char> input)
     {
         PemFields? foundFields = default;
@@ -744,6 +884,11 @@ public sealed class Xmss
         }
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="source">TODO</param>
+    /// <param name="bytesRead">TODO</param>
     public void ImportRfcPublicKey(ReadOnlySpan<byte> source, out int bytesRead)
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
@@ -752,6 +897,11 @@ public sealed class Xmss
         ImportXmssPublicKey(parameterSet, publicKey);
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="source">TODO</param>
+    /// <param name="bytesRead">TODO</param>
     public void ImportAsnPublicKey(ReadOnlySpan<byte> source, out int bytesRead)
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
@@ -761,6 +911,11 @@ public sealed class Xmss
         bytesRead = bytesConsumed;
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="source">TODO</param>
+    /// <param name="bytesRead">TODO</param>
     public override void ImportSubjectPublicKeyInfo(ReadOnlySpan<byte> source, out int bytesRead)
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
@@ -770,6 +925,10 @@ public sealed class Xmss
         bytesRead = bytesConsumed;
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="publicKey">TODO</param>
     public void ImportCertificatePublicKey(PublicKey publicKey)
     {
         ArgumentNullException.ThrowIfNull(publicKey);
@@ -780,6 +939,10 @@ public sealed class Xmss
         ImportXmssPublicKey(parameterSet, xmssPublicKey);
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="certificate">TODO</param>
     public void ImportCertificatePublicKey(X509Certificate certificate)
     {
         ArgumentNullException.ThrowIfNull(certificate);
@@ -790,6 +953,10 @@ public sealed class Xmss
         ImportXmssPublicKey(parameterSet, publicKey);
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="certificate">TODO</param>
     public void ImportCertificatePublicKey(X509Certificate2 certificate)
     {
         ArgumentNullException.ThrowIfNull(certificate);

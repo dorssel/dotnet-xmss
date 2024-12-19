@@ -9,17 +9,32 @@ using Dorssel.Security.Cryptography.Internal;
 
 namespace Dorssel.Security.Cryptography;
 
+/// <summary>
+/// TODO
+/// </summary>
 public class XmssException
     : CryptographicException
 {
+    /// <summary>
+    /// TODO
+    /// </summary>
     public XmssException()
     {
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="message">TODO</param>
     public XmssException(string message) : base(message)
     {
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="message">TODO</param>
+    /// <param name="innerException">TODO</param>
     public XmssException(string message, Exception innerException) : base(message, innerException)
     {
     }

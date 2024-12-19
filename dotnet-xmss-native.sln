@@ -42,6 +42,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{
 		UnitTests\Directory.Build.props = UnitTests\Directory.Build.props
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Documentation", "Documentation\Documentation.csproj", "{C2B99335-04F9-48CF-93AA-F5137D6C2D08}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5435047D-2323-4E4D-9476-27D469940E20} = {5435047D-2323-4E4D-9476-27D469940E20}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -76,6 +81,9 @@ Global
 		{06165BE7-C274-4CD4-AD9A-8BD4F3423B8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{06165BE7-C274-4CD4-AD9A-8BD4F3423B8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{06165BE7-C274-4CD4-AD9A-8BD4F3423B8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2B99335-04F9-48CF-93AA-F5137D6C2D08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2B99335-04F9-48CF-93AA-F5137D6C2D08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2B99335-04F9-48CF-93AA-F5137D6C2D08}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -6,8 +6,16 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Dorssel.Security.Cryptography.X509Certificates;
 
+/// <summary>
+/// TODO
+/// </summary>
 public static class XmssCertificateExtensions
 {
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="certificate">TODO</param>
+    /// <returns>TODO</returns>
     public static Xmss? GetXmssPublicKey(this X509Certificate2 certificate)
     {
         ArgumentNullException.ThrowIfNull(certificate);
