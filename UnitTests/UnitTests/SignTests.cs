@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 
 using Dorssel.Security.Cryptography;
-using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 
 namespace UnitTests;
 
@@ -22,7 +21,7 @@ sealed class SignTests
         await Xmss.GeneratePublicKeyAsync();
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup]
     public static void ClassCleanup()
     {
         Xmss.Dispose();
