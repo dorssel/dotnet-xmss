@@ -333,6 +333,20 @@ public sealed class Xmss
     /// TODO
     /// </summary>
     /// <param name="data">TODO</param>
+    /// <param name="dataLength">TODO</param>
+    /// <returns>TODO</returns>
+    public unsafe byte[] Sign(void* data, nuint dataLength)
+    {
+        var signature = new byte[Defines.XMSS_SIGNATURE_SIZE(ParameterSet.AsOID())];
+        var bytesWritten = Sign(data, dataLength, signature);
+        XmssException.ThrowFaultDetectedIf(bytesWritten != signature.Length);
+        return signature;
+    }
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="data">TODO</param>
     /// <param name="destination">TODO</param>
     /// <returns>TODO</returns>
     /// <exception cref="ArgumentException">TODO</exception>
@@ -346,11 +360,48 @@ public sealed class Xmss
     /// TODO
     /// </summary>
     /// <param name="data">TODO</param>
+    /// <param name="dataLength">TODO</param>
+    /// <param name="destination">TODO</param>
+    /// <returns>TODO</returns>
+    /// <exception cref="ArgumentException">TODO</exception>
+    public unsafe int Sign(void* data, nuint dataLength, Span<byte> destination)
+    {
+        return TrySign(data, dataLength, destination, out var bytesWritten) ? bytesWritten
+            : throw new ArgumentException("Destination is too short.");
+    }
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="data">TODO</param>
     /// <param name="destination">TODO</param>
     /// <param name="bytesWritten">TODO</param>
     /// <returns>TODO</returns>
     public bool TrySign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten)
     {
+        unsafe
+        {
+            fixed (byte* dataPtr = data)
+            {
+                return TrySign(dataPtr, (nuint)data.Length, destination, out bytesWritten);
+            }
+        }
+    }
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="data">TODO</param>
+    /// <param name="dataLength">TODO</param>
+    /// <param name="destination">TODO</param>
+    /// <param name="bytesWritten">TODO</param>
+    /// <returns>TODO</returns>
+    public unsafe bool TrySign(void* data, nuint dataLength, Span<byte> destination, out int bytesWritten)
+    {
+        if (data is null)
+        {
+            throw new ArgumentNullException(nameof(data));
+        }
         ObjectDisposedException.ThrowIf(IsDisposed, this);
         ThrowIfNoPrivateKey();
 
@@ -376,12 +427,9 @@ public sealed class Xmss
 
             // sign
             using var signatureBlob = new CriticalXmssSignatureBlobHandle();
-            fixed (byte* dataPtr = data)
-            {
-                result = UnsafeNativeMethods.xmss_sign_message(ref signatureBlob.AsPointerRef(), ref PrivateKey.KeyContext.AsRef(),
-                    new() { data = dataPtr, data_size = (nuint)data.Length });
-                XmssException.ThrowIfNotOkay(result);
-            }
+            result = UnsafeNativeMethods.xmss_sign_message(ref signatureBlob.AsPointerRef(), ref PrivateKey.KeyContext.AsRef(),
+                new() { data = (byte*)data, data_size = dataLength });
+            XmssException.ThrowIfNotOkay(result);
             XmssException.ThrowFaultDetectedIf(signatureBlob.AsRef().data_size > (nuint)destination.Length);
             var signature = new ReadOnlySpan<byte>(signatureBlob.AsRef().data, (int)signatureBlob.AsRef().data_size);
             signature.CopyTo(destination);

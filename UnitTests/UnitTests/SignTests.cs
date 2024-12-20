@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 using Dorssel.Security.Cryptography;
+using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 
 namespace UnitTests;
 
@@ -59,7 +60,7 @@ sealed class SignTests
     [TestMethod]
     public void Sign_Destination_TooShort()
     {
-        // oversized
+        // undersized
         var signature = new byte[1024];
 
         Assert.ThrowsException<ArgumentException>(() =>
@@ -67,4 +68,47 @@ sealed class SignTests
             _ = Xmss.Sign([42], signature);
         });
     }
+
+    [TestMethod]
+    public unsafe void SignLarge()
+    {
+        byte message = 42;
+        _ = Xmss.Sign(&message, 1);
+    }
+
+    [TestMethod]
+    public unsafe void SignLarge_Destination()
+    {
+        // oversized
+        var signature = new byte[4096];
+
+        byte message = 42;
+        var bytesWritten = Xmss.Sign(&message, 1, signature);
+
+        Assert.IsTrue(bytesWritten > 0);
+        Assert.IsTrue(bytesWritten < signature.Length);
+    }
+
+    [TestMethod]
+    public unsafe void SignLarge_Destination_TooShort()
+    {
+        // undersized
+        var signature = new byte[1024];
+
+        Assert.ThrowsException<ArgumentException>(() =>
+        {
+            byte message = 42;
+            _ = Xmss.Sign(&message, 1, signature);
+        });
+    }
+
+    [TestMethod]
+    public unsafe void SignLarge_Null()
+    {
+        Assert.ThrowsException<ArgumentNullException>(() =>
+        {
+            _ = Xmss.Sign(null, 1);
+        });
+    }
+
 }
