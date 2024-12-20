@@ -13,6 +13,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Dorssel.Security.Cryptography.Internal;
 using Dorssel.Security.Cryptography.InteropServices;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Dorssel.Security.Cryptography;
 
@@ -22,6 +23,7 @@ namespace Dorssel.Security.Cryptography;
 public sealed class Xmss
     : AsymmetricAlgorithm
 {
+    #region Construction
     /// <summary>
     /// TODO
     /// </summary>
@@ -43,6 +45,24 @@ public sealed class Xmss
     /// <summary>
     /// TODO
     /// </summary>
+    /// <param name="algorithm">TODO</param>
+    /// <returns>TODO</returns>
+    [UnsupportedOSPlatform("browser")]
+    [Obsolete("Cryptographic factory methods accepting an algorithm name are obsolete. Use the parameterless Create factory method on the algorithm type instead.")]
+    [RequiresUnreferencedCode("The default algorithm implementations might be removed, use strong type references like 'Xmss.Create()' instead.")]
+    public static new Xmss? Create(string algorithm)
+    {
+        ArgumentNullException.ThrowIfNull(algorithm);
+
+        RegisterWithCryptoConfig();
+        return CryptoConfig.CreateFromName(algorithm) as Xmss;
+    }
+    #endregion
+
+    #region Version
+    /// <summary>
+    /// TODO
+    /// </summary>
     public static Version NativeHeadersVersion => new(Defines.XMSS_LIBRARY_VERSION_MAJOR, Defines.XMSS_LIBRARY_VERSION_MINOR,
                 Defines.XMSS_LIBRARY_VERSION_PATCH);
 
@@ -58,23 +78,9 @@ public sealed class Xmss
                 Defines.XMSS_LIBRARY_GET_VERSION_MINOR(nativeVersion), Defines.XMSS_LIBRARY_GET_VERSION_PATCH(nativeVersion));
         }
     }
+    #endregion
 
-    /// <summary>
-    /// TODO
-    /// </summary>
-    /// <param name="algorithm">TODO</param>
-    /// <returns>TODO</returns>
-    [UnsupportedOSPlatform("browser")]
-    [Obsolete("Cryptographic factory methods accepting an algorithm name are obsolete. Use the parameterless Create factory method on the algorithm type instead.")]
-    [RequiresUnreferencedCode("The default algorithm implementations might be removed, use strong type references like 'Xmss.Create()' instead.")]
-    public static new Xmss? Create(string algorithm)
-    {
-        ArgumentNullException.ThrowIfNull(algorithm);
-
-        RegisterWithCryptoConfig();
-        return CryptoConfig.CreateFromName(algorithm) as Xmss;
-    }
-
+    #region CryptoConfig
     static readonly object RegistrationLock = new();
     static bool TriedRegisterOnce;
 
@@ -107,28 +113,13 @@ public sealed class Xmss
             }
         }
     }
+    #endregion
 
+    #region State
     /// <summary>
     /// TODO
     /// </summary>
     public XmssParameterSet ParameterSet { get; private set; } = XmssParameterSet.None;
-
-    /// <summary>
-    /// TODO
-    /// </summary>
-    public override string? SignatureAlgorithm => ParameterSet switch
-    {
-        // See https://www.iana.org/assignments/xml-security-uris/xml-security-uris.xhtml
-        // and https://www.rfc-editor.org/rfc/rfc9231.html#name-xmss-and-xmssmt
-
-        XmssParameterSet.XMSS_SHA2_10_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-sha2-10-256",
-        XmssParameterSet.XMSS_SHA2_16_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-sha2-16-256",
-        XmssParameterSet.XMSS_SHA2_20_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-sha2-20-256",
-        XmssParameterSet.XMSS_SHAKE256_10_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-shake256-10-256",
-        XmssParameterSet.XMSS_SHAKE256_16_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-shake256-16-256",
-        XmssParameterSet.XMSS_SHAKE256_20_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-shake256-20-256",
-        XmssParameterSet.None or _ => throw new InvalidOperationException(),
-    };
 
     bool IsDisposed;
     XmssPrivateKey? PrivateKey;
@@ -161,6 +152,23 @@ public sealed class Xmss
     /// </summary>
     public bool HasPublicKey { get; private set; }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    public override string? SignatureAlgorithm => ParameterSet switch
+    {
+        // See https://www.iana.org/assignments/xml-security-uris/xml-security-uris.xhtml
+        // and https://www.rfc-editor.org/rfc/rfc9231.html#name-xmss-and-xmssmt
+
+        XmssParameterSet.XMSS_SHA2_10_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-sha2-10-256",
+        XmssParameterSet.XMSS_SHA2_16_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-sha2-16-256",
+        XmssParameterSet.XMSS_SHA2_20_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-sha2-20-256",
+        XmssParameterSet.XMSS_SHAKE256_10_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-shake256-10-256",
+        XmssParameterSet.XMSS_SHAKE256_16_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-shake256-16-256",
+        XmssParameterSet.XMSS_SHAKE256_20_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-shake256-20-256",
+        XmssParameterSet.None or _ => throw new InvalidOperationException(),
+    };
+
     [StackTraceHidden]
     [MemberNotNull(nameof(PrivateKey))]
     void ThrowIfNoPrivateKey()
@@ -179,16 +187,9 @@ public sealed class Xmss
             throw new InvalidOperationException("No public key.");
         }
     }
+    #endregion
 
-    [StackTraceHidden]
-    static void ThrowIfUnsupportedAlgorithmOid(Oid algorithmOid)
-    {
-        if (algorithmOid.Value != IdAlgXmssHashsig.Value)
-        {
-            throw new CryptographicException($"Invalid public key algorithm OID ({algorithmOid.Value}), expected {IdAlgXmssHashsig.Value}.");
-        }
-    }
-
+    #region Private Key
     /// <summary>
     /// TODO
     /// </summary>
@@ -315,223 +316,9 @@ public sealed class Xmss
             throw new XmssException(XmssError.XMSS_ERR_INVALID_BLOB);
         }
     }
+    #endregion
 
-    /// <summary>
-    /// TODO
-    /// </summary>
-    /// <param name="data">TODO</param>
-    /// <returns>TODO</returns>
-    public byte[] Sign(ReadOnlySpan<byte> data)
-    {
-        var signature = new byte[Defines.XMSS_SIGNATURE_SIZE(ParameterSet.AsOID())];
-        var bytesWritten = Sign(data, signature);
-        XmssException.ThrowFaultDetectedIf(bytesWritten != signature.Length);
-        return signature;
-    }
-
-    /// <summary>
-    /// TODO
-    /// </summary>
-    /// <param name="data">TODO</param>
-    /// <param name="dataLength">TODO</param>
-    /// <returns>TODO</returns>
-    public unsafe byte[] Sign(void* data, nuint dataLength)
-    {
-        var signature = new byte[Defines.XMSS_SIGNATURE_SIZE(ParameterSet.AsOID())];
-        var bytesWritten = Sign(data, dataLength, signature);
-        XmssException.ThrowFaultDetectedIf(bytesWritten != signature.Length);
-        return signature;
-    }
-
-    /// <summary>
-    /// TODO
-    /// </summary>
-    /// <param name="data">TODO</param>
-    /// <param name="destination">TODO</param>
-    /// <returns>TODO</returns>
-    /// <exception cref="ArgumentException">TODO</exception>
-    public int Sign(ReadOnlySpan<byte> data, Span<byte> destination)
-    {
-        return TrySign(data, destination, out var bytesWritten) ? bytesWritten
-            : throw new ArgumentException("Destination is too short.");
-    }
-
-    /// <summary>
-    /// TODO
-    /// </summary>
-    /// <param name="data">TODO</param>
-    /// <param name="dataLength">TODO</param>
-    /// <param name="destination">TODO</param>
-    /// <returns>TODO</returns>
-    /// <exception cref="ArgumentException">TODO</exception>
-    public unsafe int Sign(void* data, nuint dataLength, Span<byte> destination)
-    {
-        return TrySign(data, dataLength, destination, out var bytesWritten) ? bytesWritten
-            : throw new ArgumentException("Destination is too short.");
-    }
-
-    /// <summary>
-    /// TODO
-    /// </summary>
-    /// <param name="data">TODO</param>
-    /// <param name="destination">TODO</param>
-    /// <param name="bytesWritten">TODO</param>
-    /// <returns>TODO</returns>
-    public bool TrySign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten)
-    {
-        unsafe
-        {
-            fixed (byte* dataPtr = data)
-            {
-                return TrySign(dataPtr, (nuint)data.Length, destination, out bytesWritten);
-            }
-        }
-    }
-
-    /// <summary>
-    /// TODO
-    /// </summary>
-    /// <param name="data">TODO</param>
-    /// <param name="dataLength">TODO</param>
-    /// <param name="destination">TODO</param>
-    /// <param name="bytesWritten">TODO</param>
-    /// <returns>TODO</returns>
-    public unsafe bool TrySign(void* data, nuint dataLength, Span<byte> destination, out int bytesWritten)
-    {
-        if (data is null)
-        {
-            throw new ArgumentNullException(nameof(data));
-        }
-        ObjectDisposedException.ThrowIf(IsDisposed, this);
-        ThrowIfNoPrivateKey();
-
-        if (destination.Length < Defines.XMSS_SIGNATURE_SIZE(ParameterSet.AsOID()))
-        {
-            bytesWritten = 0;
-            return false;
-        }
-
-        XmssError result;
-
-        unsafe
-        {
-            using var privateKeyStatefulBlob = new CriticalXmssPrivateKeyStatefulBlobHandle();
-
-            // request signature
-            result = UnsafeNativeMethods.xmss_request_future_signatures(ref privateKeyStatefulBlob.AsPointerRef(), ref PrivateKey.KeyContext.AsRef(), 1);
-            XmssException.ThrowIfNotOkay(result);
-
-            // store state
-            PrivateKey.StateManager.StoreStatefulPart(PrivateKey.StatefulBlob.Data, privateKeyStatefulBlob.Data);
-            PrivateKey.StatefulBlob.SwapWith(privateKeyStatefulBlob);
-
-            // sign
-            using var signatureBlob = new CriticalXmssSignatureBlobHandle();
-            result = UnsafeNativeMethods.xmss_sign_message(ref signatureBlob.AsPointerRef(), ref PrivateKey.KeyContext.AsRef(),
-                new() { data = (byte*)data, data_size = dataLength });
-            XmssException.ThrowIfNotOkay(result);
-            XmssException.ThrowFaultDetectedIf(signatureBlob.AsRef().data_size > (nuint)destination.Length);
-            var signature = new ReadOnlySpan<byte>(signatureBlob.AsRef().data, (int)signatureBlob.AsRef().data_size);
-            signature.CopyTo(destination);
-            bytesWritten = signature.Length;
-            return true;
-        }
-    }
-
-    /// <summary>
-    /// TODO
-    /// </summary>
-    /// <param name="data">TODO</param>
-    /// <param name="signature">TODO</param>
-    /// <returns>TODO</returns>
-    public bool Verify(Stream data, ReadOnlySpan<byte> signature)
-    {
-        ArgumentNullException.ThrowIfNull(data);
-        ObjectDisposedException.ThrowIf(IsDisposed, this);
-        ThrowIfNoPublicKey();
-
-        // 1088 is the Least Common Multiple of the block sizes for SHA-256 (64) and SHAKE256/256 (136).
-        // The result (16320) is slightly less than 16 kiB (16384).
-        var possiblyOversizedBuffer = ArrayPool<byte>.Shared.Rent(15 * 1088);
-        try
-        {
-            unsafe
-            {
-                var buffer = possiblyOversizedBuffer.AsSpan(0, 15 * 1088);
-                fixed (byte* signaturePtr = signature)
-                fixed (byte* bufferPtr = buffer)
-                fixed (XmssPublicKey* publicKeyPtr = &PublicKey)
-                {
-                    var result = UnsafeNativeMethods.xmss_verification_init(out var context, PublicKey, *(XmssSignature*)signaturePtr, (nuint)signature.Length);
-                    if (result == XmssError.XMSS_ERR_INVALID_SIGNATURE)
-                    {
-                        return false;
-                    }
-                    XmssException.ThrowIfNotOkay(result);
-
-                    int bytesRead;
-                    while ((bytesRead = data.Read(new(bufferPtr, buffer.Length))) != 0)
-                    {
-                        result = UnsafeNativeMethods.xmss_verification_update(ref context, bufferPtr, (nuint)bytesRead, out var bufferPtrVerify);
-                        XmssException.ThrowIfNotOkay(result);
-                        XmssException.ThrowFaultDetectedIf(bufferPtrVerify != bufferPtr);
-                    }
-
-                    result = UnsafeNativeMethods.xmss_verification_check(ref context, PublicKey);
-                    if (result == XmssError.XMSS_ERR_INVALID_SIGNATURE)
-                    {
-                        return false;
-                    }
-                    XmssException.ThrowIfNotOkay(result);
-                    return true;
-                }
-            }
-        }
-        finally
-        {
-            ArrayPool<byte>.Shared.Return(possiblyOversizedBuffer);
-        }
-    }
-
-    /// <summary>
-    /// TODO
-    /// </summary>
-    /// <param name="data">TODO</param>
-    /// <param name="signature">TODO</param>
-    /// <returns>TODO</returns>
-    public bool Verify(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
-    {
-        ObjectDisposedException.ThrowIf(IsDisposed, this);
-        ThrowIfNoPublicKey();
-
-        unsafe
-        {
-            fixed (byte* signaturePtr = signature)
-            fixed (byte* dataPtr = data)
-            fixed (XmssPublicKey* publicKeyPtr = &PublicKey)
-            {
-                var result = UnsafeNativeMethods.xmss_verification_init(out var context, PublicKey, *(XmssSignature*)signaturePtr, (nuint)signature.Length);
-                if (result == XmssError.XMSS_ERR_INVALID_SIGNATURE)
-                {
-                    return false;
-                }
-                XmssException.ThrowIfNotOkay(result);
-
-                result = UnsafeNativeMethods.xmss_verification_update(ref context, dataPtr, (nuint)data.Length, out var dataPtrVerify);
-                XmssException.ThrowIfNotOkay(result);
-                XmssException.ThrowFaultDetectedIf(dataPtrVerify != dataPtr);
-
-                result = UnsafeNativeMethods.xmss_verification_check(ref context, PublicKey);
-                if (result == XmssError.XMSS_ERR_INVALID_SIGNATURE)
-                {
-                    return false;
-                }
-                XmssException.ThrowIfNotOkay(result);
-                return true;
-            }
-        }
-    }
-
+    #region Public Key
     /// <summary>
     /// TODO
     /// </summary>
@@ -646,6 +433,262 @@ public sealed class Xmss
 
         reportPercentage?.Invoke(100.0);
     }
+    #endregion Public Key
+
+    #region Sign
+    /// <summary>
+    /// TODO
+    /// </summary>
+    public int SignaturesRemaining
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(IsDisposed, this);
+            ThrowIfNoPrivateKey();
+
+            var result = UnsafeNativeMethods.xmss_get_signature_count(out _, out var remainingCount, PrivateKey.KeyContext.AsRef());
+            XmssException.ThrowIfNotOkay(result);
+
+            return checked((int)remainingCount);
+        }
+    }
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="count">TODO</param>
+    public void RequestFutureSignatures(int count)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(count);
+
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+        ThrowIfNoPrivateKey();
+
+        using var privateKeyStatefulBlob = new CriticalXmssPrivateKeyStatefulBlobHandle();
+        unsafe
+        {
+            var result = UnsafeNativeMethods.xmss_request_future_signatures(ref privateKeyStatefulBlob.AsPointerRef(),
+                ref PrivateKey.KeyContext.AsRef(), (uint)count);
+            XmssException.ThrowIfNotOkay(result);
+        }
+
+        // store state
+        PrivateKey.StateManager.StoreStatefulPart(PrivateKey.StatefulBlob.Data, privateKeyStatefulBlob.Data);
+        PrivateKey.StatefulBlob.SwapWith(privateKeyStatefulBlob);
+    }
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="data">TODO</param>
+    /// <returns>TODO</returns>
+    public byte[] Sign(ReadOnlySpan<byte> data)
+    {
+        var signature = new byte[Defines.XMSS_SIGNATURE_SIZE(ParameterSet.AsOID())];
+        var bytesWritten = Sign(data, signature);
+        XmssException.ThrowFaultDetectedIf(bytesWritten != signature.Length);
+        return signature;
+    }
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="data">TODO</param>
+    /// <param name="dataLength">TODO</param>
+    /// <returns>TODO</returns>
+    public unsafe byte[] Sign(void* data, nuint dataLength)
+    {
+        var signature = new byte[Defines.XMSS_SIGNATURE_SIZE(ParameterSet.AsOID())];
+        var bytesWritten = Sign(data, dataLength, signature);
+        XmssException.ThrowFaultDetectedIf(bytesWritten != signature.Length);
+        return signature;
+    }
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="data">TODO</param>
+    /// <param name="destination">TODO</param>
+    /// <returns>TODO</returns>
+    /// <exception cref="ArgumentException">TODO</exception>
+    public int Sign(ReadOnlySpan<byte> data, Span<byte> destination)
+    {
+        return TrySign(data, destination, out var bytesWritten) ? bytesWritten
+            : throw new ArgumentException("Destination is too short.");
+    }
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="data">TODO</param>
+    /// <param name="dataLength">TODO</param>
+    /// <param name="destination">TODO</param>
+    /// <returns>TODO</returns>
+    /// <exception cref="ArgumentException">TODO</exception>
+    public unsafe int Sign(void* data, nuint dataLength, Span<byte> destination)
+    {
+        return TrySign(data, dataLength, destination, out var bytesWritten) ? bytesWritten
+            : throw new ArgumentException("Destination is too short.");
+    }
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="data">TODO</param>
+    /// <param name="destination">TODO</param>
+    /// <param name="bytesWritten">TODO</param>
+    /// <returns>TODO</returns>
+    public bool TrySign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten)
+    {
+        unsafe
+        {
+            fixed (byte* dataPtr = data)
+            {
+                return TrySign(dataPtr, (nuint)data.Length, destination, out bytesWritten);
+            }
+        }
+    }
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="data">TODO</param>
+    /// <param name="dataLength">TODO</param>
+    /// <param name="destination">TODO</param>
+    /// <param name="bytesWritten">TODO</param>
+    /// <returns>TODO</returns>
+    public unsafe bool TrySign(void* data, nuint dataLength, Span<byte> destination, out int bytesWritten)
+    {
+        if (data is null)
+        {
+            throw new ArgumentNullException(nameof(data));
+        }
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+        ThrowIfNoPrivateKey();
+
+        if (destination.Length < Defines.XMSS_SIGNATURE_SIZE(ParameterSet.AsOID()))
+        {
+            bytesWritten = 0;
+            return false;
+        }
+
+        XmssError result;
+
+        using var signatureBlob = new CriticalXmssSignatureBlobHandle();
+        // First attempt: use any previously requested signature.
+        result = UnsafeNativeMethods.xmss_sign_message(ref signatureBlob.AsPointerRef(), ref PrivateKey.KeyContext.AsRef(),
+            new() { data = (byte*)data, data_size = dataLength });
+        if (result == XmssError.XMSS_ERR_TOO_FEW_SIGNATURES_AVAILABLE)
+        {
+            // Seconds attempt: request a single signature.
+            RequestFutureSignatures(1);
+            result = UnsafeNativeMethods.xmss_sign_message(ref signatureBlob.AsPointerRef(), ref PrivateKey.KeyContext.AsRef(),
+                new() { data = (byte*)data, data_size = dataLength });
+        }
+        XmssException.ThrowIfNotOkay(result);
+        XmssException.ThrowFaultDetectedIf(signatureBlob.AsRef().data_size > (nuint)destination.Length);
+        var signature = new ReadOnlySpan<byte>(signatureBlob.AsRef().data, (int)signatureBlob.AsRef().data_size);
+        signature.CopyTo(destination);
+        bytesWritten = signature.Length;
+        return true;
+    }
+#endregion
+
+    #region Verify
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="data">TODO</param>
+    /// <param name="signature">TODO</param>
+    /// <returns>TODO</returns>
+    public bool Verify(Stream data, ReadOnlySpan<byte> signature)
+    {
+        ArgumentNullException.ThrowIfNull(data);
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+        ThrowIfNoPublicKey();
+
+        // 1088 is the Least Common Multiple of the block sizes for SHA-256 (64) and SHAKE256/256 (136).
+        // The result (16320) is slightly less than 16 kiB (16384).
+        var possiblyOversizedBuffer = ArrayPool<byte>.Shared.Rent(15 * 1088);
+        try
+        {
+            unsafe
+            {
+                var buffer = possiblyOversizedBuffer.AsSpan(0, 15 * 1088);
+                fixed (byte* signaturePtr = signature)
+                fixed (byte* bufferPtr = buffer)
+                fixed (XmssPublicKey* publicKeyPtr = &PublicKey)
+                {
+                    var result = UnsafeNativeMethods.xmss_verification_init(out var context, PublicKey, *(XmssSignature*)signaturePtr, (nuint)signature.Length);
+                    if (result == XmssError.XMSS_ERR_INVALID_SIGNATURE)
+                    {
+                        return false;
+                    }
+                    XmssException.ThrowIfNotOkay(result);
+
+                    int bytesRead;
+                    while ((bytesRead = data.Read(new(bufferPtr, buffer.Length))) != 0)
+                    {
+                        result = UnsafeNativeMethods.xmss_verification_update(ref context, bufferPtr, (nuint)bytesRead, out var bufferPtrVerify);
+                        XmssException.ThrowIfNotOkay(result);
+                        XmssException.ThrowFaultDetectedIf(bufferPtrVerify != bufferPtr);
+                    }
+
+                    result = UnsafeNativeMethods.xmss_verification_check(ref context, PublicKey);
+                    if (result == XmssError.XMSS_ERR_INVALID_SIGNATURE)
+                    {
+                        return false;
+                    }
+                    XmssException.ThrowIfNotOkay(result);
+                    return true;
+                }
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(possiblyOversizedBuffer);
+        }
+    }
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="data">TODO</param>
+    /// <param name="signature">TODO</param>
+    /// <returns>TODO</returns>
+    public bool Verify(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
+    {
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+        ThrowIfNoPublicKey();
+
+        unsafe
+        {
+            fixed (byte* signaturePtr = signature)
+            fixed (byte* dataPtr = data)
+            fixed (XmssPublicKey* publicKeyPtr = &PublicKey)
+            {
+                var result = UnsafeNativeMethods.xmss_verification_init(out var context, PublicKey, *(XmssSignature*)signaturePtr, (nuint)signature.Length);
+                if (result == XmssError.XMSS_ERR_INVALID_SIGNATURE)
+                {
+                    return false;
+                }
+                XmssException.ThrowIfNotOkay(result);
+
+                result = UnsafeNativeMethods.xmss_verification_update(ref context, dataPtr, (nuint)data.Length, out var dataPtrVerify);
+                XmssException.ThrowIfNotOkay(result);
+                XmssException.ThrowFaultDetectedIf(dataPtrVerify != dataPtr);
+
+                result = UnsafeNativeMethods.xmss_verification_check(ref context, PublicKey);
+                if (result == XmssError.XMSS_ERR_INVALID_SIGNATURE)
+                {
+                    return false;
+                }
+                XmssException.ThrowIfNotOkay(result);
+                return true;
+            }
+        }
+    }
+    #endregion
 
     const int AsnPublicKeyLength = 70;
     const int SubjectPublicKeyInfoLength = 85;
@@ -653,6 +696,7 @@ public sealed class Xmss
     const string PublicKeyLabel = "PUBLIC KEY";
     const string CertificateLabel = "CERTIFICATE";
 
+    #region Export
     /// <summary>
     /// TODO
     /// </summary>
@@ -797,6 +841,17 @@ public sealed class Xmss
             }
         }
         return asnWriter.TryEncode(destination, out bytesWritten);
+    }
+    #endregion
+
+    #region Import
+    [StackTraceHidden]
+    static void ThrowIfUnsupportedAlgorithmOid(Oid algorithmOid)
+    {
+        if (algorithmOid.Value != IdAlgXmssHashsig.Value)
+        {
+            throw new CryptographicException($"Invalid public key algorithm OID ({algorithmOid.Value}), expected {IdAlgXmssHashsig.Value}.");
+        }
     }
 
     static void DecodeXmssPublicKey(ReadOnlySpan<byte> source, out XmssPublicKey publicKey,
@@ -1012,4 +1067,5 @@ public sealed class Xmss
 
         ImportCertificatePublicKey(certificate.PublicKey);
     }
+    #endregion
 }
