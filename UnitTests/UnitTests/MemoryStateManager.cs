@@ -21,8 +21,25 @@ sealed class MemoryStateManager()
         return State[part];
     }
 
+    readonly Queue<bool> PlannedSuccess = new();
+
+    public void Setup(bool success = true)
+    {
+        PlannedSuccess.Enqueue(success);
+    }
+
+    void ThrowIfPlanned()
+    {
+        if (PlannedSuccess.TryDequeue(out var success) && !success)
+        {
+            throw new InvalidOperationException("Planned failure.");
+        }
+    }
+
     public void Store(XmssKeyPart part, ReadOnlySpan<byte> data)
     {
+        ThrowIfPlanned();
+
         if (State[part] is not null)
         {
             throw new InvalidOperationException("Part already exists.");
@@ -32,6 +49,8 @@ sealed class MemoryStateManager()
 
     public void StoreStatefulPart(ReadOnlySpan<byte> expected, ReadOnlySpan<byte> data)
     {
+        ThrowIfPlanned();
+
         if (State[XmssKeyPart.PrivateStateful] is not byte[] oldData)
         {
             throw new InvalidOperationException("Part does not exists.");
@@ -45,6 +64,8 @@ sealed class MemoryStateManager()
 
     public void Load(XmssKeyPart part, Span<byte> destination)
     {
+        ThrowIfPlanned();
+
         if (State[part] is not byte[] data)
         {
             throw new ArgumentException("Part does not exist.", nameof(part));
@@ -58,11 +79,15 @@ sealed class MemoryStateManager()
 
     public void DeletePublicPart()
     {
+        ThrowIfPlanned();
+
         State[XmssKeyPart.Public] = null;
     }
 
     public void DeleteAll()
     {
+        ThrowIfPlanned();
+
         State[XmssKeyPart.PrivateStateless] = null;
         State[XmssKeyPart.PrivateStateful] = null;
         State[XmssKeyPart.Public] = null;

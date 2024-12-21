@@ -140,4 +140,21 @@ sealed class SignTests
 
         Assert.AreEqual(oldCount - 3, newCount);
     }
+
+    [TestMethod]
+    public void RequestFutureSignatures_StoreStatefulFails()
+    {
+        var stateManager = new MemoryStateManager();
+        using var xmss = new Xmss();
+        xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
+        xmss.GeneratePublicKeyAsync().Wait();
+
+        stateManager.Setup(false);  // Store stateful
+
+        Assert.ThrowsException<XmssStateManagerException>(() =>
+        {
+            xmss.RequestFutureSignatures(1);
+        });
+        Assert.IsFalse(xmss.HasPrivateKey);
+    }
 }
