@@ -15,6 +15,9 @@ on:
   workflow_dispatch:
   workflow_call:
 
+env:
+  RUNTIME: linux-x64
+
 permissions:
   contents: read
   actions: write
@@ -28,6 +31,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Calculate cache key
+        id: cache-key
+        run: |
+          echo "value=runtime-${{ env.RUNTIME }}-${{ hashFiles('.gitmodules', 'libc/libc.c', '.github/workflows/runtime-linux-x64.yml') }}" \
+            >> "$GITHUB_OUTPUT"
 
       - name: Configure
         run: >
@@ -50,8 +59,8 @@ jobs:
 
       - name: Copy artifact
         run: |
-          mkdir -p Xmss/runtimes/linux-x64/native
-          cp build/src/libxmss.so Xmss/runtimes/linux-x64/native/xmss.so
+          mkdir -p "Xmss/runtimes/${{ env.RUNTIME }}/native"
+          cp build/src/libxmss.so "Xmss/runtimes/${{ env.RUNTIME }}/native/xmss.so"
 
       - name: Check existing cache
         id: cache-check
@@ -59,7 +68,7 @@ jobs:
         with:
           path: |
             Xmss/runtimes/**
-          key: runtime-${{ inputs.runtime }}-${{ hashFiles('.gitmodules', 'libc/libc.c', '.github/workflows/runtime-linux-x64.yml') }}
+          key: ${{ steps.cache-key.outputs.value }}
           enableCrossOsArchive: true
           lookup-only: true
 
@@ -67,7 +76,7 @@ jobs:
         if: ${{ steps.cache-check.outputs.cache-hit }}
         run: |
           gh extension install actions/gh-actions-cache
-          gh actions-cache delete "runtime-${{ inputs.runtime }}-${{ hashFiles('.gitmodules', 'libc/libc.c', '.github/workflows/runtime-linux-x64.yml') }}" --confirm
+          gh actions-cache delete "${{ steps.cache-key.outputs.value }}" --confirm
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -76,5 +85,5 @@ jobs:
         with:
           path: |
             Xmss/runtimes/**
-          key: runtime-linux-x64-${{ hashFiles('.gitmodules', 'libc/libc.c', '.github/workflows/runtime-linux-x64.yml') }}
+          key: ${{ steps.cache-key.outputs.value }}
           enableCrossOsArchive: true

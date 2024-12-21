@@ -26,6 +26,7 @@
 *.targets  text
 
 libc/*.c   text eol=lf
+*.cfg      text
 
 *.razor   text
 *.html    text

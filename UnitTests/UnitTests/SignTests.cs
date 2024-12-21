@@ -124,10 +124,20 @@ sealed class SignTests
     public void RequestFutureSignatures()
     {
         var oldCount = Xmss.SignaturesRemaining;
-        Xmss.RequestFutureSignatures(10);
+        Xmss.RequestFutureSignatures(2);
         _ = Xmss.Sign([42]);
         var newCount = Xmss.SignaturesRemaining;
 
-        Assert.AreEqual(oldCount - 10, newCount);
+        Assert.AreEqual(oldCount - 2, newCount);
+
+        _ = Xmss.Sign([42]);
+        newCount = Xmss.SignaturesRemaining;
+
+        Assert.AreEqual(oldCount - 2, newCount);
+
+        _ = Xmss.Sign([42]);
+        newCount = Xmss.SignaturesRemaining;
+
+        Assert.AreEqual(oldCount - 3, newCount);
     }
 }

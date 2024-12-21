@@ -48,10 +48,6 @@ jobs:
         run: |
           exit 1
 
-      - name: Copy build workflow
-        run: |
-          cp ${{ env.runtime-workflow }} .github/workflows/build-runtime.yml
-
       - name: Check existing cache
         id: cache
         uses: actions/cache/restore@v4
