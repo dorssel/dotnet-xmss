@@ -16,7 +16,7 @@ sealed class XmssCertificateExtensionsTests
     [TestMethod]
     public void GetXmssPublicKey()
     {
-        using var xmss = IetfExampleCertificate.Certificate2.GetXmssPublicKey();
+        using var xmss = ExampleCertificate.Certificate2.GetXmssPublicKey();
 
         Assert.IsNotNull(xmss);
         Assert.IsTrue(xmss.HasPublicKey);

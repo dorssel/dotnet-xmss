@@ -34,13 +34,13 @@ sealed unsafe class ErrorStringMarshallerTests
     }
 
     [TestMethod]
-    public void FreeNullIsNoop()
+    public void FreeNullIsNoOp()
     {
         ErrorStringMarshaller.Free(null);
     }
 
     [TestMethod]
-    public void FreeIsNoop()
+    public void FreeIsNoOp()
     {
         byte b;
         ErrorStringMarshaller.Free(&b);

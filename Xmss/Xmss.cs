@@ -13,7 +13,6 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Dorssel.Security.Cryptography.Internal;
 using Dorssel.Security.Cryptography.InteropServices;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Dorssel.Security.Cryptography;
 
@@ -728,7 +727,7 @@ public sealed class Xmss
     [Obsolete("XMSS public keys as standalone ASN.1 PEM are not standardized; consider using ExportSubjectPublicKeyInfoPem() instead.")]
     public string ExportAsnPublicKeyPem()
     {
-        // Line endings may differ on different platforms; length will be somewhere beteen 2x and 3x the binary form.
+        // Line endings may differ on different platforms; length will be somewhere between 2x and 3x the binary form.
         var result = new char[3 * AsnPublicKeyLength];
         XmssException.ThrowFaultDetectedIf(!TryExportAsnPublicKeyPem(result, out var charsWritten));
         return new(result[..charsWritten]);

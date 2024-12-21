@@ -16,7 +16,7 @@ SPDX-License-Identifier: MIT
 
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-    <NoWarn>$(NoWarn),IDE0053,IDE0058</NoWarn>
+    <NoWarn>$(NoWarn),IDE0053,IDE0058,IDE0200</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

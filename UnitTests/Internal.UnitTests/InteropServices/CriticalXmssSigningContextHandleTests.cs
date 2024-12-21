@@ -24,7 +24,7 @@ sealed unsafe class CriticalXmssSigningContextHandleTests
     [TestMethod]
     public void AsRef_Free()
     {
-        using var sigingContext = new CriticalXmssSigningContextHandle();
-        sigingContext.AsPointerRef() = CreateSigningContextPointer();
+        using var signingContext = new CriticalXmssSigningContextHandle();
+        signingContext.AsPointerRef() = CreateSigningContextPointer();
     }
 }

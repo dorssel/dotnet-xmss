@@ -96,9 +96,9 @@ sealed class ImportTests
         Assert.IsFalse(xmss.HasPrivateKey);
         Assert.IsFalse(xmss.HasPublicKey);
 
-        xmss.ImportRfcPublicKey(IetfExampleCertificate.PublicKey.EncodedKeyValue.RawData, out var bytesRead);
+        xmss.ImportRfcPublicKey(ExampleCertificate.PublicKey.EncodedKeyValue.RawData, out var bytesRead);
 
-        Assert.AreEqual(IetfExampleCertificate.PublicKey.EncodedKeyValue.RawData.Length, bytesRead);
+        Assert.AreEqual(ExampleCertificate.PublicKey.EncodedKeyValue.RawData.Length, bytesRead);
         Assert.IsFalse(xmss.HasPrivateKey);
         Assert.IsTrue(xmss.HasPublicKey);
     }
@@ -119,7 +119,7 @@ sealed class ImportTests
     {
         using var xmss = new Xmss();
 
-        var wrong = new byte[IetfExampleCertificate.RfcPublicKey.Length];
+        var wrong = new byte[ExampleCertificate.RfcPublicKey.Length];
 
         Assert.ThrowsException<CryptographicException>(() =>
         {
@@ -132,7 +132,7 @@ sealed class ImportTests
     {
         using var xmss = new Xmss();
 
-        var tooShort = IetfExampleCertificate.RfcPublicKey[..^1];
+        var tooShort = ExampleCertificate.RfcPublicKey[..^1];
 
         Assert.ThrowsException<CryptographicException>(() =>
         {
@@ -149,9 +149,9 @@ sealed class ImportTests
         Assert.IsTrue(xmss.HasPrivateKey);
         Assert.IsFalse(xmss.HasPublicKey);
 
-        xmss.ImportRfcPublicKey(IetfExampleCertificate.PublicKey.EncodedKeyValue.RawData, out var bytesRead);
+        xmss.ImportRfcPublicKey(ExampleCertificate.PublicKey.EncodedKeyValue.RawData, out var bytesRead);
 
-        Assert.AreEqual(IetfExampleCertificate.PublicKey.EncodedKeyValue.RawData.Length, bytesRead);
+        Assert.AreEqual(ExampleCertificate.PublicKey.EncodedKeyValue.RawData.Length, bytesRead);
         Assert.IsFalse(xmss.HasPrivateKey);
         Assert.IsTrue(xmss.HasPublicKey);
     }
@@ -162,7 +162,7 @@ sealed class ImportTests
         byte[] asn;
         {
             using var tmpXmss = new Xmss();
-            tmpXmss.ImportFromPem(IetfExampleCertificate.Pem);
+            tmpXmss.ImportFromPem(ExampleCertificate.Pem);
             asn = tmpXmss.ExportAsnPublicKey();
         }
 
@@ -192,11 +192,11 @@ sealed class ImportTests
     [TestMethod]
     public void ImportSubjectPublicKeyInfo()
     {
-        byte[] spki;
+        byte[] info;
         {
             using var tmpXmss = new Xmss();
-            tmpXmss.ImportFromPem(IetfExampleCertificate.Pem);
-            spki = tmpXmss.ExportSubjectPublicKeyInfo();
+            tmpXmss.ImportFromPem(ExampleCertificate.Pem);
+            info = tmpXmss.ExportSubjectPublicKeyInfo();
         }
 
         using var xmss = new Xmss();
@@ -204,9 +204,9 @@ sealed class ImportTests
         Assert.IsFalse(xmss.HasPrivateKey);
         Assert.IsFalse(xmss.HasPublicKey);
 
-        xmss.ImportSubjectPublicKeyInfo(spki, out var bytesRead);
+        xmss.ImportSubjectPublicKeyInfo(info, out var bytesRead);
 
-        Assert.AreEqual(spki.Length, bytesRead);
+        Assert.AreEqual(info.Length, bytesRead);
         Assert.IsFalse(xmss.HasPrivateKey);
         Assert.IsTrue(xmss.HasPublicKey);
     }
@@ -214,10 +214,10 @@ sealed class ImportTests
     [TestMethod]
     public void ImportSubjectPublicKeyInfo_WrongOid()
     {
-        byte[] spki;
+        byte[] info;
         {
             using var rsa = RSA.Create();
-            spki = rsa.ExportSubjectPublicKeyInfo();
+            info = rsa.ExportSubjectPublicKeyInfo();
         }
 
         using var xmss = new Xmss();
@@ -227,7 +227,7 @@ sealed class ImportTests
 
         Assert.ThrowsException<CryptographicException>(() =>
         {
-            xmss.ImportSubjectPublicKeyInfo(spki, out var bytesRead);
+            xmss.ImportSubjectPublicKeyInfo(info, out var bytesRead);
         });
     }
 
@@ -239,7 +239,7 @@ sealed class ImportTests
         Assert.IsFalse(xmss.HasPrivateKey);
         Assert.IsFalse(xmss.HasPublicKey);
 
-        xmss.ImportCertificatePublicKey(IetfExampleCertificate.Certificate);
+        xmss.ImportCertificatePublicKey(ExampleCertificate.Certificate);
 
         Assert.IsFalse(xmss.HasPrivateKey);
         Assert.IsTrue(xmss.HasPublicKey);
@@ -253,7 +253,7 @@ sealed class ImportTests
         Assert.IsFalse(xmss.HasPrivateKey);
         Assert.IsFalse(xmss.HasPublicKey);
 
-        xmss.ImportCertificatePublicKey(IetfExampleCertificate.Certificate2);
+        xmss.ImportCertificatePublicKey(ExampleCertificate.Certificate2);
 
         Assert.IsFalse(xmss.HasPrivateKey);
         Assert.IsTrue(xmss.HasPublicKey);
@@ -265,7 +265,7 @@ sealed class ImportTests
         string asnPem;
         {
             using var tmpXmss = new Xmss();
-            tmpXmss.ImportFromPem(IetfExampleCertificate.Pem);
+            tmpXmss.ImportFromPem(ExampleCertificate.Pem);
 #pragma warning disable CS0618 // Type or member is obsolete
             asnPem = tmpXmss.ExportAsnPublicKeyPem();
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -285,11 +285,11 @@ sealed class ImportTests
     [TestMethod]
     public void ImportFromPem_SubjectPublicKeyInfo()
     {
-        string spkiPem;
+        string infoPem;
         {
             using var tmpXmss = new Xmss();
-            tmpXmss.ImportFromPem(IetfExampleCertificate.Pem);
-            spkiPem = tmpXmss.ExportSubjectPublicKeyInfoPem();
+            tmpXmss.ImportFromPem(ExampleCertificate.Pem);
+            infoPem = tmpXmss.ExportSubjectPublicKeyInfoPem();
         }
 
         using var xmss = new Xmss();
@@ -297,7 +297,7 @@ sealed class ImportTests
         Assert.IsFalse(xmss.HasPrivateKey);
         Assert.IsFalse(xmss.HasPublicKey);
 
-        xmss.ImportFromPem(spkiPem);
+        xmss.ImportFromPem(infoPem);
 
         Assert.IsFalse(xmss.HasPrivateKey);
         Assert.IsTrue(xmss.HasPublicKey);
@@ -306,19 +306,19 @@ sealed class ImportTests
     [TestMethod]
     public void ImportFromPem_SubjectPublicKeyInfo_ExtraneousData()
     {
-        string spkiPemWithExtraneousData;
+        string infoPemWithExtraneousData;
         {
             using var tmpXmss = new Xmss();
-            tmpXmss.ImportFromPem(IetfExampleCertificate.Pem);
-            var spki = tmpXmss.ExportSubjectPublicKeyInfo();
-            spkiPemWithExtraneousData = PemEncoding.WriteString("PUBLIC KEY", [.. spki, 42]);
+            tmpXmss.ImportFromPem(ExampleCertificate.Pem);
+            var info = tmpXmss.ExportSubjectPublicKeyInfo();
+            infoPemWithExtraneousData = PemEncoding.WriteString("PUBLIC KEY", [.. info, 42]);
         }
 
         using var xmss = new Xmss();
 
         Assert.ThrowsException<CryptographicException>(() =>
         {
-            xmss.ImportFromPem(spkiPemWithExtraneousData);
+            xmss.ImportFromPem(infoPemWithExtraneousData);
         });
     }
 
@@ -330,7 +330,7 @@ sealed class ImportTests
         Assert.IsFalse(xmss.HasPrivateKey);
         Assert.IsFalse(xmss.HasPublicKey);
 
-        xmss.ImportFromPem(IetfExampleCertificate.Pem);
+        xmss.ImportFromPem(ExampleCertificate.Pem);
 
         Assert.IsFalse(xmss.HasPrivateKey);
         Assert.IsTrue(xmss.HasPublicKey);
@@ -361,13 +361,13 @@ sealed class ImportTests
     }
 
     [TestMethod]
-    public void ImportFromPem_AmbigousPem()
+    public void ImportFromPem_AmbiguousPem()
     {
         using var xmss = new Xmss();
 
         Assert.ThrowsException<ArgumentException>(() =>
         {
-            xmss.ImportFromPem(IetfExampleCertificate.Pem + Environment.NewLine + IetfExampleCertificate.Pem);
+            xmss.ImportFromPem(ExampleCertificate.Pem + Environment.NewLine + ExampleCertificate.Pem);
         });
     }
 
@@ -376,6 +376,6 @@ sealed class ImportTests
     {
         using var xmss = new Xmss();
 
-        xmss.ImportFromPem(PemEncoding.WriteString("UNSUPPORTED", [1, 2, 3]) + Environment.NewLine + IetfExampleCertificate.Pem);
+        xmss.ImportFromPem(PemEncoding.WriteString("UNSUPPORTED", [1, 2, 3]) + Environment.NewLine + ExampleCertificate.Pem);
     }
 }

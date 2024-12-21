@@ -1,0 +1,9 @@
+# SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
+#
+# SPDX-License-Identifier: MIT
+
+---
+# You can see all available properties here: https://github.com/bridgecrewio/checkov#configuration-using-a-config-file
+quiet: true
+skip-check:
+  - CKV_GHA_7
