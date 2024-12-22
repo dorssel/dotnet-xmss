@@ -51,6 +51,43 @@ sealed class GenerateTests
     }
 
     [TestMethod]
+    public void GeneratePrivateKey_StoreStatelessFails()
+    {
+        var stateManager = new MemoryStateManager();
+        using var xmss = new Xmss();
+
+        stateManager.Setup();       // Load stateful (verify not exists)
+        stateManager.Setup();       // Load stateless (verify not exists)
+        stateManager.Setup();       // DeleteAll
+        stateManager.Setup(false);  // Store stateless
+
+        Assert.ThrowsException<XmssStateManagerException>(() =>
+        {
+            xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
+        });
+        Assert.IsFalse(xmss.HasPrivateKey);
+    }
+
+    [TestMethod]
+    public void GeneratePrivateKey_StoreStatelessAndRollbackFail()
+    {
+        var stateManager = new MemoryStateManager();
+        using var xmss = new Xmss();
+
+        stateManager.Setup();       // Load stateful (verify not exists)
+        stateManager.Setup();       // Load stateless (verify not exists)
+        stateManager.Setup();       // DeleteAll
+        stateManager.Setup(false);  // Store stateless
+        stateManager.Setup(false);  // DeleteAll
+
+        Assert.ThrowsException<AggregateException>(() =>
+        {
+            xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
+        });
+        Assert.IsFalse(xmss.HasPrivateKey);
+    }
+
+    [TestMethod]
     public async Task GeneratePublicKeyAsync_AndImport()
     {
         var stateManager = new MemoryStateManager();
@@ -119,6 +156,48 @@ sealed class GenerateTests
             {
                 await xmss.GeneratePublicKeyAsync();
             });
+        }
+    }
+
+    [TestMethod]
+    public async Task GeneratePublicKeyAsync_DeletePublicFails()
+    {
+        var stateManager = new MemoryStateManager();
+
+        // generate
+        {
+            using var xmss = new Xmss();
+
+            Assert.IsFalse(xmss.HasPrivateKey);
+            Assert.IsFalse(xmss.HasPublicKey);
+
+            xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, true);
+
+            Assert.IsTrue(xmss.HasPrivateKey);
+            Assert.IsFalse(xmss.HasPublicKey);
+
+            stateManager.Setup(false);  // DeletePublicPart
+
+            await Assert.ThrowsExceptionAsync<XmssStateManagerException>(async () =>
+            {
+                await xmss.GeneratePublicKeyAsync();
+            });
+
+            Assert.IsTrue(xmss.HasPrivateKey);
+            Assert.IsTrue(xmss.HasPublicKey);
+        }
+
+        // import
+        {
+            using var xmss = new Xmss();
+
+            Assert.IsFalse(xmss.HasPrivateKey);
+            Assert.IsFalse(xmss.HasPublicKey);
+
+            xmss.ImportPrivateKey(stateManager);
+
+            Assert.IsTrue(xmss.HasPrivateKey);
+            Assert.IsFalse(xmss.HasPublicKey);
         }
     }
 }

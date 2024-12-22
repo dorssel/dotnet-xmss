@@ -5,5 +5,5 @@ marshaller
 param
 realloc
 stateful
-XMSS
+xmss
 zeroize

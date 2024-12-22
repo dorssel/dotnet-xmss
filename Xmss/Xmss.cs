@@ -124,6 +124,14 @@ public sealed class Xmss
     XmssPrivateKey? PrivateKey;
     XmssPublicKey PublicKey;
 
+    void ResetState()
+    {
+        PrivateKey?.Dispose();
+        PrivateKey = null;
+        HasPublicKey = false;
+        ParameterSet = XmssParameterSet.None;
+    }
+
     /// <summary>
     /// TODO
     /// </summary>
@@ -132,9 +140,7 @@ public sealed class Xmss
     {
         if (!IsDisposed)
         {
-            PrivateKey?.Dispose();
-            PrivateKey = null;
-            HasPublicKey = false;
+            ResetState();
             IsDisposed = true;
         }
         base.Dispose(disposing);
@@ -189,6 +195,35 @@ public sealed class Xmss
     #endregion
 
     #region Private Key
+    static void VerifyNoPrivateState(StateManagerWrapper wrappedStateManager)
+    {
+        var partExists = false;
+
+        using var statelessBlob = CriticalXmssPrivateKeyStatelessBlobHandle.Alloc();
+        try
+        {
+            wrappedStateManager.Load(XmssKeyPart.PrivateStateless, statelessBlob.Data);
+            partExists = true;
+        }
+        catch (XmssStateManagerException) { }
+        if (partExists)
+        {
+            throw new XmssStateManagerException("Stateless private part already exists.");
+        }
+
+        using var statefulBlob = CriticalXmssPrivateKeyStatefulBlobHandle.Alloc();
+        try
+        {
+            wrappedStateManager.Load(XmssKeyPart.PrivateStateful, statefulBlob.Data);
+            partExists = true;
+        }
+        catch (XmssStateManagerException) { }
+        if (partExists)
+        {
+            throw new XmssStateManagerException("Stateful private part already exists.");
+        }
+    }
+
     /// <summary>
     /// TODO
     /// </summary>
@@ -201,10 +236,22 @@ public sealed class Xmss
 
         ObjectDisposedException.ThrowIf(IsDisposed, this);
 
+        var wrappedStateManager = new StateManagerWrapper(stateManager);
+
+        // Step 1: Verify that no (possibly valid) private parts exist for the new state.
+
+        VerifyNoPrivateState(wrappedStateManager);
+
+        // Step 2: Cleanup new state (which has no valid private parts anyway).
+
+        wrappedStateManager.DeleteAll();
+
         XmssError result;
 
         unsafe
         {
+            // Step 3: Create key.
+
             using var keyContext = new CriticalXmssKeyContextHandle();
             using var signingContext = new CriticalXmssSigningContextHandle();
             {
@@ -233,15 +280,26 @@ public sealed class Xmss
                 CryptographicOperations.ZeroMemory(allRandom);
             }
 
-            stateManager.Store(XmssKeyPart.PrivateStateless, privateKeyStatelessBlob.Data);
-            stateManager.Store(XmssKeyPart.PrivateStateful, privateKeyStatefulBlob.Data);
+            // Step 4: Store state (failure erases any partial storage, then throws).
 
-            PrivateKey?.Dispose();
+            try
+            {
+                wrappedStateManager.Store(XmssKeyPart.PrivateStateless, privateKeyStatelessBlob.Data);
+                wrappedStateManager.Store(XmssKeyPart.PrivateStateful, privateKeyStatefulBlob.Data);
+            }
+            catch (XmssStateManagerException ex)
+            {
+                wrappedStateManager.DeleteAllAfterFailure(ex);
+                throw;
+            }
+
+            // Step 5: Replace KeyContext.
+
+            ResetState();
             ParameterSet = parameterSet;
-            PrivateKey = new(stateManager);
+            PrivateKey = new(wrappedStateManager);
             PrivateKey.KeyContext.SwapWith(keyContext);
             PrivateKey.StatefulBlob.SwapWith(privateKeyStatefulBlob);
-            HasPublicKey = false;
         }
     }
 
@@ -255,14 +313,16 @@ public sealed class Xmss
         ArgumentNullException.ThrowIfNull(stateManager);
         ObjectDisposedException.ThrowIf(IsDisposed, this);
 
+        var wrappedStateManager = new StateManagerWrapper(stateManager);
+
         XmssError result;
 
         unsafe
         {
             using var privateKeyStatefulBlob = CriticalXmssPrivateKeyStatefulBlobHandle.Alloc();
             using var privateKeyStatelessBlob = CriticalXmssPrivateKeyStatelessBlobHandle.Alloc();
-            stateManager.Load(XmssKeyPart.PrivateStateless, privateKeyStatelessBlob.Data);
-            stateManager.Load(XmssKeyPart.PrivateStateful, privateKeyStatefulBlob.Data);
+            wrappedStateManager.Load(XmssKeyPart.PrivateStateless, privateKeyStatelessBlob.Data);
+            wrappedStateManager.Load(XmssKeyPart.PrivateStateful, privateKeyStatefulBlob.Data);
 
             foreach (var oid in Enum.GetValues<XmssParameterSetOID>())
             {
@@ -276,12 +336,11 @@ public sealed class Xmss
                     privateKeyStatelessBlob.AsRef(), privateKeyStatefulBlob.AsRef(), signingContext.AsRef());
                 if (result == XmssError.XMSS_OKAY)
                 {
-                    PrivateKey?.Dispose();
+                    ResetState();
                     ParameterSet = (XmssParameterSet)oid;
-                    PrivateKey = new(stateManager);
+                    PrivateKey = new(wrappedStateManager);
                     PrivateKey.KeyContext.SwapWith(keyContext);
                     PrivateKey.StatefulBlob.SwapWith(privateKeyStatefulBlob);
-                    HasPublicKey = false;
 
                     // Now try to load the internal public key part, but failure is not fatal.
                     try
@@ -290,7 +349,7 @@ public sealed class Xmss
                         {
                             using var publicKeyInternalBlob = CriticalXmssPublicKeyInternalBlobHandle.Alloc(XmssCacheType.XMSS_CACHE_TOP, 0,
                                 ParameterSet);
-                            stateManager.Load(XmssKeyPart.Public, publicKeyInternalBlob.Data);
+                            wrappedStateManager.Load(XmssKeyPart.Public, publicKeyInternalBlob.Data);
                             // The cache will be automatically freed with the key context; we don't need it.
                             XmssInternalCache* cache = null;
                             result = UnsafeNativeMethods.xmss_load_public_key(ref cache, ref PrivateKey.KeyContext.AsRef(),
@@ -301,18 +360,156 @@ public sealed class Xmss
                             XmssException.ThrowIfNotOkay(result);
                             HasPublicKey = true;
                         }
-                        catch (Exception ex) when (ex is not XmssException)
+                        catch (Exception ex)
                         {
-                            throw new XmssException(XmssError.XMSS_ERR_INVALID_BLOB, ex);
+                            throw new IgnoreException(ex);
                         }
                     }
-                    catch (XmssException) { }
+                    catch (IgnoreException) { }
                     return;
                 }
             }
 
             // None of the OIDs worked.
             throw new XmssException(XmssError.XMSS_ERR_INVALID_BLOB);
+        }
+    }
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="newPartition">TODO</param>
+    /// <param name="newPartitionSize">TODO</param>
+    public void SplitPrivateKey(IXmssStateManager newPartition, int newPartitionSize)
+    {
+        ArgumentNullException.ThrowIfNull(newPartition);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(newPartitionSize, 0);
+
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+        ThrowIfNoPrivateKey();
+
+        var wrappedNewPartition = new StateManagerWrapper(newPartition);
+
+        // Step 1: Verify that no (possibly valid) private parts exist for the new state.
+
+        VerifyNoPrivateState(wrappedNewPartition);
+
+        // Step 2: Cleanup new partition (which has no valid private parts anyway).
+
+        wrappedNewPartition.DeleteAll();
+
+        // Step 3: Copy the stateless private part (failure removes any partial copy, then throws)
+        try
+        {
+            using var statelessBlob = CriticalXmssPrivateKeyStatelessBlobHandle.Alloc();
+            PrivateKey.WrappedStateManager.Load(XmssKeyPart.PrivateStateless, statelessBlob.Data);
+            wrappedNewPartition.Store(XmssKeyPart.PrivateStateless, statelessBlob.Data);
+        }
+        catch (XmssStateManagerException ex)
+        {
+            wrappedNewPartition.DeleteAllAfterFailure(ex);
+            throw;
+        }
+
+        if (HasPublicKey)
+        {
+            // Step 4: Try to copy the public part (failure removes any partial copy, then throws)
+            try
+            {
+                using var publicBlob = CriticalXmssPublicKeyInternalBlobHandle.Alloc(XmssCacheType.XMSS_CACHE_TOP, 0, ParameterSet);
+                PrivateKey.WrappedStateManager.Load(XmssKeyPart.Public, publicBlob.Data);
+                wrappedNewPartition.Store(XmssKeyPart.Public, publicBlob.Data);
+            }
+            catch (XmssStateManagerException ex)
+            {
+                wrappedNewPartition.DeleteAllAfterFailure(ex);
+                throw;
+            }
+        }
+
+        // Step 5: Try to update the current key context (failure removes the new partition, then throws)
+        using var updatedStatefulBlob = CriticalXmssPrivateKeyStatefulBlobHandle.Alloc();
+        using var newStatefulBlob = CriticalXmssPrivateKeyStatefulBlobHandle.Alloc();
+        try
+        {
+            unsafe
+            {
+                var result = UnsafeNativeMethods.xmss_partition_signature_space(ref newStatefulBlob.AsPointerRef(),
+                    ref updatedStatefulBlob.AsPointerRef(), ref PrivateKey.KeyContext.AsRef(), (uint)newPartitionSize);
+                XmssException.ThrowIfNotOkay(result);
+            }
+        }
+        catch (XmssException ex)
+        {
+            wrappedNewPartition.DeleteAllAfterFailure(ex);
+            throw;
+        }
+
+        // NOTE: our KeyContext and StateManager are now out of sync! Failure to update the StateManager must destroy the KeyContext!
+
+        // Step 6: Try to store the old (now truncated) partition (failure resets the current key and removes the new partition, then throws)
+        try
+        {
+            PrivateKey.WrappedStateManager.StoreStatefulPart(PrivateKey.StatefulBlob.Data, updatedStatefulBlob.Data);
+            PrivateKey.StatefulBlob.SwapWith(updatedStatefulBlob);
+        }
+        catch (XmssStateManagerException ex)
+        {
+            ResetState();
+            wrappedNewPartition.DeleteAllAfterFailure(ex);
+            throw;
+        }
+
+        // NOTE: back in sync again
+
+        // Step 7: Try to store the new partition (failure removes the new partition, then throws)
+        try
+        {
+            wrappedNewPartition.Store(XmssKeyPart.PrivateStateful, newStatefulBlob.Data);
+        }
+        catch (XmssStateManagerException ex)
+        {
+            wrappedNewPartition.DeleteAllAfterFailure(ex);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="consumedPartition">TODO</param>
+    public void MergePartition(IXmssStateManager consumedPartition)
+    {
+        ArgumentNullException.ThrowIfNull(consumedPartition);
+
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+        ThrowIfNoPrivateKey();
+
+        var wrappedConsumedPartition = new StateManagerWrapper(consumedPartition);
+
+        using var consumedKeyStatefulBlob = CriticalXmssPrivateKeyStatefulBlobHandle.Alloc();
+        wrappedConsumedPartition.Load(XmssKeyPart.PrivateStateful, consumedKeyStatefulBlob.Data);
+
+        using var updatedStatefulBlob = CriticalXmssPrivateKeyStatefulBlobHandle.Alloc();
+        unsafe
+        {
+            var result = UnsafeNativeMethods.xmss_merge_signature_space(ref updatedStatefulBlob.AsPointerRef(),
+                ref PrivateKey.KeyContext.AsRef(), consumedKeyStatefulBlob.AsRef());
+            XmssException.ThrowIfNotOkay(result);
+        }
+
+        // NOTE: our KeyContext and StateManager are now out of sync! Failure to update the StateManager must destroy the KeyContext!
+
+        try
+        {
+            wrappedConsumedPartition.DeleteAll();
+            PrivateKey.WrappedStateManager.StoreStatefulPart(PrivateKey.StatefulBlob.Data, updatedStatefulBlob.Data);
+            PrivateKey.StatefulBlob.SwapWith(updatedStatefulBlob);
+        }
+        catch (XmssStateManagerException)
+        {
+            ResetState();
+            throw;
         }
     }
     #endregion
@@ -422,13 +619,16 @@ public sealed class Xmss
             result = UnsafeNativeMethods.xmss_finish_calculate_public_key(ref publicKeyInternalBlob.AsPointerRef(),
                 ref keyGenerationContext.AsPointerRef(), ref PrivateKey.KeyContext.AsRef());
             XmssException.ThrowIfNotOkay(result);
-        }
-        PrivateKey.StateManager.DeletePublicPart();
-        PrivateKey.StateManager.Store(XmssKeyPart.Public, publicKeyInternalBlob.Data);
 
-        result = UnsafeNativeMethods.xmss_export_public_key(out PublicKey, PrivateKey.KeyContext.AsRef());
-        XmssException.ThrowIfNotOkay(result);
-        HasPublicKey = true;
+            result = UnsafeNativeMethods.xmss_export_public_key(out PublicKey, PrivateKey.KeyContext.AsRef());
+            XmssException.ThrowIfNotOkay(result);
+            HasPublicKey = true;
+        }
+
+        // NOTE: our KeyContext and StateManager are now out of sync, but that does not affect security (only the public part)
+
+        PrivateKey.WrappedStateManager.DeletePublicPart();
+        PrivateKey.WrappedStateManager.Store(XmssKeyPart.Public, publicKeyInternalBlob.Data);
 
         reportPercentage?.Invoke(100.0);
     }
@@ -471,9 +671,18 @@ public sealed class Xmss
             XmssException.ThrowIfNotOkay(result);
         }
 
-        // store state
-        PrivateKey.StateManager.StoreStatefulPart(PrivateKey.StatefulBlob.Data, privateKeyStatefulBlob.Data);
-        PrivateKey.StatefulBlob.SwapWith(privateKeyStatefulBlob);
+        // NOTE: our KeyContext and StateManager are now out of sync! Failure to update the StateManager must destroy the KeyContext!
+
+        try
+        {
+            PrivateKey.WrappedStateManager.StoreStatefulPart(PrivateKey.StatefulBlob.Data, privateKeyStatefulBlob.Data);
+            PrivateKey.StatefulBlob.SwapWith(privateKeyStatefulBlob);
+        }
+        catch (XmssStateManagerException)
+        {
+            ResetState();
+            throw;
+        }
     }
 
     /// <summary>
@@ -914,9 +1123,8 @@ public sealed class Xmss
 
     void ImportXmssPublicKey(XmssParameterSet parameterSet, in XmssPublicKey publicKey)
     {
+        ResetState();
         PublicKey = publicKey;
-        PrivateKey?.Dispose();
-        PrivateKey = null;
         ParameterSet = parameterSet;
         HasPublicKey = true;
     }

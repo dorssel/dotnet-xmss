@@ -6,18 +6,18 @@ using Dorssel.Security.Cryptography.InteropServices;
 
 namespace Dorssel.Security.Cryptography;
 
-sealed class XmssPrivateKey(IXmssStateManager stateManager) : IDisposable
+sealed class XmssPrivateKey(StateManagerWrapper wrappedStateManager) : IDisposable
 {
-    readonly IXmssStateManager _StateManager = stateManager;
+    readonly StateManagerWrapper _WrappedStateManager = wrappedStateManager;
     readonly CriticalXmssKeyContextHandle _KeyContext = new();
     readonly CriticalXmssPrivateKeyStatefulBlobHandle _StatefulBlob = new();
 
-    public IXmssStateManager StateManager
+    public IXmssStateManager WrappedStateManager
     {
         get
         {
             ObjectDisposedException.ThrowIf(IsDisposed, this);
-            return _StateManager;
+            return _WrappedStateManager;
         }
     }
 
