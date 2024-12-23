@@ -14,17 +14,8 @@ static class Program
         NativeHelper.NativeLoader.Setup();
     }
 
-    static void Main()
+    static async Task Main()
     {
-        /*
-        {
-            using var ec = ECDsa.Create();
-            var parameters = ec.ExportParameters(false);
-            using var ec2 = ECDsa.Create(parameters);
-            var signature = ec2.SignData([1, 2, 3, 4], HashAlgorithmName.SHA256);
-            _ = signature;
-        }
-        */
         {
             Console.WriteLine($"Native headers version: {Xmss.NativeHeadersVersion}");
             Console.WriteLine($"Native library version: {Xmss.NativeLibraryVersion}");
@@ -37,7 +28,7 @@ static class Program
             var oid = CryptoConfig.MapNameToOID("XMSS");
         }
         {
-            // generate new key
+            Console.WriteLine("Generating new key...");
 
             var stateManager = new XmssFileStateManager(@"C:\test");
             stateManager.DeleteAll();
@@ -56,14 +47,14 @@ static class Program
                 var oldPercentage = 0;
                 try
                 {
-                    xmss.GeneratePublicKeyAsync(progress =>
+                    await xmss.CalculatePublicKeyAsync(progress =>
                     {
                         if (oldPercentage < (int)progress)
                         {
                             oldPercentage = (int)progress;
                             Console.Write($"\r{(int)progress,3}%");
                         }
-                    }, cancellationTokenSource.Token).Wait();
+                    }, cancellationTokenSource.Token).ConfigureAwait(false);
                 }
                 catch (AggregateException ex) when (ex.GetBaseException() is OperationCanceledException)
                 {
@@ -73,27 +64,24 @@ static class Program
                 }
             }
             Console.WriteLine();
+            Console.WriteLine("Public Key:");
             Console.WriteLine(xmss.ExportSubjectPublicKeyInfoPem());
-            _ = xmss.Sign([1, 2, 3]);
-            _ = xmss.Sign([4, 5, 6]);
         }
-        var message = new byte[] { 7, 8, 9 };
+        var message = new byte[] { 1, 2, 3 };
         byte[] signature;
         string publicKeyPem;
         {
-            // reuse same key
+            Console.WriteLine("Signing a message...");
 
             using var xmss = new Xmss();
             xmss.ImportPrivateKey(new XmssFileStateManager(@"C:\test"));
             signature = xmss.Sign(message);
             publicKeyPem = xmss.ExportSubjectPublicKeyInfoPem();
-            Console.WriteLine($"verification: {xmss.Verify(message, signature)}");
         }
         {
-            // verify using public key only
             using var xmss = new Xmss();
             xmss.ImportFromPem(publicKeyPem);
-            Console.WriteLine($"verification (pubkey only): {xmss.Verify(message, signature)}");
+            Console.WriteLine($"Verification: {xmss.Verify(message, signature)}");
         }
     }
 }

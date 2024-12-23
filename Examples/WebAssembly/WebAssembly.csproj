@@ -6,8 +6,14 @@ SPDX-License-Identifier: MIT
 -->
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
+  <PropertyGroup>
+    <IsPublishable>true</IsPublishable>
+  </PropertyGroup>
+
   <ItemGroup>
     <SupportedPlatform Include="browser" />
+    <TrimmerRootAssembly Include="Microsoft.FluentUI.AspNetCore.Components" />
+    <TrimmerRootAssembly Include="WebAssembly" />
   </ItemGroup>
 
   <ItemGroup>

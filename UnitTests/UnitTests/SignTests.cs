@@ -18,7 +18,7 @@ sealed class SignTests
         _ = testContext;
 
         Xmss.GeneratePrivateKey(new MemoryStateManager(), XmssParameterSet.XMSS_SHA2_10_256, true);
-        await Xmss.GeneratePublicKeyAsync();
+        await Xmss.CalculatePublicKeyAsync();
     }
 
     [ClassCleanup]
@@ -142,12 +142,12 @@ sealed class SignTests
     }
 
     [TestMethod]
-    public void RequestFutureSignatures_StoreStatefulFails()
+    public async Task RequestFutureSignatures_StoreStatefulFails()
     {
         var stateManager = new MemoryStateManager();
         using var xmss = new Xmss();
         xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
-        xmss.GeneratePublicKeyAsync().Wait();
+        await xmss.CalculatePublicKeyAsync();
 
         stateManager.Setup(false);  // Store stateful
 

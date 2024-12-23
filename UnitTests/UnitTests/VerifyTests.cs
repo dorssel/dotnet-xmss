@@ -20,7 +20,7 @@ sealed class VerifyTests
 
         using var xmss = new Xmss();
         xmss.GeneratePrivateKey(new MemoryStateManager(), XmssParameterSet.XMSS_SHA2_10_256, true);
-        await xmss.GeneratePublicKeyAsync();
+        await xmss.CalculatePublicKeyAsync();
 
         PublicKey = xmss.ExportRfcPublicKey();
         Signature = xmss.Sign(Message);

@@ -23,6 +23,8 @@ SPDX-License-Identifier: MIT
     <Content Include="runtimes\**">
       <!-- Required for running unit tests and examples within this repository. -->
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <!-- Not required for Example/WebAssembly publishing. -->
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
       <!-- Required for NuGet. -->
       <Pack>true</Pack>
       <PackagePath>%(Identity)</PackagePath>

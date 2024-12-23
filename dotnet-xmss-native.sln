@@ -19,7 +19,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{CC
 		Examples\Directory.Build.targets = Examples\Directory.Build.targets
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrintVersion", "Examples\PrintVersion\PrintVersion.csproj", "{11B9BE3A-86E5-4AE8-BFF8-D849368689C0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp", "Examples\ConsoleApp\ConsoleApp.csproj", "{11B9BE3A-86E5-4AE8-BFF8-D849368689C0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebAssembly", "Examples\WebAssembly\WebAssembly.csproj", "{06165BE7-C274-4CD4-AD9A-8BD4F3423B8D}"
 EndProject
