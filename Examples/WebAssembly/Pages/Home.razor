@@ -6,46 +6,143 @@
 
 @page "/"
 @using Dorssel.Security.Cryptography
+@using System.Text
 @inject Blazored.LocalStorage.ISyncLocalStorageService LocalStorage
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>XMSS in your browser!</h1>
 
-<FluentButton @onclick="GeneratePublicKey">Generate Key</FluentButton>
-<FluentProgress Width="300px" Min="0" Max="100" Value="@ProgressPercentage"></FluentProgress>
-<FluentButton Disabled="@DisableCancel" @onclick="Cancel">Cancel</FluentButton>
+<h2>Private Key</h2>
+
+@if (!Xmss.HasPrivateKey)
+{
+    <p><FluentButton @onclick="CreateKey">New</FluentButton></p>
+}
+else
+{
+    <p>Signatures remaining: @Xmss.SignaturesRemaining</p>
+    <p><FluentButton @onclick="DestroyKey">Destroy</FluentButton></p>
+
+    <h2>Public Key</h2>
+
+    @if (!Xmss.HasPublicKey)
+    {
+        if (!IsCalculating)
+        {
+            <p><FluentButton @onclick="CalculatePublicKey">Calculate</FluentButton></p>
+        }
+        else
+        {
+            <p>Generating ...</p>
+            <p><FluentProgress Width="300px" Min="0" Max="1000" Value="@ProgressPermille"></FluentProgress></p>
+            <p><FluentButton Disabled="CancellationTokenSource.IsCancellationRequested" @onclick="CancellationTokenSource.Cancel">Cancel</FluentButton></p>
+        }
+    }
+    else
+    {
+        <pre>@Xmss.ExportSubjectPublicKeyInfoPem()</pre>
+
+        <h2>Signing</h2>
+        <p>Message:</p>
+        <p><FluentTextField Immediate="true" @bind-Value=MessageToSign /></p>
+
+        @if (Signature.Length == 0)
+        {
+            <p><FluentButton @onclick="Sign">Sign</FluentButton></p>
+        }
+        else
+        {
+            <p>Signature:</p>
+            <pre>@Convert.ToBase64String(Signature, Base64FormattingOptions.InsertLineBreaks)</pre>
+        }
+    }
+}
 
 @code {
-    int ProgressPercentage;
-    bool DisableCancel = true;
+    const string KeyName = "example";
+    Xmss Xmss = new Xmss();
+    bool IsCalculating = false;
+    int ProgressPermille;
     CancellationTokenSource CancellationTokenSource = new();
-
-    private async Task GeneratePublicKey()
-    {
-        StateHasChanged();
-        {
-            using var xmss = new Xmss();
-            xmss.GeneratePrivateKey(new LocalStorageStateManager(LocalStorage, @"test"), XmssParameterSet.XMSS_SHA2_10_256, false);
-        }
-        {
-            using var xmss = new Xmss();
-            xmss.ImportPrivateKey(new LocalStorageStateManager(LocalStorage, @"test"));
-            if (!xmss.HasPublicKey)
+    string _MessageToSign = string.Empty;
+    string MessageToSign {
+        get => _MessageToSign;
+        set {
+            if (_MessageToSign != value)
             {
-                CancellationTokenSource = new();
-                DisableCancel = false;
-                await xmss.GeneratePublicKeyAsync((percentage) => {
-                    ProgressPercentage = (int)percentage;
-                    StateHasChanged();
-                }, CancellationTokenSource.Token);
+                if (Signature.Length != 0)
+                {
+                    Signature = Array.Empty<byte>();
+                }
+                _MessageToSign = value;
             }
         }
     }
+    byte[] Signature = Array.Empty<byte>();
 
-    private void Cancel()
+    protected override void OnInitialized()
     {
-        CancellationTokenSource.Cancel();
-        DisableCancel = true;
+        var stateManager = new LocalStorageStateManager(LocalStorage, KeyName);
+        try
+        {
+            Xmss.ImportPrivateKey(stateManager);
+        }
+        catch (XmssStateManagerException) { }
+        base.OnInitialized();
+    }
+
+    void DestroyKey()
+    {
+        Xmss.Dispose();
+        new LocalStorageStateManager(LocalStorage, KeyName).DeleteAll();
+        MessageToSign = string.Empty;
+        Signature = Array.Empty<byte>();
+        Xmss = new Xmss();
+    }
+
+    void CreateKey()
+    {
+        new LocalStorageStateManager(LocalStorage, KeyName).DeleteAll();
+        Xmss.GeneratePrivateKey(new LocalStorageStateManager(LocalStorage, KeyName), XmssParameterSet.XMSS_SHA2_10_256, false);
+    }
+
+    async Task CalculatePublicKey()
+    {
+        IsCalculating = true;
+
+        CancellationTokenSource.Dispose();
+        CancellationTokenSource = new();
+        try
+        {
+            await Xmss.CalculatePublicKeyAsync((percentage) =>
+            {
+                ProgressPermille = (int)(percentage * 10);
+                StateHasChanged();
+            }, CancellationTokenSource.Token);
+        }
+        finally
+        {
+            IsCalculating = false;
+            StateHasChanged();
+        }
+    }
+
+    void Sign()
+    {
+        Signature = Xmss.Sign(Encoding.UTF8.GetBytes(MessageToSign));
+    }
+
+    bool IsDisposed;
+
+    public void Dispose()
+    {
+        if (!IsDisposed)
+        {
+            // often forgotten: clean up when done
+            Xmss.Dispose();
+            CancellationTokenSource.Dispose();
+            IsDisposed = true;
+        }
     }
 }

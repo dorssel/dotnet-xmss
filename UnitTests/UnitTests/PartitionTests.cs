@@ -18,7 +18,7 @@ sealed class PartitionTests
         _ = testContext;
 
         SharedXmss.GeneratePrivateKey(new MemoryStateManager(), XmssParameterSet.XMSS_SHA2_10_256, true);
-        await SharedXmss.GeneratePublicKeyAsync();
+        await SharedXmss.CalculatePublicKeyAsync();
     }
 
     [ClassCleanup]

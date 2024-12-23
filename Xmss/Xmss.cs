@@ -522,7 +522,7 @@ public sealed class Xmss
     /// <param name="cancellationToken">TODO</param>
     /// <returns>TODO</returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public async Task GeneratePublicKeyAsync(Action<double>? reportPercentage = null, CancellationToken cancellationToken = default)
+    public async Task CalculatePublicKeyAsync(Action<double>? reportPercentage = null, CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
         ThrowIfNoPrivateKey();
@@ -800,7 +800,7 @@ public sealed class Xmss
         bytesWritten = signature.Length;
         return true;
     }
-#endregion
+    #endregion
 
     #region Verify
     /// <summary>
