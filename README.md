@@ -6,10 +6,10 @@ SPDX-License-Identifier: MIT
 
 # dotnet-xmss
 
-[![Build](https://github.com/dorssel/dotnet-xmss/workflows/Build/badge.svg?branch=master)](https://github.com/dorssel/dotnet-xmss/actions?query=workflow%3ABuild+branch%3Amaster)
-[![CodeQL](https://github.com/dorssel/dotnet-xmss/workflows/CodeQL/badge.svg?branch=master)](https://github.com/dorssel/dotnet-xmss/actions?query=workflow%3ACodeQL+branch%3Amaster)
-[![MegaLinter](https://github.com/dorssel/dotnet-xmss/workflows/MegaLinter/badge.svg?branch=master)](https://github.com/dorssel/dotnet-xmss/actions?query=workflow%3AMegaLinter+branch%3Amaster)
-[![codecov](https://codecov.io/gh/dorssel/dotnet-xmss/branch/master/graph/badge.svg?token=8alCQveCnj)](https://codecov.io/gh/dorssel/dotnet-xmss)
+[![Build](https://github.com/dorssel/dotnet-xmss/actions/workflows/dotnet.yml/badge.svg?branch=master)](https://github.com/dorssel/dotnet-xmss/actions?query=workflow%3ABuild+branch%3Amaster)
+[![CodeQL](https://github.com/dorssel/dotnet-xmss/actions/workflows/codeql.yml/badge.svg?branch=master)](https://github.com/dorssel/dotnet-xmss/actions?query=workflow%3ACodeQL+branch%3Amaster)
+[![MegaLinter](https://github.com/dorssel/dotnet-xmss/actions/workflows/lint.yml/badge.svg?branch=master)](https://github.com/dorssel/dotnet-xmss/actions?query=workflow%3ALint+branch%3Amaster)
+[![Codecov](https://codecov.io/gh/dorssel/dotnet-xmss/branch/master/graph/badge.svg?token=8alCQveCnj)](https://codecov.io/gh/dorssel/dotnet-xmss)
 [![REUSE status](https://api.reuse.software/badge/github.com/dorssel/dotnet-xmss)](https://api.reuse.software/info/github.com/dorssel/dotnet-xmss)
 
 .NET Standard 2.0 implementation of XMSS and XMSS-MT, as defined by:
