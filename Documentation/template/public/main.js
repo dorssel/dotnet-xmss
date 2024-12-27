@@ -7,7 +7,7 @@ export default {
     iconLinks: [
         {
             icon: 'github',
-            href: 'https://github.com/dorssel/dotnet-xmss-native',
+            href: 'https://github.com/dorssel/dotnet-xmss',
             title: 'GitHub'
         }
     ]
