@@ -594,7 +594,7 @@ public sealed class Xmss
             });
             if (completed > lastReported)
             {
-                reportPercentage?.Invoke(99.0 * completed / totalTaskCount);
+                reportPercentage?.Invoke(99.9 * completed / totalTaskCount);
                 lastReported = completed;
             }
 

@@ -35,7 +35,7 @@ else
         else
         {
             <p>Generating ...</p>
-            <p><FluentProgress Width="300px" Min="0" Max="1000" Value="@ProgressPermille"></FluentProgress></p>
+            <p><FluentProgress Width="300px" Min="0" Max="100" Value="@ProgressPercentage"></FluentProgress></p>
             <p><FluentButton Disabled="CancellationTokenSource.IsCancellationRequested" @onclick="CancellationTokenSource.Cancel">Cancel</FluentButton></p>
         }
     }
@@ -63,7 +63,7 @@ else
     const string KeyName = "example";
     Xmss Xmss = new Xmss();
     bool IsCalculating = false;
-    int ProgressPermille;
+    int ProgressPercentage;
     CancellationTokenSource CancellationTokenSource = new();
     string _MessageToSign = string.Empty;
     string MessageToSign {
@@ -117,8 +117,12 @@ else
         {
             await Xmss.CalculatePublicKeyAsync((percentage) =>
             {
-                ProgressPermille = (int)(percentage * 10);
-                StateHasChanged();
+                int newPercentage = (int)percentage;
+                if (ProgressPercentage < newPercentage)
+                {
+                    ProgressPercentage = newPercentage;
+                    StateHasChanged();
+                }
             }, CancellationTokenSource.Token);
         }
         finally
