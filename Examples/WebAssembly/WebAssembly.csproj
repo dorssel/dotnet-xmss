@@ -8,6 +8,8 @@ SPDX-License-Identifier: MIT
 
   <PropertyGroup>
     <IsPublishable>true</IsPublishable>
+    <PublishProfile>Properties\PublishProfiles\FolderProfile.pubxml</PublishProfile>
+    <PublishDir>bin\publish\</PublishDir>
     <CompressionEnabled>false</CompressionEnabled>
   </PropertyGroup>
 
