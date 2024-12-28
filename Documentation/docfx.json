@@ -21,6 +21,11 @@
     "resource": [
       {
         "files": [".nojekyll"]
+      },
+      {
+        "files": ["**"],
+        "src": "../Examples/WebAssembly/bin/publish/wwwroot",
+        "dest": "wasm-example"
       }
     ],
     "postProcessors": ["ExtractSearchIndex"],
@@ -36,7 +41,7 @@
       }
     },
     "sitemap": {
-      "baseUrl": "https://dorssel.github.io/dotnet-xmss-documentation",
+      "baseUrl": "https://dorssel.github.io/dotnet-xmss",
       "priority": 0.5,
       "changefreq": "daily"
     },

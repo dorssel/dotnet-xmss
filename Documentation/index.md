@@ -6,6 +6,10 @@ SPDX-License-Identifier: MIT
 
 # This is the **HOMEPAGE**
 
+## Under construction
+
+Already available: [XMSS WebAssembly Demo](wasm-example/).
+
 > [!NOTE]
 > Information the user should notice even if skimming.
 
