@@ -1,0 +1,89 @@
+# SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
+#
+# SPDX-License-Identifier: MIT
+
+# This file requires LF line endings, as it is used in GitHub action hashes.
+
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+# This file requires LF line endings, as it is used in cross-platform GitHub action hashes.
+
+name: Runtime osx-x64
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+env:
+  RUNTIME: osx-x64
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  build-osx-x64:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Calculate cache key
+        id: cache-key
+        run: |
+          echo "value=runtime-${{ env.RUNTIME }}-${{ hashFiles('.gitmodules', 'libc/libc.c', '.github/workflows/runtime-osx-x64.yml') }}" \
+            >> "$GITHUB_OUTPUT"
+
+      - name: Configure
+        run: >
+          cmake
+          -S xmss-library
+          -B build
+          -DBUILD_SHARED_LIBS=ON
+          -DXMSS_C99_COMPATIBLE=OFF
+          -DXMSS_SHAKE256_256=OverrideInternal
+          -DXMSS_HASH_OVERRIDE_SOURCES="../../libc/libc.c"
+          -DCMAKE_C_COMPILER=clang
+          -DCMAKE_SHARED_LINKER_FLAGS="-nostdlib -s"
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        working-directory: build
+        run: ctest
+
+      - name: Copy artifact
+        run: |
+          mkdir -p "Xmss/runtimes/${{ env.RUNTIME }}/native"
+          cp build/src/libxmss.dylib "Xmss/runtimes/${{ env.RUNTIME }}/native/xmss.dylib"
+
+      - name: Check existing cache
+        id: cache-check
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            Xmss/runtimes/**
+          key: ${{ steps.cache-key.outputs.value }}
+          enableCrossOsArchive: true
+          lookup-only: true
+
+      - name: Delete existing cache
+        if: ${{ steps.cache-check.outputs.cache-hit }}
+        run: |
+          gh extension install actions/gh-actions-cache
+          gh actions-cache delete "${{ steps.cache-key.outputs.value }}" --confirm
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Save cache
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            Xmss/runtimes/**
+          key: ${{ steps.cache-key.outputs.value }}
+          enableCrossOsArchive: true
