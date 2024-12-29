@@ -21,11 +21,12 @@ static class Program
             Console.WriteLine($"Native library version: {Xmss.NativeLibraryVersion}");
         }
         {
-            Xmss.RegisterWithCryptoConfig();
+            var oid = CryptoConfig.MapNameToOID("XMSS");
+            Console.WriteLine($"Found OID for 'XMSS': {oid}");
 #pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
             var alg = CryptoConfig.CreateFromName("XMSS");
 #pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-            var oid = CryptoConfig.MapNameToOID("XMSS");
+            Console.WriteLine($"Created by CryptoConfig('XMSS'): {alg is not null}");
         }
         {
             Console.WriteLine("Generating new key...");

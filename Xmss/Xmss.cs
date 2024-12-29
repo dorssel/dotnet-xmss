@@ -4,11 +4,11 @@
 
 using System.Buffers;
 using System.Buffers.Binary;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Formats.Asn1;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Dorssel.Security.Cryptography.Internal;
@@ -40,22 +40,6 @@ public sealed class Xmss
     {
         return new Xmss();
     }
-
-    /// <summary>
-    /// TODO
-    /// </summary>
-    /// <param name="algorithm">TODO</param>
-    /// <returns>TODO</returns>
-    [UnsupportedOSPlatform("browser")]
-    [Obsolete("Cryptographic factory methods accepting an algorithm name are obsolete. Use the parameterless Create factory method on the algorithm type instead.")]
-    [RequiresUnreferencedCode("The default algorithm implementations might be removed, use strong type references like 'Xmss.Create()' instead.")]
-    public static new Xmss? Create(string algorithm)
-    {
-        ArgumentNullException.ThrowIfNull(algorithm);
-
-        RegisterWithCryptoConfig();
-        return CryptoConfig.CreateFromName(algorithm) as Xmss;
-    }
     #endregion
 
     #region Version
@@ -80,36 +64,37 @@ public sealed class Xmss
     #endregion
 
     #region CryptoConfig
-    static readonly object RegistrationLock = new();
-    static bool TriedRegisterOnce;
+    static readonly string[] _IdAlgXmssHashsigNames = ["xmss", "id-alg-xmss-hashsig"];
 
     /// <summary>
     /// TODO
     /// </summary>
     // See https://datatracker.ietf.org/doc/draft-ietf-lamps-x509-shbs/.
     // Appendix B suggests the FriendlyName is "xmss" (lowercase); the others are "extra".
-    public static readonly string[] IdAlgXmssHashsigNames = ["xmss", "id-alg-xmss-hashsig", "XMSS"];
+    public static ReadOnlyCollection<string> IdAlgXmssHashsigNames { get; } = _IdAlgXmssHashsigNames.AsReadOnly();
 
     /// <summary>
     /// TODO
     /// </summary>
     // See https://iana.org/assignments/xmss-extended-hash-based-signatures/.
-    public static readonly Oid IdAlgXmssHashsig = new("1.3.6.1.5.5.7.6.34", IdAlgXmssHashsigNames.First());
+    public static Oid IdAlgXmssHashsig { get; }  = new("1.3.6.1.5.5.7.6.34", IdAlgXmssHashsigNames.First());
 
-    /// <summary>
-    /// TODO
-    /// </summary>
-    [UnsupportedOSPlatform("browser")]
-    public static void RegisterWithCryptoConfig()
+    static void RegisterWithCryptoConfig()
     {
-        lock (RegistrationLock)
+        CryptoConfig.AddAlgorithm(typeof(Xmss), _IdAlgXmssHashsigNames);
+        CryptoConfig.AddOID(IdAlgXmssHashsig.Value!, _IdAlgXmssHashsigNames);
+    }
+
+    [ExcludeFromCodeCoverage(Justification = "Not testable; WASM only.")]
+    static Xmss()
+    {
+        try
         {
-            if (!TriedRegisterOnce)
-            {
-                TriedRegisterOnce = true;
-                CryptoConfig.AddAlgorithm(typeof(Xmss), IdAlgXmssHashsigNames);
-                CryptoConfig.AddOID(IdAlgXmssHashsig.Value!, IdAlgXmssHashsigNames);
-            }
+            RegisterWithCryptoConfig();
+        }
+        catch (PlatformNotSupportedException)
+        {
+            // CryptoConfig is unsupported for browser (WASM).
         }
     }
     #endregion

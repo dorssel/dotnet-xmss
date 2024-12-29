@@ -26,28 +26,11 @@ sealed class CryptoConfigTests
         Assert.IsNotNull(Xmss.IdAlgXmssHashsig.FriendlyName);
         Assert.AreEqual("xmss", Xmss.IdAlgXmssHashsig.FriendlyName);
 
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable SYSLIB0045 // Type or member is obsolete
         using var xmss = Xmss.Create("xmss");
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore SYSLIB0045 // Type or member is obsolete
 
         Assert.IsNotNull(xmss);
-    }
-
-    [TestMethod]
-    public void RegisterWithCryptoConfig()
-    {
-        Xmss.RegisterWithCryptoConfig();
-
-        Assert.AreEqual(Xmss.IdAlgXmssHashsig.Value, CryptoConfig.MapNameToOID("xmss"));
-    }
-
-    [TestMethod]
-    public void RegisterWithCryptoConfig_Twice()
-    {
-        Xmss.RegisterWithCryptoConfig();
-        Xmss.RegisterWithCryptoConfig();
-
-        Assert.AreEqual(Xmss.IdAlgXmssHashsig.Value, CryptoConfig.MapNameToOID("xmss"));
     }
 
     [TestMethod]
