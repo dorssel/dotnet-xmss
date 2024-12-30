@@ -4,7 +4,6 @@
 
 using System.Buffers;
 using System.Buffers.Binary;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Formats.Asn1;
@@ -64,25 +63,21 @@ public sealed class Xmss
     #endregion
 
     #region CryptoConfig
-    static readonly string[] _IdAlgXmssHashsigNames = ["xmss", "id-alg-xmss-hashsig"];
-
     /// <summary>
-    /// TODO
+    /// XMSS Algorithm Identifier (OID) id-alg-xmss-hashsig, as registered by IANA.
     /// </summary>
-    // See https://datatracker.ietf.org/doc/draft-ietf-lamps-x509-shbs/.
-    // Appendix B suggests the FriendlyName is "xmss" (lowercase); the others are "extra".
-    public static ReadOnlyCollection<string> IdAlgXmssHashsigNames { get; } = _IdAlgXmssHashsigNames.AsReadOnly();
-
-    /// <summary>
-    /// TODO
-    /// </summary>
-    // See https://iana.org/assignments/xmss-extended-hash-based-signatures/.
-    public static Oid IdAlgXmssHashsig { get; }  = new("1.3.6.1.5.5.7.6.34", IdAlgXmssHashsigNames.First());
+    /// <remarks>
+    /// The friendly name "xmss" is suggested by the certificate example of
+    /// <see href="https://www.ietf.org/archive/id/draft-ietf-lamps-x509-shbs-13.html#name-xmss-x509-v3-certificate-ex" />.
+    /// </remarks>
+    /// <seealso href="https://www.iana.org/assignments/smi-numbers/smi-numbers.xml#smi-numbers-1.3.6.1.5.5.7.6" />
+    /// <seealso href="https://www.ietf.org/archive/id/draft-ietf-lamps-x509-shbs-13.html#name-xmss-algorithm-identifier" />
+    public static Oid IdAlgXmssHashsig { get; }  = new("1.3.6.1.5.5.7.6.34", "xmss");
 
     static void RegisterWithCryptoConfig()
     {
-        CryptoConfig.AddAlgorithm(typeof(Xmss), _IdAlgXmssHashsigNames);
-        CryptoConfig.AddOID(IdAlgXmssHashsig.Value!, _IdAlgXmssHashsigNames);
+        CryptoConfig.AddAlgorithm(typeof(Xmss), IdAlgXmssHashsig.FriendlyName!);
+        CryptoConfig.AddOID(IdAlgXmssHashsig.Value!, IdAlgXmssHashsig.FriendlyName!);
     }
 
     [ExcludeFromCodeCoverage(Justification = "Not testable; WASM only.")]
@@ -94,7 +89,7 @@ public sealed class Xmss
         }
         catch (PlatformNotSupportedException)
         {
-            // CryptoConfig is unsupported for browser (WASM).
+            // CryptoConfig is unsupported for WASM.
         }
     }
     #endregion
