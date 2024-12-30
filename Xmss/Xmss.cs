@@ -138,19 +138,18 @@ public sealed class Xmss
     public bool HasPublicKey { get; private set; }
 
     /// <summary>
-    /// TODO
+    /// Gets the XML Security Uniform Resource Identifier (URI) for the current <see cref="ParameterSet" />.
     /// </summary>
+    /// <seealso href="https://www.iana.org/assignments/xml-security-uris/xml-security-uris.xhtml" />
+    /// <seealso href="https://www.rfc-editor.org/rfc/rfc9231.html#name-xmss-and-xmssmt" />
     public override string? SignatureAlgorithm => ParameterSet switch
     {
-        // See https://www.iana.org/assignments/xml-security-uris/xml-security-uris.xhtml
-        // and https://www.rfc-editor.org/rfc/rfc9231.html#name-xmss-and-xmssmt
-
-        XmssParameterSet.XMSS_SHA2_10_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-sha2-10-256",
-        XmssParameterSet.XMSS_SHA2_16_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-sha2-16-256",
-        XmssParameterSet.XMSS_SHA2_20_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-sha2-20-256",
-        XmssParameterSet.XMSS_SHAKE256_10_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-shake256-10-256",
-        XmssParameterSet.XMSS_SHAKE256_16_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-shake256-16-256",
-        XmssParameterSet.XMSS_SHAKE256_20_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-shake256-20-256",
+        XmssParameterSet.XMSS_SHA2_10_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-sha2-10-256", // DevSkim: ignore DS137138
+        XmssParameterSet.XMSS_SHA2_16_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-sha2-16-256", // DevSkim: ignore DS137138
+        XmssParameterSet.XMSS_SHA2_20_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-sha2-20-256", // DevSkim: ignore DS137138
+        XmssParameterSet.XMSS_SHAKE256_10_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-shake256-10-256", // DevSkim: ignore DS137138
+        XmssParameterSet.XMSS_SHAKE256_16_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-shake256-16-256", // DevSkim: ignore DS137138
+        XmssParameterSet.XMSS_SHAKE256_20_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-shake256-20-256", // DevSkim: ignore DS137138
         XmssParameterSet.None or _ => throw new InvalidOperationException(),
     };
 

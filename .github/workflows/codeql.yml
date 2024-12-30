@@ -75,13 +75,10 @@ jobs:
       #     echo "Run, Build Application using script"
       #     ./location_of_script_within_repo/buildscript.sh
 
-      - name: Restore browser-wasm artifact
-        uses: actions/cache/restore@v4
+      - name: Restore browser-wasm
+        uses: ./.github/actions/restore-runtime-cache
         with:
-          path: |
-            Xmss/runtimes/**
-          key: runtime-browser-wasm-${{ hashFiles('.gitmodules', 'libc/libc.c', '.github/workflows/runtime-browser-wasm.yml') }}
-          fail-on-cache-miss: true
+          runtime: browser-wasm
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
