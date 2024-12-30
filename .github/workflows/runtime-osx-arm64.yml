@@ -9,21 +9,21 @@
 
 # This file requires LF line endings, as it is used in cross-platform GitHub action hashes.
 
-name: Runtime osx-x64
+name: Runtime osx-arm64
 
 on:
   workflow_dispatch:
   workflow_call:
 
 env:
-  RUNTIME: osx-x64
+  RUNTIME: osx-arm64
 
 permissions:
   contents: read
   actions: write
 
 jobs:
-  build-osx-x64:
+  build-osx-arm64:
     runs-on: macos-latest
 
     steps:
@@ -35,7 +35,7 @@ jobs:
       - name: Calculate cache key
         id: cache-key
         run: |
-          echo "value=runtime-${{ env.RUNTIME }}-${{ hashFiles('.gitmodules', 'libc/libc.c', '.github/workflows/runtime-osx-x64.yml') }}" \
+          echo "value=runtime-${{ env.RUNTIME }}-${{ hashFiles('.gitmodules', 'libc/libc.c', '.github/workflows/runtime-osx-arm64.yml') }}" \
             >> "$GITHUB_OUTPUT"
 
       - name: Configure
@@ -45,10 +45,8 @@ jobs:
           -B build
           -DBUILD_SHARED_LIBS=ON
           -DXMSS_C99_COMPATIBLE=OFF
-          -DXMSS_SHAKE256_256=OverrideInternal
-          -DXMSS_HASH_OVERRIDE_SOURCES="../../libc/libc.c"
           -DCMAKE_C_COMPILER=clang
-          -DCMAKE_SHARED_LINKER_FLAGS="-nostdlib -s"
+          -DCMAKE_C_FLAGS="-Wno-error=implicit-int-conversion"
 
       - name: Build
         run: cmake --build build
