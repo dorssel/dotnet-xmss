@@ -21,30 +21,25 @@ permissions:
   actions: write
 
 jobs:
-  cache-runtimes:
-    strategy:
-      matrix:
-        runtime:
-          - linux-x64
-          - browser-wasm
-    uses: ./.github/workflows/cache-runtime.yml
-    with:
-      runtime: ${{ matrix.runtime }}
-    permissions:
-      contents: read
-      actions: write
-
   lookup-runtime-caches:
     runs-on: ubuntu-latest
 
     outputs:
+      linux-x64: ${{ steps.lookup-linux-x64.outputs.cache-hit }}
       win-x64: ${{ steps.lookup-win-x64.outputs.cache-hit }}
       osx-arm64: ${{ steps.lookup-osx-arm64.outputs.cache-hit }}
+      browser-wasm: ${{ steps.lookup-browser-wasm.outputs.cache-hit }}
 
     steps:
       - name: Checkout
         id: checkout
         uses: actions/checkout@v4
+
+      - name: Lookup linux-x64
+        id: lookup-linux-x64
+        uses: ./.github/actions/lookup-runtime-cache
+        with:
+          runtime: linux-x64
 
       - name: Lookup win-x64
         id: lookup-win-x64
@@ -57,6 +52,20 @@ jobs:
         uses: ./.github/actions/lookup-runtime-cache
         with:
           runtime: osx-arm64
+
+      - name: Lookup browser-wasm
+        id: lookup-browser-wasm
+        uses: ./.github/actions/lookup-runtime-cache
+        with:
+          runtime: browser-wasm
+
+  runtime-linux-x64:
+    needs: lookup-runtime-caches
+    if: ${{ !needs.lookup-runtime-caches.outputs.linux-x64 }}
+    uses: ./.github/workflows/runtime-linux-x64.yml
+    permissions:
+      contents: read
+      actions: write
 
   runtime-win-x64:
     needs: lookup-runtime-caches
@@ -74,11 +83,20 @@ jobs:
       contents: read
       actions: write
 
+  runtime-browser-wasm:
+    needs: lookup-runtime-caches
+    if: ${{ !needs.lookup-runtime-caches.outputs.browser-wasm }}
+    uses: ./.github/workflows/runtime-browser-wasm.yml
+    permissions:
+      contents: read
+      actions: write
+
   build-dotnet:
     needs:
-      - cache-runtimes
+      - runtime-linux-x64
       - runtime-win-x64
       - runtime-osx-arm64
+      - runtime-browser-wasm
 
     if: always()
 
@@ -90,13 +108,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Restore linux-x64 artifact
-        uses: actions/cache/restore@v4
+      - name: Restore linux-x64
+        uses: ./.github/actions/restore-runtime-cache
         with:
-          path: |
-            Xmss/runtimes/**
-          key: runtime-linux-x64-${{ hashFiles('.gitmodules', 'libc/libc.c', '.github/workflows/runtime-linux-x64.yml') }}
-          fail-on-cache-miss: true
+          runtime: linux-x64
 
       - name: Restore win-x64
         uses: ./.github/actions/restore-runtime-cache
@@ -108,13 +123,10 @@ jobs:
         with:
           runtime: osx-arm64
 
-      - name: Restore browser-wasm artifact
-        uses: actions/cache/restore@v4
+      - name: Restore browser-wasm
+        uses: ./.github/actions/restore-runtime-cache
         with:
-          path: |
-            Xmss/runtimes/**
-          key: runtime-browser-wasm-${{ hashFiles('.gitmodules', 'libc/libc.c', '.github/workflows/runtime-browser-wasm.yml') }}
-          fail-on-cache-miss: true
+          runtime: browser-wasm
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
