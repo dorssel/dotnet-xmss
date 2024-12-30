@@ -21,7 +21,7 @@ permissions:
   actions: write
 
 jobs:
-  build-win-x64:
+  build:
     runs-on: windows-latest
 
     steps:
@@ -29,12 +29,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Calculate cache key
-        id: cache-key
-        run: |
-          echo "value=runtime-${{ env.RUNTIME }}-${{ hashFiles('.gitmodules', 'libc/libc.c', '.github/workflows/runtime-win-x64.yml') }}" `
-            >> "$env:GITHUB_OUTPUT"
 
       - name: Configure
         run: >
@@ -61,28 +55,8 @@ jobs:
           mkdir "Xmss\runtimes\${{ env.RUNTIME }}\native"
           copy build\src\Release\xmss.dll "Xmss\runtimes\${{ env.RUNTIME }}\native\"
 
-      - name: Check existing cache
-        id: cache-check
-        uses: actions/cache/restore@v4
+      - name: Save runtime cache
+        id: save-runtime-cache
+        uses: ./.github/actions/save-runtime-cache
         with:
-          path: |
-            Xmss/runtimes/**
-          key: ${{ steps.cache-key.outputs.value }}
-          enableCrossOsArchive: true
-          lookup-only: true
-
-      - name: Delete existing cache
-        if: ${{ steps.cache-check.outputs.cache-hit }}
-        run: |
-          gh extension install actions/gh-actions-cache
-          gh actions-cache delete "${{ steps.cache-key.outputs.value }}" --confirm
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Save cache
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            Xmss/runtimes/**
-          key: ${{ steps.cache-key.outputs.value }}
-          enableCrossOsArchive: true
+          runtime: ${{ env.RUNTIME }}

@@ -2,8 +2,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-# This file requires LF line endings, as it is used in GitHub action hashes.
-
 ---
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 
@@ -23,7 +21,7 @@ permissions:
   actions: write
 
 jobs:
-  build-osx-arm64:
+  build:
     runs-on: macos-latest
 
     steps:
@@ -58,4 +56,4 @@ jobs:
         id: save-runtime-cache
         uses: ./.github/actions/save-runtime-cache
         with:
-          runtime: osx-arm64
+          runtime: ${{ env.RUNTIME }}

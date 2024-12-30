@@ -34,6 +34,7 @@ runs:
           const runtime_caches = await github.rest.actions.getActionsCacheList({
             owner: context.repo.owner,
             repo: context.repo.repo,
+            ref: context.ref,
             key: `${RUNTIME_CACHE_KEY}`,
           })
           for (const runtime_cache of runtime_caches.data.actions_caches) {
