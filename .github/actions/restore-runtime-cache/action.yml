@@ -1,0 +1,32 @@
+# SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
+#
+# SPDX-License-Identifier: MIT
+
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+
+name: 'Restore runtime cache'
+
+description: 'Restore a previously cached runtime (which must exists)'
+
+inputs:
+  runtime:
+    description: 'Runtime identifier'
+    required: true
+
+runs:
+  using: composite
+
+  steps:
+    - id: calculate-cache-key
+      uses: ./.github/actions/calculate-cache-key
+      with:
+        runtime: ${{ inputs.runtime }}
+
+    - id: restore
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          Xmss/runtimes/**
+        key: ${{ steps.calculate-cache-key.outputs.key }}
+        fail-on-cache-miss: true

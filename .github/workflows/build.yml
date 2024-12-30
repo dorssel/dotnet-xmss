@@ -35,9 +35,37 @@ jobs:
       contents: read
       actions: write
 
+  lookup-runtime-caches:
+    runs-on: ubuntu-latest
+
+    outputs:
+      osx-arm64: ${{ steps.lookup-osx-arm64.outputs.cache-hit }}
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+
+      - name: Lookup osx-arm64
+        id: lookup-osx-arm64
+        uses: ./.github/actions/lookup-runtime-cache
+        with:
+          runtime: osx-arm64
+
+  runtime-osx-arm64:
+    needs: lookup-runtime-caches
+    if: ${{ !needs.lookup-runtime-caches.outputs.osx-arm64 }}
+    uses: ./.github/workflows/runtime-osx-arm64.yml
+    permissions:
+      contents: read
+      actions: write
+
   build-dotnet:
     needs:
       - cache-runtimes
+      - runtime-osx-arm64
+
+    if: always()
 
     runs-on: ubuntu-latest
 
@@ -62,6 +90,11 @@ jobs:
             Xmss/runtimes/**
           key: runtime-win-x64-${{ hashFiles('.gitmodules', 'libc/libc.c', '.github/workflows/runtime-win-x64.yml') }}
           fail-on-cache-miss: true
+
+      - name: Restore osx-arm64
+        uses: ./.github/actions/restore-runtime-cache
+        with:
+          runtime: osx-arm64
 
       - name: Restore browser-wasm artifact
         uses: actions/cache/restore@v4

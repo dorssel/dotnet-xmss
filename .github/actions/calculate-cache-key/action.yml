@@ -1,0 +1,30 @@
+# SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
+#
+# SPDX-License-Identifier: MIT
+
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+
+name: 'Calculate cache key'
+
+description: 'Calculate the cache key for the given runtime'
+
+inputs:
+  runtime:
+    description: 'Runtime identifier'
+    required: true
+
+outputs:
+  key:
+    description: 'The key value for the runtime cache'
+    value: ${{ steps.calculate-cache-key.outputs.key }}
+
+runs:
+  using: composite
+
+  steps:
+    - id: calculate-cache-key
+      shell: bash
+      run: |
+        echo "key=runtime-${{ inputs.runtime }}-${{ hashFiles('.gitmodules', 'libc/libc.c', format('.github/workflows/runtime-{0}.yml', inputs.runtime)) }}" \
+          >> "$GITHUB_OUTPUT"

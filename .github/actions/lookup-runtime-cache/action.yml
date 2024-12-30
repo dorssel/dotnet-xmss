@@ -1,0 +1,41 @@
+# SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
+#
+# SPDX-License-Identifier: MIT
+
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+
+name: 'Lookup runtime cache'
+
+description: 'Checks if a cache exists for the given runtime'
+
+inputs:
+  runtime:
+    description: 'Runtime identifier'
+    required: true
+
+outputs:
+  key:
+    description: 'The key value for the runtime cache'
+    value: ${{ steps.calculate-cache-key.outputs.key }}
+  cache-hit:
+    description: 'Indicates if the cache exists or not'
+    value: ${{ steps.cache-lookup.outputs.cache-hit }}
+
+runs:
+  using: composite
+
+  steps:
+    - id: calculate-cache-key
+      uses: ./.github/actions/calculate-cache-key
+      with:
+        runtime: ${{ inputs.runtime }}
+
+    - id: cache-lookup
+      uses: actions/cache/restore@v4
+      with:
+        key: ${{ steps.calculate-cache-key.outputs.key }}
+        path: |
+          Xmss/runtimes/**
+        enableCrossOsArchive: true
+        lookup-only: true
