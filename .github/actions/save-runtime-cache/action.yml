@@ -1,0 +1,43 @@
+# SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
+#
+# SPDX-License-Identifier: MIT
+
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+
+name: 'Save runtime cache'
+
+description: 'Save the given runtime cache (which must exist as Xmss/runtimes/**)'
+
+inputs:
+  runtime:
+    description: 'Runtime identifier'
+    required: true
+
+runs:
+  using: composite
+
+  steps:
+    - id: lookup-runtime-cache
+      uses: ./.github/actions/lookup-runtime-cache
+      with:
+        runtime: ${{ inputs.runtime }}
+
+    - id: delete
+      if: ${{ steps.lookup-runtime-cache.outputs.cache-hit }}
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.actions.deleteActionsCacheById({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            cache_id: steps.lookup-runtime-cache.outputs.key,
+          })
+
+    - id: save
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          Xmss/runtimes/**
+        key: ${{ steps.lookup-runtime-cache.outputs.key }}
+        enableCrossOsArchive: true
