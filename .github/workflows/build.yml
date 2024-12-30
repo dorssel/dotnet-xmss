@@ -26,7 +26,6 @@ jobs:
       matrix:
         runtime:
           - linux-x64
-          - win-x64
           - browser-wasm
     uses: ./.github/workflows/cache-runtime.yml
     with:
@@ -39,6 +38,7 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
+      win-x64: ${{ steps.lookup-win-x64.outputs.cache-hit }}
       osx-arm64: ${{ steps.lookup-osx-arm64.outputs.cache-hit }}
 
     steps:
@@ -46,11 +46,25 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
 
+      - name: Lookup win-x64
+        id: lookup-win-x64
+        uses: ./.github/actions/lookup-runtime-cache
+        with:
+          runtime: win-x64
+
       - name: Lookup osx-arm64
         id: lookup-osx-arm64
         uses: ./.github/actions/lookup-runtime-cache
         with:
           runtime: osx-arm64
+
+  runtime-win-x64:
+    needs: lookup-runtime-caches
+    if: ${{ !needs.lookup-runtime-caches.outputs.win-x64 }}
+    uses: ./.github/workflows/runtime-win-x64.yml
+    permissions:
+      contents: read
+      actions: write
 
   runtime-osx-arm64:
     needs: lookup-runtime-caches
@@ -63,6 +77,7 @@ jobs:
   build-dotnet:
     needs:
       - cache-runtimes
+      - runtime-win-x64
       - runtime-osx-arm64
 
     if: always()
@@ -83,13 +98,10 @@ jobs:
           key: runtime-linux-x64-${{ hashFiles('.gitmodules', 'libc/libc.c', '.github/workflows/runtime-linux-x64.yml') }}
           fail-on-cache-miss: true
 
-      - name: Restore win-x64 artifact
-        uses: actions/cache/restore@v4
+      - name: Restore win-x64
+        uses: ./.github/actions/restore-runtime-cache
         with:
-          path: |
-            Xmss/runtimes/**
-          key: runtime-win-x64-${{ hashFiles('.gitmodules', 'libc/libc.c', '.github/workflows/runtime-win-x64.yml') }}
-          fail-on-cache-miss: true
+          runtime: win-x64
 
       - name: Restore osx-arm64
         uses: ./.github/actions/restore-runtime-cache
