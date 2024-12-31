@@ -7,7 +7,7 @@ using Dorssel.Security.Cryptography.Internal;
 namespace Internal.UnitTests;
 
 [TestClass]
-sealed unsafe class OpaqueStructuresTests
+sealed class OpaqueStructuresTests
 {
     [TestMethod]
     public void XMSS_SIGNING_CONTEXT_SIZE()

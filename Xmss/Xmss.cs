@@ -227,59 +227,56 @@ public sealed class Xmss
 
         XmssError result;
 
+        // Step 3: Create key.
+
+        using var keyContext = new CriticalXmssKeyContextHandle();
+        using var signingContext = new CriticalXmssSigningContextHandle();
+        using var privateKeyStatelessBlob = new CriticalXmssPrivateKeyStatelessBlobHandle();
+        using var privateKeyStatefulBlob = new CriticalXmssPrivateKeyStatefulBlobHandle();
+
         unsafe
         {
-            // Step 3: Create key.
+            result = UnsafeNativeMethods.xmss_context_initialize(ref signingContext.AsPointerRef(), (XmssParameterSetOID)parameterSet,
+                &UnmanagedFunctions.Realloc, &UnmanagedFunctions.Free, &UnmanagedFunctions.Zeroize);
+            XmssException.ThrowIfNotOkay(result);
 
-            using var keyContext = new CriticalXmssKeyContextHandle();
-            using var signingContext = new CriticalXmssSigningContextHandle();
-            {
-                result = UnsafeNativeMethods.xmss_context_initialize(ref signingContext.AsPointerRef(), (XmssParameterSetOID)parameterSet,
-                    &UnmanagedFunctions.Realloc, &UnmanagedFunctions.Free, &UnmanagedFunctions.Zeroize);
-                XmssException.ThrowIfNotOkay(result);
-            }
+            var allRandomPtr = stackalloc byte[96 + 32];
+            var allRandom = new Span<byte>(allRandomPtr, 96 + 32);
 
-            using var privateKeyStatelessBlob = new CriticalXmssPrivateKeyStatelessBlobHandle();
-            using var privateKeyStatefulBlob = new CriticalXmssPrivateKeyStatefulBlobHandle();
-            {
-                var allRandomPtr = stackalloc byte[96 + 32];
-                var allRandom = new Span<byte>(allRandomPtr, 96 + 32);
+            RandomNumberGenerator.Fill(allRandom);
 
-                RandomNumberGenerator.Fill(allRandom);
+            XmssBuffer secure_random = new() { data = allRandomPtr, data_size = 96 };
+            XmssBuffer random = new() { data = allRandomPtr + 96, data_size = 32 };
 
-                XmssBuffer secure_random = new() { data = allRandomPtr, data_size = 96 };
-                XmssBuffer random = new() { data = allRandomPtr + 96, data_size = 32 };
+            result = UnsafeNativeMethods.xmss_generate_private_key(ref keyContext.AsPointerRef(), ref privateKeyStatelessBlob.AsPointerRef(),
+                ref privateKeyStatefulBlob.AsPointerRef(), secure_random, enableIndexObfuscation
+                    ? XmssIndexObfuscationSetting.XMSS_INDEX_OBFUSCATION_ON : XmssIndexObfuscationSetting.XMSS_INDEX_OBFUSCATION_OFF,
+                random, signingContext.AsRef());
+            XmssException.ThrowIfNotOkay(result);
 
-                result = UnsafeNativeMethods.xmss_generate_private_key(ref keyContext.AsPointerRef(), ref privateKeyStatelessBlob.AsPointerRef(),
-                    ref privateKeyStatefulBlob.AsPointerRef(), secure_random, enableIndexObfuscation
-                        ? XmssIndexObfuscationSetting.XMSS_INDEX_OBFUSCATION_ON : XmssIndexObfuscationSetting.XMSS_INDEX_OBFUSCATION_OFF,
-                    random, signingContext.AsRef());
-                XmssException.ThrowIfNotOkay(result);
-
-                CryptographicOperations.ZeroMemory(allRandom);
-            }
-
-            // Step 4: Store state (failure erases any partial storage, then throws).
-
-            try
-            {
-                wrappedStateManager.Store(XmssKeyPart.PrivateStateless, privateKeyStatelessBlob.Data);
-                wrappedStateManager.Store(XmssKeyPart.PrivateStateful, privateKeyStatefulBlob.Data);
-            }
-            catch (XmssStateManagerException ex)
-            {
-                wrappedStateManager.DeleteAllAfterFailure(ex);
-                throw;
-            }
-
-            // Step 5: Replace KeyContext.
-
-            ResetState();
-            ParameterSet = parameterSet;
-            PrivateKey = new(wrappedStateManager);
-            PrivateKey.KeyContext.SwapWith(keyContext);
-            PrivateKey.StatefulBlob.SwapWith(privateKeyStatefulBlob);
+            CryptographicOperations.ZeroMemory(allRandom);
         }
+
+        // Step 4: Store state (failure erases any partial storage, then throws).
+
+        try
+        {
+            wrappedStateManager.Store(XmssKeyPart.PrivateStateless, privateKeyStatelessBlob.Data);
+            wrappedStateManager.Store(XmssKeyPart.PrivateStateful, privateKeyStatefulBlob.Data);
+        }
+        catch (XmssStateManagerException ex)
+        {
+            wrappedStateManager.DeleteAllAfterFailure(ex);
+            throw;
+        }
+
+        // Step 5: Replace KeyContext.
+
+        ResetState();
+        ParameterSet = parameterSet;
+        PrivateKey = new(wrappedStateManager);
+        PrivateKey.KeyContext.SwapWith(keyContext);
+        PrivateKey.StatefulBlob.SwapWith(privateKeyStatefulBlob);
     }
 
     /// <summary>
@@ -296,62 +293,66 @@ public sealed class Xmss
 
         XmssError result;
 
-        unsafe
-        {
-            using var privateKeyStatefulBlob = CriticalXmssPrivateKeyStatefulBlobHandle.Alloc();
-            using var privateKeyStatelessBlob = CriticalXmssPrivateKeyStatelessBlobHandle.Alloc();
-            wrappedStateManager.Load(XmssKeyPart.PrivateStateless, privateKeyStatelessBlob.Data);
-            wrappedStateManager.Load(XmssKeyPart.PrivateStateful, privateKeyStatefulBlob.Data);
+        using var privateKeyStatefulBlob = CriticalXmssPrivateKeyStatefulBlobHandle.Alloc();
+        using var privateKeyStatelessBlob = CriticalXmssPrivateKeyStatelessBlobHandle.Alloc();
+        wrappedStateManager.Load(XmssKeyPart.PrivateStateless, privateKeyStatelessBlob.Data);
+        wrappedStateManager.Load(XmssKeyPart.PrivateStateful, privateKeyStatefulBlob.Data);
 
-            foreach (var oid in Enum.GetValues<XmssParameterSetOID>())
+        foreach (var oid in Enum.GetValues<XmssParameterSetOID>())
+        {
+            using var keyContext = new CriticalXmssKeyContextHandle();
+            using var signingContext = new CriticalXmssSigningContextHandle();
+
+            unsafe
             {
-                using var keyContext = new CriticalXmssKeyContextHandle();
-                using var signingContext = new CriticalXmssSigningContextHandle();
                 result = UnsafeNativeMethods.xmss_context_initialize(ref signingContext.AsPointerRef(), oid,
                     &UnmanagedFunctions.Realloc, &UnmanagedFunctions.Free, &UnmanagedFunctions.Zeroize);
                 XmssException.ThrowIfNotOkay(result);
 
                 result = UnsafeNativeMethods.xmss_load_private_key(ref keyContext.AsPointerRef(),
                     privateKeyStatelessBlob.AsRef(), privateKeyStatefulBlob.AsRef(), signingContext.AsRef());
-                if (result == XmssError.XMSS_OKAY)
-                {
-                    ResetState();
-                    ParameterSet = (XmssParameterSet)oid;
-                    PrivateKey = new(wrappedStateManager);
-                    PrivateKey.KeyContext.SwapWith(keyContext);
-                    PrivateKey.StatefulBlob.SwapWith(privateKeyStatefulBlob);
+            }
+            if (result == XmssError.XMSS_OKAY)
+            {
+                ResetState();
+                ParameterSet = (XmssParameterSet)oid;
+                PrivateKey = new(wrappedStateManager);
+                PrivateKey.KeyContext.SwapWith(keyContext);
+                PrivateKey.StatefulBlob.SwapWith(privateKeyStatefulBlob);
 
-                    // Now try to load the internal public key part, but failure is not fatal.
+                // Now try to load the internal public key part, but failure is not fatal.
+                try
+                {
                     try
                     {
-                        try
+                        using var publicKeyInternalBlob = CriticalXmssPublicKeyInternalBlobHandle.Alloc(XmssCacheType.XMSS_CACHE_TOP, 0,
+                            ParameterSet);
+                        wrappedStateManager.Load(XmssKeyPart.Public, publicKeyInternalBlob.Data);
+
+                        unsafe
                         {
-                            using var publicKeyInternalBlob = CriticalXmssPublicKeyInternalBlobHandle.Alloc(XmssCacheType.XMSS_CACHE_TOP, 0,
-                                ParameterSet);
-                            wrappedStateManager.Load(XmssKeyPart.Public, publicKeyInternalBlob.Data);
                             // The cache will be automatically freed with the key context; we don't need it.
                             XmssInternalCache* cache = null;
                             result = UnsafeNativeMethods.xmss_load_public_key(ref cache, ref PrivateKey.KeyContext.AsRef(),
                                 publicKeyInternalBlob.AsRef());
                             XmssException.ThrowIfNotOkay(result);
-
-                            result = UnsafeNativeMethods.xmss_export_public_key(out PublicKey, PrivateKey.KeyContext.AsRef());
-                            XmssException.ThrowIfNotOkay(result);
-                            HasPublicKey = true;
                         }
-                        catch (Exception ex)
-                        {
-                            throw new IgnoreException(ex);
-                        }
+                        result = UnsafeNativeMethods.xmss_export_public_key(out PublicKey, PrivateKey.KeyContext.AsRef());
+                        XmssException.ThrowIfNotOkay(result);
+                        HasPublicKey = true;
                     }
-                    catch (IgnoreException) { }
-                    return;
+                    catch (Exception ex)
+                    {
+                        throw new IgnoreException(ex);
+                    }
                 }
-            }
+                catch (IgnoreException) { }
 
-            // None of the OIDs worked.
-            throw new XmssException(XmssError.XMSS_ERR_INVALID_BLOB);
+                return;
+            }
         }
+        // None of the OIDs worked.
+        throw new XmssException(XmssError.XMSS_ERR_INVALID_BLOB);
     }
 
     /// <summary>
@@ -598,11 +599,10 @@ public sealed class Xmss
             result = UnsafeNativeMethods.xmss_finish_calculate_public_key(ref publicKeyInternalBlob.AsPointerRef(),
                 ref keyGenerationContext.AsPointerRef(), ref PrivateKey.KeyContext.AsRef());
             XmssException.ThrowIfNotOkay(result);
-
-            result = UnsafeNativeMethods.xmss_export_public_key(out PublicKey, PrivateKey.KeyContext.AsRef());
-            XmssException.ThrowIfNotOkay(result);
-            HasPublicKey = true;
         }
+        result = UnsafeNativeMethods.xmss_export_public_key(out PublicKey, PrivateKey.KeyContext.AsRef());
+        XmssException.ThrowIfNotOkay(result);
+        HasPublicKey = true;
 
         // NOTE: our KeyContext and StateManager are now out of sync, but that does not affect security (only the public part)
 
