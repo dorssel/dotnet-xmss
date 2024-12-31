@@ -91,7 +91,7 @@ jobs:
       contents: read
       actions: write
 
-  build-dotnet:
+  build:
     needs:
       - runtime-linux-x64
       - runtime-win-x64
@@ -201,8 +201,8 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
   deploy:
-    if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged) }}
-    needs: build-dotnet
+    needs: build
+    if: ${{ always() && github.event_name == 'push' && needs.build.result == 'success' }}
 
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:
