@@ -8,7 +8,7 @@ namespace Dorssel.Security.Cryptography.InteropServices;
 
 abstract class CriticalXmssHandle<T> : CriticalHandle where T : unmanaged
 {
-    private protected unsafe CriticalXmssHandle()
+    private protected CriticalXmssHandle()
         : base(0)
     {
     }

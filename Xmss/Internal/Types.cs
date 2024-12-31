@@ -80,9 +80,9 @@ enum XmssCacheType : int
     XMSS_CACHE_TOP = XmssDistantValues.XMSS_DISTANT_VALUE_3
 }
 
-unsafe struct XmssValue256
+struct XmssValue256
 {
-    internal fixed byte data[32];
+    internal unsafe fixed byte data[32];
 }
 
 static partial class Defines
@@ -90,15 +90,15 @@ static partial class Defines
     internal const int XMSS_VALUE_256_WORDS = 8;
 }
 
-unsafe struct XmssNativeValue256
+struct XmssNativeValue256
 {
-    internal fixed uint data[Defines.XMSS_VALUE_256_WORDS];
+    internal unsafe fixed uint data[Defines.XMSS_VALUE_256_WORDS];
 }
 
-unsafe struct XmssBuffer
+struct XmssBuffer
 {
     internal nuint data_size;
-    internal byte* data;
+    internal unsafe byte* data;
 }
 
 unsafe delegate void* XmssReallocFunction(void* ptr, nuint size);

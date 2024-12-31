@@ -7,7 +7,7 @@ using System.Security;
 
 namespace Dorssel.Security.Cryptography.Internal;
 
-unsafe struct XmssSigningContext { }
+struct XmssSigningContext { }
 
 static partial class Defines
 {
@@ -22,7 +22,7 @@ static partial class UnsafeNativeMethods
     internal static unsafe partial void xmss_free_signing_context(XmssSigningContext* signing_context);
 }
 
-unsafe struct XmssInternalCache { }
+struct XmssInternalCache { }
 
 static partial class Defines
 {
@@ -50,7 +50,7 @@ static partial class Defines
     }
 }
 
-unsafe struct XmssKeyContext { }
+struct XmssKeyContext { }
 
 static partial class Defines
 {
@@ -74,7 +74,7 @@ static partial class UnsafeNativeMethods
     internal static unsafe partial void xmss_free_key_context(XmssKeyContext* key_context);
 }
 
-unsafe struct XmssKeyGenerationContext { }
+struct XmssKeyGenerationContext { }
 
 static partial class Defines
 {
