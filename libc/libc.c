@@ -53,7 +53,7 @@ int memcmp(const void *s1, const void *s2, size_t n) {
 }
 
 NOEXPORT
-void *memcpy(void * restrict s1, const void * restrict s2, size_t n) {
+void *memcpy(void * restrict s1, const void * restrict s2, size_t n) {  // DevSkim: ignore DS121708
     unsigned char *dst = s1;
     const unsigned char *src = s2;
     for (; n; n--) {

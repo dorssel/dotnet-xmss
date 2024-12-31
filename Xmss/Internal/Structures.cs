@@ -7,10 +7,10 @@ using System.Security;
 
 namespace Dorssel.Security.Cryptography.Internal;
 
-unsafe struct XmssPrivateKeyStatelessBlob
+struct XmssPrivateKeyStatelessBlob
 {
     internal nuint data_size;
-    internal byte* data // originally: uint8_t[]
+    internal unsafe byte* data // originally: uint8_t[]
     {
         get
         {
@@ -28,10 +28,10 @@ static partial class Defines
         + sizeof(XmssValue256) + 4 + 4 + 4 + 4 + XMSS_PRIVATE_KEY_STATELESS_PART_SIZE;
 }
 
-unsafe struct XmssPrivateKeyStatefulBlob
+struct XmssPrivateKeyStatefulBlob
 {
     internal nuint data_size;
-    internal byte* data // originally: uint8_t[]
+    internal unsafe byte* data // originally: uint8_t[]
     {
         get
         {
@@ -49,10 +49,10 @@ static partial class Defines
         + 4 + 4 + 4 + 4 + sizeof(XmssValue256) + (2 * XMSS_PRIVATE_KEY_STATEFUL_PART_SIZE);
 }
 
-unsafe struct XmssPublicKeyInternalBlob
+struct XmssPublicKeyInternalBlob
 {
     internal nuint data_size;
-    internal byte* data // originally: uint8_t[]
+    internal unsafe byte* data // originally: uint8_t[]
     {
         get
         {
@@ -85,12 +85,12 @@ static partial class Defines
     internal static readonly unsafe int XMSS_PUBLIC_KEY_SIZE = sizeof(XmssPublicKey);
 }
 
-unsafe struct XmssSignature
+struct XmssSignature
 {
     internal uint leaf_index; // big-endian
     internal XmssValue256 random_bytes;
-    internal fixed byte wots_signature[67 * 32]; // originally: XmssValue256[67]
-    internal XmssValue256* authentication_path // originally: XmssValue256[]
+    internal unsafe fixed byte wots_signature[67 * 32]; // originally: XmssValue256[67]
+    internal unsafe XmssValue256* authentication_path // originally: XmssValue256[]
     {
         get
         {
@@ -102,10 +102,10 @@ unsafe struct XmssSignature
     }
 }
 
-unsafe struct XmssSignatureBlob
+struct XmssSignatureBlob
 {
     internal nuint data_size;
-    internal byte* data // originally: uint8_t[]
+    internal unsafe byte* data // originally: uint8_t[]
     {
         get
         {
@@ -143,10 +143,10 @@ static partial class Defines
 }
 
 [StructLayout(LayoutKind.Explicit)]
-unsafe struct XmssVerificationContext
+struct XmssVerificationContext
 {
     [FieldOffset(0)]
-    internal fixed byte data[Defines.XMSS_VERIFICATION_CONTEXT_SIZE];
+    internal unsafe fixed byte data[Defines.XMSS_VERIFICATION_CONTEXT_SIZE];
 
     [FieldOffset(0)]
     internal ulong alignment;

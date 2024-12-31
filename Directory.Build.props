@@ -45,7 +45,9 @@ SPDX-License-Identifier: MIT
     <!-- NuGet metadata -->
     <Title>$(Product)</Title>
     <Authors>$(Company)</Authors>
-    <Description>TODO</Description>
+    <Description>XMSS Library</Description>
+    <PackageProjectUrl>https://dorssel.github.io/dotnet-xmss/</PackageProjectUrl>
+    <PackageTags>cryptography signature post-quantum post-quantum-cryptography post-quantum-signature xmss rfc-8391 nist-sp-800-208</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
@@ -55,7 +57,7 @@ SPDX-License-Identifier: MIT
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dorssel.GitVersion.MsBuild" />
+    <PackageReference Include="Dorssel.GitVersion.MsBuild" PrivateAssets="all" />
   </ItemGroup>
 
   <Target Name="SetCopyright" AfterTargets="GetVersion">
