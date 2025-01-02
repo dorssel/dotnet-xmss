@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
 
@@ -24,8 +25,8 @@ struct XmssPrivateKeyStatelessBlob
 
 static partial class Defines
 {
-    internal static readonly unsafe int XMSS_PRIVATE_KEY_STATELESS_BLOB_SIZE = sizeof(XmssPrivateKeyStatelessBlob)
-        + sizeof(XmssValue256) + 4 + 4 + 4 + 4 + XMSS_PRIVATE_KEY_STATELESS_PART_SIZE;
+    internal static readonly int XMSS_PRIVATE_KEY_STATELESS_BLOB_SIZE = Unsafe.SizeOf<XmssPrivateKeyStatelessBlob>()
+        + Unsafe.SizeOf<XmssValue256>() + 4 + 4 + 4 + 4 + XMSS_PRIVATE_KEY_STATELESS_PART_SIZE;
 }
 
 struct XmssPrivateKeyStatefulBlob
@@ -45,8 +46,8 @@ struct XmssPrivateKeyStatefulBlob
 
 static partial class Defines
 {
-    internal static readonly unsafe int XMSS_PRIVATE_KEY_STATEFUL_BLOB_SIZE = sizeof(XmssPrivateKeyStatefulBlob) + sizeof(XmssValue256)
-        + 4 + 4 + 4 + 4 + sizeof(XmssValue256) + (2 * XMSS_PRIVATE_KEY_STATEFUL_PART_SIZE);
+    internal static readonly int XMSS_PRIVATE_KEY_STATEFUL_BLOB_SIZE = Unsafe.SizeOf<XmssPrivateKeyStatefulBlob>() + Unsafe.SizeOf<XmssValue256>()
+        + 4 + 4 + 4 + 4 + Unsafe.SizeOf<XmssValue256>() + (2 * XMSS_PRIVATE_KEY_STATEFUL_PART_SIZE);
 }
 
 struct XmssPublicKeyInternalBlob
@@ -66,10 +67,10 @@ struct XmssPublicKeyInternalBlob
 
 static partial class Defines
 {
-    internal static unsafe int XMSS_PUBLIC_KEY_INTERNAL_BLOB_SIZE(XmssCacheType cache_type, byte cache_level, XmssParameterSetOID param_set)
+    internal static int XMSS_PUBLIC_KEY_INTERNAL_BLOB_SIZE(XmssCacheType cache_type, byte cache_level, XmssParameterSetOID param_set)
     {
-        return sizeof(XmssPublicKeyInternalBlob) + sizeof(XmssValue256) + 4 + 4 + sizeof(XmssValue256) + sizeof(XmssValue256)
-            + 4 + 4 + 4 + 4 + (sizeof(XmssValue256) * XMSS_CACHE_ENTRY_COUNT(cache_type, cache_level, param_set));
+        return Unsafe.SizeOf<XmssPublicKeyInternalBlob>() + Unsafe.SizeOf<XmssValue256>() + 4 + 4 + Unsafe.SizeOf<XmssValue256>()
+            + Unsafe.SizeOf<XmssValue256>() + 4 + 4 + 4 + 4 + (Unsafe.SizeOf<XmssValue256>() * XMSS_CACHE_ENTRY_COUNT(cache_type, cache_level, param_set));
     }
 }
 
@@ -82,7 +83,7 @@ struct XmssPublicKey
 
 static partial class Defines
 {
-    internal static readonly unsafe int XMSS_PUBLIC_KEY_SIZE = sizeof(XmssPublicKey);
+    internal static readonly int XMSS_PUBLIC_KEY_SIZE = Unsafe.SizeOf<XmssPublicKey>();
 }
 
 struct XmssSignature
@@ -129,14 +130,14 @@ static partial class UnsafeNativeMethods
 
 static partial class Defines
 {
-    internal static unsafe int XMSS_SIGNATURE_SIZE(XmssParameterSetOID param_set)
+    internal static int XMSS_SIGNATURE_SIZE(XmssParameterSetOID param_set)
     {
-        return sizeof(XmssSignature) + (sizeof(XmssValue256) * XMSS_TREE_DEPTH(param_set));
+        return Unsafe.SizeOf<XmssSignature>() + (Unsafe.SizeOf<XmssValue256>() * XMSS_TREE_DEPTH(param_set));
     }
 
-    internal static unsafe int XMSS_SIGNATURE_BLOB_SIZE(XmssParameterSetOID param_set)
+    internal static int XMSS_SIGNATURE_BLOB_SIZE(XmssParameterSetOID param_set)
     {
-        return sizeof(XmssSignatureBlob) + XMSS_SIGNATURE_SIZE(param_set);
+        return Unsafe.SizeOf<XmssSignatureBlob>() + XMSS_SIGNATURE_SIZE(param_set);
     }
 
     internal const int XMSS_VERIFICATION_CONTEXT_SIZE = 4 + 4 + 8 + 8 + 200 + 8 + 32;

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
 
@@ -39,14 +40,14 @@ static partial class Defines
         ;
     }
 
-    internal static unsafe int XMSS_INTERNAL_CACHE_SIZE(XmssCacheType cache_type, byte cache_level, XmssParameterSetOID param_set)
+    internal static int XMSS_INTERNAL_CACHE_SIZE(XmssCacheType cache_type, byte cache_level, XmssParameterSetOID param_set)
     {
-        return 4 + 4 + (sizeof(XmssValue256) * XMSS_CACHE_ENTRY_COUNT(cache_type, cache_level, param_set));
+        return 4 + 4 + (Unsafe.SizeOf<XmssValue256>() * XMSS_CACHE_ENTRY_COUNT(cache_type, cache_level, param_set));
     }
 
-    internal static unsafe int XMSS_PUBLIC_KEY_GENERATION_CACHE_SIZE(int number_of_partitions)
+    internal static int XMSS_PUBLIC_KEY_GENERATION_CACHE_SIZE(int number_of_partitions)
     {
-        return 4 + 4 + (sizeof(XmssValue256) * number_of_partitions);
+        return 4 + 4 + (Unsafe.SizeOf<XmssValue256>() * number_of_partitions);
     }
 }
 
@@ -56,13 +57,16 @@ static partial class Defines
 {
     internal const int XMSS_PRIVATE_KEY_STATEFUL_PART_SIZE = 4 + 4;
 
-    internal static readonly unsafe int XMSS_PRIVATE_KEY_STATELESS_PART_SIZE = 32 + 32 + 4 + 4 + 32 + sizeof(XmssValue256) + 32;
+    internal static readonly int XMSS_PRIVATE_KEY_STATELESS_PART_SIZE = 32 + 32 + 4 + 4 + 32 + Unsafe.SizeOf<XmssValue256>() + 32;
 
-    internal static unsafe int XMSS_KEY_CONTEXT_SIZE(XmssParameterSetOID param_set, XmssIndexObfuscationSetting obfuscation_setting)
+    internal static int XMSS_KEY_CONTEXT_SIZE(XmssParameterSetOID param_set, XmssIndexObfuscationSetting obfuscation_setting)
     {
-        return 4 + 4 + XMSS_SIGNING_CONTEXT_SIZE + XMSS_PRIVATE_KEY_STATELESS_PART_SIZE + (2 * XMSS_PRIVATE_KEY_STATEFUL_PART_SIZE)
-        + ((3 * sizeof(XmssValue256)) + sizeof(void*) + 4 + 4)
-        + (4 * (1 << XMSS_TREE_DEPTH(param_set)) * ((obfuscation_setting == XmssIndexObfuscationSetting.XMSS_INDEX_OBFUSCATION_ON) ? 1 : 0));
+        unsafe
+        {
+            return 4 + 4 + XMSS_SIGNING_CONTEXT_SIZE + XMSS_PRIVATE_KEY_STATELESS_PART_SIZE + (2 * XMSS_PRIVATE_KEY_STATEFUL_PART_SIZE)
+                + ((3 * Unsafe.SizeOf<XmssValue256>()) + sizeof(void*) + 4 + 4)
+                + (4 * (1 << XMSS_TREE_DEPTH(param_set)) * ((obfuscation_setting == XmssIndexObfuscationSetting.XMSS_INDEX_OBFUSCATION_ON) ? 1 : 0));
+        }
     }
 }
 
@@ -78,9 +82,12 @@ struct XmssKeyGenerationContext { }
 
 static partial class Defines
 {
-    internal static unsafe int XMSS_KEY_GENERATION_CONTEXT_SIZE(int generation_partitions)
+    internal static int XMSS_KEY_GENERATION_CONTEXT_SIZE(int generation_partitions)
     {
-        return sizeof(void*) + sizeof(uint) + sizeof(uint) + sizeof(void*) + sizeof(void*) + (sizeof(uint) * generation_partitions);
+        unsafe
+        {
+            return sizeof(void*) + sizeof(uint) + sizeof(uint) + sizeof(void*) + sizeof(void*) + (sizeof(uint) * generation_partitions);
+        }
     }
 }
 
