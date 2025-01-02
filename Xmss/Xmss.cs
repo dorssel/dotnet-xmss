@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Formats.Asn1;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Dorssel.Security.Cryptography.Internal;
@@ -24,20 +25,15 @@ public sealed class Xmss
     #region Construction
     static Xmss()
     {
-        VerifyLibraryVersion();
-        TryRegisterWithCryptoConfig();
+        var runtimeVersion = SafeNativeMethods.xmss_library_get_version();
+        ThrowIfVersionsNotEqual(Defines.XMSS_LIBRARY_VERSION, runtimeVersion);
     }
 
-    /// <summary>
-    /// Throws if either the library cannot be loaded, or it does not expose the expected version (i.e., it is the wrong one).
-    /// </summary>
-    [ExcludeFromCodeCoverage(Justification = "Not testable.")]
-    static void VerifyLibraryVersion()
+    internal static void ThrowIfVersionsNotEqual(uint expected, uint actual)
     {
-        var runtimeVersion = SafeNativeMethods.xmss_library_get_version();
-        if (runtimeVersion != Defines.XMSS_LIBRARY_VERSION)
+        if (actual != expected)
         {
-            throw new DllNotFoundException($"XMSS library version mismatch ({runtimeVersion})");
+            throw new DllNotFoundException($"XMSS library version mismatch ({actual})");
         }
     }
 
@@ -72,22 +68,23 @@ public sealed class Xmss
     /// <seealso href="https://www.ietf.org/archive/id/draft-ietf-lamps-x509-shbs-13.html#name-xmss-algorithm-identifier" />
     public static Oid IdAlgXmssHashsig { get; }  = new("1.3.6.1.5.5.7.6.34", "xmss");
 
-    static void RegisterWithCryptoConfig()
-    {
-        CryptoConfig.AddAlgorithm(typeof(Xmss), IdAlgXmssHashsig.FriendlyName!);
-        CryptoConfig.AddOID(IdAlgXmssHashsig.Value!, IdAlgXmssHashsig.FriendlyName!);
-    }
+    static readonly object RegistrationLock = new();
+    static bool TriedRegisterOnce;
 
-    [ExcludeFromCodeCoverage(Justification = "Not testable; WASM only.")]
-    static void TryRegisterWithCryptoConfig()
+    /// <summary>
+    /// TODO
+    /// </summary>
+    [UnsupportedOSPlatform("browser")]
+    public static void RegisterWithCryptoConfig()
     {
-        try
+        lock (RegistrationLock)
         {
-            RegisterWithCryptoConfig();
-        }
-        catch (PlatformNotSupportedException)
-        {
-            // CryptoConfig is unsupported for WASM.
+            if (!TriedRegisterOnce)
+            {
+                TriedRegisterOnce = true;
+                CryptoConfig.AddAlgorithm(typeof(Xmss), IdAlgXmssHashsig.FriendlyName!);
+                CryptoConfig.AddOID(IdAlgXmssHashsig.Value!, IdAlgXmssHashsig.FriendlyName!);
+            }
         }
     }
     #endregion

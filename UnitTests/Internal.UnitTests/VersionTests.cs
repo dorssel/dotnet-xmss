@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
+using Dorssel.Security.Cryptography;
 using Dorssel.Security.Cryptography.Internal;
 
 namespace Internal.UnitTests;
@@ -37,5 +38,20 @@ sealed unsafe class VersionTests
     public void XMSS_LIBRARY_GET_VERSION_PATCH()
     {
         Assert.AreEqual(0x56, Defines.XMSS_LIBRARY_GET_VERSION_PATCH(0x00123456));
+    }
+
+    [TestMethod]
+    public void ThrowIfVersionsNotEqual()
+    {
+        Xmss.ThrowIfVersionsNotEqual(Defines.XMSS_LIBRARY_VERSION, Defines.XMSS_LIBRARY_VERSION);
+    }
+
+    [TestMethod]
+    public void ThrowIfVersionsNotEqual_Throws()
+    {
+        Assert.ThrowsException<DllNotFoundException>(() =>
+        {
+            Xmss.ThrowIfVersionsNotEqual(Defines.XMSS_LIBRARY_VERSION, uint.MaxValue);
+        });
     }
 }
