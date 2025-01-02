@@ -16,14 +16,33 @@ using Dorssel.Security.Cryptography.InteropServices;
 namespace Dorssel.Security.Cryptography;
 
 /// <summary>
-/// TODO
+/// Provides an implementation of the XMSS algorithm.
 /// </summary>
 public sealed class Xmss
     : AsymmetricAlgorithm
 {
     #region Construction
+    static Xmss()
+    {
+        VerifyLibraryVersion();
+        TryRegisterWithCryptoConfig();
+    }
+
     /// <summary>
-    /// TODO
+    /// Throws if either the library cannot be loaded, or it does not expose the expected version (i.e., it is the wrong one).
+    /// </summary>
+    [ExcludeFromCodeCoverage(Justification = "Not testable.")]
+    static void VerifyLibraryVersion()
+    {
+        var runtimeVersion = SafeNativeMethods.xmss_library_get_version();
+        if (runtimeVersion != Defines.XMSS_LIBRARY_VERSION)
+        {
+            throw new DllNotFoundException($"XMSS library version mismatch ({runtimeVersion})");
+        }
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Xmss"/> class.
     /// </summary>
     public Xmss()
     {
@@ -32,33 +51,12 @@ public sealed class Xmss
     }
 
     /// <summary>
-    /// TODO
+    /// Creates a new instance of the default implementation of the eXtended Merkle Signature Scheme (XMSS).
     /// </summary>
-    /// <returns>TODO</returns>
+    /// <returns>A new instance of the default implementation (<see cref="Xmss"/>) of this class.</returns>
     public static new Xmss Create()
     {
         return new Xmss();
-    }
-    #endregion
-
-    #region Version
-    /// <summary>
-    /// TODO
-    /// </summary>
-    public static Version NativeHeadersVersion => new(Defines.XMSS_LIBRARY_VERSION_MAJOR, Defines.XMSS_LIBRARY_VERSION_MINOR,
-                Defines.XMSS_LIBRARY_VERSION_PATCH);
-
-    /// <summary>
-    /// TODO
-    /// </summary>
-    public static Version NativeLibraryVersion
-    {
-        get
-        {
-            var nativeVersion = SafeNativeMethods.xmss_library_get_version();
-            return new(Defines.XMSS_LIBRARY_GET_VERSION_MAJOR(nativeVersion),
-                Defines.XMSS_LIBRARY_GET_VERSION_MINOR(nativeVersion), Defines.XMSS_LIBRARY_GET_VERSION_PATCH(nativeVersion));
-        }
     }
     #endregion
 
@@ -81,7 +79,7 @@ public sealed class Xmss
     }
 
     [ExcludeFromCodeCoverage(Justification = "Not testable; WASM only.")]
-    static Xmss()
+    static void TryRegisterWithCryptoConfig()
     {
         try
         {
@@ -112,10 +110,7 @@ public sealed class Xmss
         ParameterSet = XmssParameterSet.None;
     }
 
-    /// <summary>
-    /// TODO
-    /// </summary>
-    /// <param name="disposing">TODO</param>
+    /// <inheritdoc/>
     protected override void Dispose(bool disposing)
     {
         if (!IsDisposed)
@@ -142,6 +137,7 @@ public sealed class Xmss
     /// </summary>
     /// <seealso href="https://www.iana.org/assignments/xml-security-uris/xml-security-uris.xhtml" />
     /// <seealso href="https://www.rfc-editor.org/rfc/rfc9231.html#name-xmss-and-xmssmt" />
+    /// <exception cref="InvalidOperationException">When the current <see cref="ParameterSet"/> is <see cref="XmssParameterSet.None"/>.</exception>
     public override string? SignatureAlgorithm => ParameterSet switch
     {
         XmssParameterSet.XMSS_SHA2_10_256 => "http://www.w3.org/2021/04/xmldsig-more#xmss-sha2-10-256", // DevSkim: ignore DS137138
@@ -665,10 +661,10 @@ public sealed class Xmss
     }
 
     /// <summary>
-    /// TODO
+    /// Computes the XMSS signature for the specified data.
     /// </summary>
-    /// <param name="data">TODO</param>
-    /// <returns>TODO</returns>
+    /// <param name="data">The data to sign.</param>
+    /// <returns>The XMSS signature for the specified data.</returns>
     public byte[] Sign(ReadOnlySpan<byte> data)
     {
         var signature = new byte[Defines.XMSS_SIGNATURE_SIZE(ParameterSet.AsOID())];
@@ -692,12 +688,12 @@ public sealed class Xmss
     }
 
     /// <summary>
-    /// TODO
+    /// Computes the XMSS signature for the specified data into the provided buffer.
     /// </summary>
-    /// <param name="data">TODO</param>
-    /// <param name="destination">TODO</param>
-    /// <returns>TODO</returns>
-    /// <exception cref="ArgumentException">TODO</exception>
+    /// <param name="data">The data to sign.</param>
+    /// <param name="destination">The buffer to receive the signature.</param>
+    /// <returns>The total number of bytes written to <paramref name="destination"/>.</returns>
+    /// <exception cref="ArgumentException">The buffer in <paramref name="destination"/> is too small to hold the signature.</exception>
     public int Sign(ReadOnlySpan<byte> data, Span<byte> destination)
     {
         return TrySign(data, destination, out var bytesWritten) ? bytesWritten
@@ -719,12 +715,13 @@ public sealed class Xmss
     }
 
     /// <summary>
-    /// TODO
+    /// Attempts to compute the XMSS digital signature for the specified read-only span of bytes into the provided destination by using the current key.
     /// </summary>
-    /// <param name="data">TODO</param>
-    /// <param name="destination">TODO</param>
-    /// <param name="bytesWritten">TODO</param>
-    /// <returns>TODO</returns>
+    /// <param name="data">The data to be signed.</param>
+    /// <param name="destination">The buffer to receive the signature.</param>
+    /// <param name="bytesWritten">When this method returns, the total number of bytes written into <paramref name="destination"/>.
+    ///     This parameter is treated as uninitialized.</param>
+    /// <returns><see langword="true"/> if <paramref name="destination"/> is big enough to receive the signature; otherwise, <see langword="false"/>.</returns>
     public bool TrySign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten)
     {
         unsafe
@@ -783,11 +780,11 @@ public sealed class Xmss
 
     #region Verify
     /// <summary>
-    /// TODO
+    /// Verifies that a digital signature is appropriate for the current key and provided data.
     /// </summary>
-    /// <param name="data">TODO</param>
-    /// <param name="signature">TODO</param>
-    /// <returns>TODO</returns>
+    /// <param name="data">The signed data.</param>
+    /// <param name="signature">The signature to be verified.</param>
+    /// <returns><see langword="true"/> if the signature is valid for the provided data; otherwise, <see langword="false"/>.</returns>
     public bool Verify(Stream data, ReadOnlySpan<byte> signature)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -838,11 +835,11 @@ public sealed class Xmss
     }
 
     /// <summary>
-    /// TODO
+    /// Verifies that a digital signature is appropriate for the current key and provided data.
     /// </summary>
-    /// <param name="data">TODO</param>
-    /// <param name="signature">TODO</param>
-    /// <returns>TODO</returns>
+    /// <param name="data">The signed data.</param>
+    /// <param name="signature">The signature to be verified.</param>
+    /// <returns><see langword="true"/> if the signature is valid for the provided data; otherwise, <see langword="false"/>.</returns>
     public bool Verify(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
@@ -1109,10 +1106,27 @@ public sealed class Xmss
     }
 
     /// <summary>
-    /// TODO
+    /// Imports an RFC 7468 PEM-encoded key, replacing the keys for this object.
     /// </summary>
-    /// <param name="input">TODO</param>
-    /// <exception cref="ArgumentException">TODO</exception>
+    /// <param name="input">The PEM text of the key to import.</param>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="input"/> does not contain a PEM-encoded key with a recognized label.
+    ///
+    /// -or-
+    ///
+    /// <paramref name="input"/> contains multiple PEM-encoded keys with a recognized label.
+    /// </exception>
+    /// <remarks>
+    /// Unsupported or malformed PEM-encoded objects will be ignored.
+    /// If multiple supported PEM labels are found, an exception is raised to prevent importing a key when the key is ambiguous.
+    ///
+    /// This method supports the following PEM labels:
+    /// <list type="bullet">
+    /// <item><c>PUBLIC KEY</c></item>
+    /// <item><c>XMSS PUBLIC KEY</c></item>
+    /// <item><c>CERTIFICATE</c></item>
+    /// </list>
+    /// </remarks>
     public override void ImportFromPem(ReadOnlySpan<char> input)
     {
         PemFields? foundFields = default;

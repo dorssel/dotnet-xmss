@@ -6,7 +6,7 @@ using Dorssel.Security.Cryptography.Internal;
 
 namespace Dorssel.Security.Cryptography.InteropServices;
 
-sealed class CriticalXmssPrivateKeyStatefulBlobHandle() : CriticalXmssBlobHandle<XmssPrivateKeyStatefulBlob>(true)
+sealed class CriticalXmssPrivateKeyStatefulBlobHandle : CriticalXmssPrivateBlobHandle<XmssPrivateKeyStatefulBlob>
 {
     public static CriticalXmssPrivateKeyStatefulBlobHandle Alloc()
     {

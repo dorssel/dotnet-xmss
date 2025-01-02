@@ -17,10 +17,6 @@ static class Program
     static async Task Main()
     {
         {
-            Console.WriteLine($"Native headers version: {Xmss.NativeHeadersVersion}");
-            Console.WriteLine($"Native library version: {Xmss.NativeLibraryVersion}");
-        }
-        {
             var oid = CryptoConfig.MapNameToOID("XMSS");
             Console.WriteLine($"Found OID for 'XMSS': {oid}");
 #pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
