@@ -6,7 +6,7 @@ using Dorssel.Security.Cryptography.Internal;
 
 namespace Dorssel.Security.Cryptography.InteropServices;
 
-sealed class CriticalXmssPublicKeyInternalBlobHandle() : CriticalXmssBlobHandle<XmssPublicKeyInternalBlob>(false)
+sealed class CriticalXmssPublicKeyInternalBlobHandle : CriticalXmssBlobHandle<XmssPublicKeyInternalBlob>
 {
     public static CriticalXmssPublicKeyInternalBlobHandle Alloc(XmssCacheType cacheType, byte cacheLevel, XmssParameterSet parameterSet)
     {

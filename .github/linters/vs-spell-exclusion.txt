@@ -2,8 +2,11 @@ Codecov
 Dorssel
 hashsig
 marshaller
+navmenu
 param
 realloc
+sitenav
 stateful
 xmss
 zeroize
+Xtended
