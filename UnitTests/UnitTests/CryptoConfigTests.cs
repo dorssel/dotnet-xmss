@@ -12,6 +12,30 @@ namespace UnitTests;
 sealed class CryptoConfigTests
 {
     [TestMethod]
+    public void IdAlgXmssHashsig()
+    {
+        Assert.IsNotNull(Xmss.IdAlgXmssHashsig.Value);
+        Assert.IsNotNull(Xmss.IdAlgXmssHashsig.FriendlyName);
+    }
+
+    [TestMethod]
+    public void RegisterWithCryptoConfig()
+    {
+        Xmss.RegisterWithCryptoConfig();
+
+        Assert.AreEqual(Xmss.IdAlgXmssHashsig.Value, CryptoConfig.MapNameToOID(Xmss.IdAlgXmssHashsig.FriendlyName!));
+    }
+
+    [TestMethod]
+    public void RegisterWithCryptoConfig_Twice()
+    {
+        Xmss.RegisterWithCryptoConfig();
+        Xmss.RegisterWithCryptoConfig();
+
+        Assert.AreEqual(Xmss.IdAlgXmssHashsig.Value, CryptoConfig.MapNameToOID(Xmss.IdAlgXmssHashsig.FriendlyName!));
+    }
+
+    [TestMethod]
     public void Create()
     {
         using var xmss = Xmss.Create();
@@ -23,11 +47,10 @@ sealed class CryptoConfigTests
     [RequiresUnreferencedCode("Calls Dorssel.Security.Cryptography.Xmss.Create(String)")]
     public void Create_Name()
     {
-        Assert.IsNotNull(Xmss.IdAlgXmssHashsig.FriendlyName);
-        Assert.AreEqual("xmss", Xmss.IdAlgXmssHashsig.FriendlyName);
+        Xmss.RegisterWithCryptoConfig();
 
 #pragma warning disable SYSLIB0045 // Type or member is obsolete
-        using var xmss = Xmss.Create("xmss");
+        using var xmss = Xmss.Create(Xmss.IdAlgXmssHashsig.FriendlyName!);
 #pragma warning restore SYSLIB0045 // Type or member is obsolete
 
         Assert.IsNotNull(xmss);

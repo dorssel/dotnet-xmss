@@ -17,6 +17,8 @@ static class Program
     static async Task Main()
     {
         {
+            Xmss.RegisterWithCryptoConfig();
+
             var oid = CryptoConfig.MapNameToOID("XMSS");
             Console.WriteLine($"Found OID for 'XMSS': {oid}");
 #pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code

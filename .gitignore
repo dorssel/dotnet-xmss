@@ -10,3 +10,4 @@ runtimes/
 TestResults/
 
 *.user
+*.lutconfig
