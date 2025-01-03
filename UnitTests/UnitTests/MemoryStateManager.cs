@@ -53,7 +53,7 @@ sealed class MemoryStateManager()
 
         if (State[XmssKeyPart.PrivateStateful] is not byte[] oldData)
         {
-            throw new InvalidOperationException("Part does not exists.");
+            throw new InvalidOperationException("Part does not exist.");
         }
         if (!expected.SequenceEqual(oldData))
         {
@@ -68,7 +68,7 @@ sealed class MemoryStateManager()
 
         if (State[part] is not byte[] data)
         {
-            throw new ArgumentException("Part does not exist.", nameof(part));
+            throw new InvalidOperationException("Part does not exist.");
         }
         if (data.Length != destination.Length)
         {
