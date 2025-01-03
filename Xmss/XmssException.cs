@@ -10,31 +10,34 @@ using Dorssel.Security.Cryptography.Internal;
 namespace Dorssel.Security.Cryptography;
 
 /// <summary>
-/// TODO
+/// The exception that is thrown when an error occurs during a cryptographic operation of the native XMSS library.
 /// </summary>
 public class XmssException
     : CryptographicException
 {
     /// <summary>
-    /// TODO
+    /// Initializes a new instance of the <see cref="XmssException"/> class with default properties.
     /// </summary>
     public XmssException()
     {
     }
 
     /// <summary>
-    /// TODO
+    /// Initializes a new instance of the <see cref="XmssException"/> class with a specified error message.
     /// </summary>
-    /// <param name="message">TODO</param>
+    /// <param name="message">The error message that explains the reason for the exception.</param>
     public XmssException(string message) : base(message)
     {
     }
 
     /// <summary>
-    /// TODO
+    /// Initializes a new instance of the <see cref="XmssException"/> class with a specified error message
+    /// and a reference to the inner exception that is the cause of this exception.
     /// </summary>
-    /// <param name="message">TODO</param>
-    /// <param name="innerException">TODO</param>
+    /// <param name="message">The error message that explains the reason for the exception.</param>
+    /// <param name="innerException">The exception that is the cause of the current exception.
+    ///     If the <paramref name="innerException"/> parameter is not <see langword="null"/>,
+    ///     the current exception is raised in a <see langword="catch"/> block that handles the inner exception.</param>
     public XmssException(string message, Exception innerException) : base(message, innerException)
     {
     }
