@@ -26,13 +26,16 @@ static class Program
 #pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
             Console.WriteLine($"Created by CryptoConfig('XMSS'): {alg is not null}");
         }
+
+        var message = new byte[] { 1, 2, 3 };
+        byte[] signature;
+        string publicKeyPem;
+
         {
             Console.WriteLine("Generating new key...");
 
-            var stateManager = new XmssFileStateManager(@"C:\test");
-            stateManager.DeleteAll();
             using var xmss = new Xmss();
-            xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
+            xmss.GeneratePrivateKey(new XmssEphemeralStateManager(), XmssParameterSet.XMSS_SHA2_10_256, false);
             {
                 // this is special for XMSS, a long-running (cancelable) process
 
@@ -63,19 +66,13 @@ static class Program
                 }
             }
             Console.WriteLine();
-            Console.WriteLine("Public Key:");
-            Console.WriteLine(xmss.ExportSubjectPublicKeyInfoPem());
-        }
-        var message = new byte[] { 1, 2, 3 };
-        byte[] signature;
-        string publicKeyPem;
-        {
-            Console.WriteLine("Signing a message...");
 
-            using var xmss = new Xmss();
-            xmss.ImportPrivateKey(new XmssFileStateManager(@"C:\test"));
-            signature = xmss.Sign(message);
             publicKeyPem = xmss.ExportSubjectPublicKeyInfoPem();
+            Console.WriteLine("Public Key:");
+            Console.WriteLine(publicKeyPem);
+
+            Console.WriteLine("Signing a message...");
+            signature = xmss.Sign(message);
         }
         {
             using var xmss = new Xmss();
