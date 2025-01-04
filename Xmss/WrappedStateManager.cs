@@ -4,13 +4,18 @@
 
 namespace Dorssel.Security.Cryptography;
 
-sealed class StateManagerWrapper(IXmssStateManager stateManager)
+sealed class WrappedStateManager(IXmssStateManager? stateManager)
     : IXmssStateManager
 {
-    readonly IXmssStateManager StateManager = stateManager;
+    readonly IXmssStateManager? StateManager = stateManager;
 
     public void Store(XmssKeyPart part, ReadOnlySpan<byte> data)
     {
+        if (StateManager is null)
+        {
+            // ephemeral key
+            return;
+        }
         try
         {
             StateManager.Store(part, data);
@@ -23,6 +28,11 @@ sealed class StateManagerWrapper(IXmssStateManager stateManager)
 
     public void StoreStatefulPart(ReadOnlySpan<byte> expected, ReadOnlySpan<byte> data)
     {
+        if (StateManager is null)
+        {
+            // ephemeral key
+            return;
+        }
         try
         {
             StateManager.StoreStatefulPart(expected, data);
@@ -37,6 +47,11 @@ sealed class StateManagerWrapper(IXmssStateManager stateManager)
     {
         try
         {
+            if (StateManager is null)
+            {
+                // ephemeral key
+                throw new NotImplementedException();
+            }
             StateManager.Load(part, destination);
         }
         catch (Exception ex)
@@ -47,6 +62,11 @@ sealed class StateManagerWrapper(IXmssStateManager stateManager)
 
     public void DeletePublicPart()
     {
+        if (StateManager is null)
+        {
+            // ephemeral key
+            return;
+        }
         try
         {
             StateManager.DeletePublicPart();
@@ -59,6 +79,11 @@ sealed class StateManagerWrapper(IXmssStateManager stateManager)
 
     public void Purge()
     {
+        if (StateManager is null)
+        {
+            // ephemeral key
+            return;
+        }
         try
         {
             StateManager.Purge();
@@ -78,6 +103,14 @@ sealed class StateManagerWrapper(IXmssStateManager stateManager)
         catch (XmssStateManagerException ex2)
         {
             throw new AggregateException(exception, ex2);
+        }
+    }
+
+    public void ThrowIfEphemeralKey()
+    {
+        if (StateManager is null)
+        {
+            throw new InvalidOperationException("Ephemeral keys do not support partitioning.");
         }
     }
 }

@@ -6,13 +6,13 @@ using Dorssel.Security.Cryptography.InteropServices;
 
 namespace Dorssel.Security.Cryptography;
 
-sealed class XmssPrivateKey(StateManagerWrapper wrappedStateManager) : IDisposable
+sealed class PrivateKey(WrappedStateManager wrappedStateManager) : IDisposable
 {
-    readonly StateManagerWrapper _WrappedStateManager = wrappedStateManager;
+    readonly WrappedStateManager _WrappedStateManager = wrappedStateManager;
     readonly CriticalXmssKeyContextHandle _KeyContext = new();
     readonly CriticalXmssPrivateKeyStatefulBlobHandle _StatefulBlob = new();
 
-    public IXmssStateManager WrappedStateManager
+    public WrappedStateManager WrappedStateManager
     {
         get
         {

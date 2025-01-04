@@ -21,7 +21,6 @@ DISABLE_LINTERS:
   - CSHARP_ROSLYNATOR # Not compatible with .NET 8 (yet)
   - JSON_V8R # Too many missing/obsolete schemas
   - REPOSITORY_TRIVY # Unstable, leading to a lot of build failures
-  - MARKDOWN_MARKDOWN_LINK_CHECK # TODO: remove once repository goes public
 SHOW_ELAPSED_TIME: true
 FILEIO_REPORTER: false
 # DISABLE_ERRORS: true # Uncomment if you want MegaLinter to detect errors but not block CI to pass

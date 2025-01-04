@@ -8,6 +8,7 @@ SPDX-License-Identifier: MIT
 
 ## Under construction
 
+<!-- markdown-link-check-disable-next-line -->
 Already available: [XMSS WebAssembly Demo](wasm-example/).
 
 > [!NOTE]

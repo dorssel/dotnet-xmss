@@ -35,7 +35,7 @@ static class Program
             Console.WriteLine("Generating new key...");
 
             using var xmss = new Xmss();
-            xmss.GeneratePrivateKey(new XmssEphemeralStateManager(), XmssParameterSet.XMSS_SHA2_10_256, false);
+            xmss.GeneratePrivateKey(null, XmssParameterSet.XMSS_SHA2_10_256, false);
             {
                 // this is special for XMSS, a long-running (cancelable) process
 

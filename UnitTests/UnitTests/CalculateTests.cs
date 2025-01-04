@@ -10,6 +10,27 @@ namespace UnitTests;
 sealed class CalculateTests
 {
     [TestMethod]
+    public async Task CalculatePublicKeyAsync_Ephemeral_AndSign()
+    {
+        using var xmss = new Xmss();
+
+        Assert.IsFalse(xmss.HasPrivateKey);
+        Assert.IsFalse(xmss.HasPublicKey);
+
+        xmss.GeneratePrivateKey(null, XmssParameterSet.XMSS_SHA2_10_256, true);
+
+        Assert.IsTrue(xmss.HasPrivateKey);
+        Assert.IsFalse(xmss.HasPublicKey);
+
+        await xmss.CalculatePublicKeyAsync();
+
+        Assert.IsTrue(xmss.HasPrivateKey);
+        Assert.IsTrue(xmss.HasPublicKey);
+
+        _ = xmss.Sign([1, 2, 3]);
+    }
+
+    [TestMethod]
     public async Task CalculatePublicKeyAsync_AndImport()
     {
         var stateManager = new MockStateManager();
