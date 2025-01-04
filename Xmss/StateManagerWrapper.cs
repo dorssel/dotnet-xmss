@@ -57,11 +57,11 @@ sealed class StateManagerWrapper(IXmssStateManager stateManager)
         }
     }
 
-    public void DeleteAll()
+    public void Purge()
     {
         try
         {
-            StateManager.DeleteAll();
+            StateManager.Purge();
         }
         catch (Exception ex)
         {
@@ -69,11 +69,11 @@ sealed class StateManagerWrapper(IXmssStateManager stateManager)
         }
     }
 
-    public void DeleteAllAfterFailure(Exception exception)
+    public void PurgeAfterFailure(Exception exception)
     {
         try
         {
-            DeleteAll();
+            Purge();
         }
         catch (XmssStateManagerException ex2)
         {

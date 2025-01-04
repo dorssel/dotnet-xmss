@@ -66,7 +66,7 @@ sealed class CryptoConfigTests
     public void SignatureAlgorithm(XmssParameterSet parameterSet)
     {
         using var xmss = new Xmss();
-        xmss.GeneratePrivateKey(new MemoryStateManager(), parameterSet, false);
+        xmss.GeneratePrivateKey(new MockStateManager(), parameterSet, false);
 
         Assert.IsFalse(string.IsNullOrEmpty(xmss.SignatureAlgorithm));
     }

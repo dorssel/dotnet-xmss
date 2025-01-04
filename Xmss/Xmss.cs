@@ -216,7 +216,7 @@ public sealed class Xmss
 
         // Step 2: Cleanup new state (which has no valid private parts anyway).
 
-        wrappedStateManager.DeleteAll();
+        wrappedStateManager.Purge();
 
         XmssError result;
 
@@ -259,7 +259,7 @@ public sealed class Xmss
         }
         catch (XmssStateManagerException ex)
         {
-            wrappedStateManager.DeleteAllAfterFailure(ex);
+            wrappedStateManager.PurgeAfterFailure(ex);
             throw;
         }
 
@@ -369,7 +369,7 @@ public sealed class Xmss
 
         // Step 2: Cleanup new partition (which has no valid private parts anyway).
 
-        wrappedNewPartition.DeleteAll();
+        wrappedNewPartition.Purge();
 
         // Step 3: Copy the stateless private part (failure removes any partial copy, then throws)
         try
@@ -380,7 +380,7 @@ public sealed class Xmss
         }
         catch (XmssStateManagerException ex)
         {
-            wrappedNewPartition.DeleteAllAfterFailure(ex);
+            wrappedNewPartition.PurgeAfterFailure(ex);
             throw;
         }
 
@@ -395,7 +395,7 @@ public sealed class Xmss
             }
             catch (XmssStateManagerException ex)
             {
-                wrappedNewPartition.DeleteAllAfterFailure(ex);
+                wrappedNewPartition.PurgeAfterFailure(ex);
                 throw;
             }
         }
@@ -414,7 +414,7 @@ public sealed class Xmss
         }
         catch (XmssException ex)
         {
-            wrappedNewPartition.DeleteAllAfterFailure(ex);
+            wrappedNewPartition.PurgeAfterFailure(ex);
             throw;
         }
 
@@ -429,7 +429,7 @@ public sealed class Xmss
         catch (XmssStateManagerException ex)
         {
             ResetState();
-            wrappedNewPartition.DeleteAllAfterFailure(ex);
+            wrappedNewPartition.PurgeAfterFailure(ex);
             throw;
         }
 
@@ -442,7 +442,7 @@ public sealed class Xmss
         }
         catch (XmssStateManagerException ex)
         {
-            wrappedNewPartition.DeleteAllAfterFailure(ex);
+            wrappedNewPartition.PurgeAfterFailure(ex);
             throw;
         }
     }
@@ -475,7 +475,7 @@ public sealed class Xmss
 
         try
         {
-            wrappedConsumedPartition.DeleteAll();
+            wrappedConsumedPartition.Purge();
             PrivateKey.WrappedStateManager.StoreStatefulPart(PrivateKey.StatefulBlob.Data, updatedStatefulBlob.Data);
             PrivateKey.StatefulBlob.SwapWith(updatedStatefulBlob);
         }

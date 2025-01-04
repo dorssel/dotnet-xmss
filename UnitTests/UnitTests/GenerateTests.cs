@@ -23,7 +23,7 @@ sealed class GenerateTests
         Assert.IsFalse(xmss.HasPrivateKey);
         Assert.IsFalse(xmss.HasPublicKey);
 
-        xmss.GeneratePrivateKey(new MemoryStateManager(), parameterSet, true);
+        xmss.GeneratePrivateKey(new MockStateManager(), parameterSet, true);
 
         Assert.IsTrue(xmss.HasPrivateKey);
         Assert.IsFalse(xmss.HasPublicKey);
@@ -37,13 +37,13 @@ sealed class GenerateTests
         Assert.IsFalse(xmss.HasPrivateKey);
         Assert.IsFalse(xmss.HasPublicKey);
 
-        xmss.GeneratePrivateKey(new MemoryStateManager(), XmssParameterSet.XMSS_SHA2_10_256, false);
+        xmss.GeneratePrivateKey(new MockStateManager(), XmssParameterSet.XMSS_SHA2_10_256, false);
 
         Assert.IsTrue(xmss.HasPrivateKey);
         Assert.IsFalse(xmss.HasPublicKey);
         Assert.AreEqual(XmssParameterSet.XMSS_SHA2_10_256, xmss.ParameterSet);
 
-        xmss.GeneratePrivateKey(new MemoryStateManager(), XmssParameterSet.XMSS_SHA2_16_256, false);
+        xmss.GeneratePrivateKey(new MockStateManager(), XmssParameterSet.XMSS_SHA2_16_256, false);
 
         Assert.IsTrue(xmss.HasPrivateKey);
         Assert.IsFalse(xmss.HasPublicKey);
@@ -53,12 +53,12 @@ sealed class GenerateTests
     [TestMethod]
     public void GeneratePrivateKey_StoreStatelessFails()
     {
-        var stateManager = new MemoryStateManager();
+        var stateManager = new MockStateManager();
         using var xmss = new Xmss();
 
         stateManager.Setup();       // Load stateful (verify not exists)
         stateManager.Setup();       // Load stateless (verify not exists)
-        stateManager.Setup();       // DeleteAll
+        stateManager.Setup();       // Purge
         stateManager.Setup(false);  // Store stateless
 
         Assert.ThrowsException<XmssStateManagerException>(() =>
@@ -71,14 +71,14 @@ sealed class GenerateTests
     [TestMethod]
     public void GeneratePrivateKey_StoreStatelessAndRollbackFail()
     {
-        var stateManager = new MemoryStateManager();
+        var stateManager = new MockStateManager();
         using var xmss = new Xmss();
 
         stateManager.Setup();       // Load stateful (verify not exists)
         stateManager.Setup();       // Load stateless (verify not exists)
-        stateManager.Setup();       // DeleteAll
+        stateManager.Setup();       // Purge
         stateManager.Setup(false);  // Store stateless
-        stateManager.Setup(false);  // DeleteAll
+        stateManager.Setup(false);  // Purge
 
         Assert.ThrowsException<AggregateException>(() =>
         {

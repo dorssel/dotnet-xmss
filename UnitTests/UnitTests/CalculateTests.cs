@@ -12,7 +12,7 @@ sealed class CalculateTests
     [TestMethod]
     public async Task CalculatePublicKeyAsync_AndImport()
     {
-        var stateManager = new MemoryStateManager();
+        var stateManager = new MockStateManager();
 
         // generate
         {
@@ -49,7 +49,7 @@ sealed class CalculateTests
     [TestMethod]
     public async Task CalculatePublicKeyAsync_Report_AndGenerateAgain()
     {
-        var stateManager = new MemoryStateManager();
+        var stateManager = new MockStateManager();
 
         // generate
         {
@@ -84,7 +84,7 @@ sealed class CalculateTests
     [TestMethod]
     public async Task CalculatePublicKeyAsync_DeletePublicFails()
     {
-        var stateManager = new MemoryStateManager();
+        var stateManager = new MockStateManager();
 
         // generate
         {

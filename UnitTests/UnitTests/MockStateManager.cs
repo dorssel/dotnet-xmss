@@ -6,7 +6,7 @@ using Dorssel.Security.Cryptography;
 
 namespace UnitTests;
 
-sealed class MemoryStateManager()
+sealed class MockStateManager()
     : IXmssStateManager
 {
     readonly Dictionary<XmssKeyPart, byte[]?> State = new()
@@ -84,7 +84,7 @@ sealed class MemoryStateManager()
         State[XmssKeyPart.Public] = null;
     }
 
-    public void DeleteAll()
+    public void Purge()
     {
         ThrowIfPlanned();
 

@@ -74,7 +74,7 @@ sealed class XmssMemoryStateManagerTests
         using var stateManager = new XmssMemoryStateManager();
         stateManager.Store(XmssKeyPart.PrivateStateful, [1]);
 
-        Assert.ThrowsException<ArgumentException>(() =>
+        Assert.ThrowsException<InvalidOperationException>(() =>
         {
             stateManager.StoreStatefulPart([1, 2], [3, 4]);
         });
@@ -86,7 +86,7 @@ sealed class XmssMemoryStateManagerTests
         using var stateManager = new XmssMemoryStateManager();
         stateManager.Store(XmssKeyPart.PrivateStateful, [1]);
 
-        Assert.ThrowsException<ArgumentException>(() =>
+        Assert.ThrowsException<InvalidOperationException>(() =>
         {
             stateManager.StoreStatefulPart([2], [3]);
         });
@@ -165,21 +165,21 @@ sealed class XmssMemoryStateManagerTests
     }
 
     [TestMethod]
-    public void DeleteAll()
+    public void Purge()
     {
         using var stateManager = new XmssMemoryStateManager();
         stateManager.Store(XmssKeyPart.PrivateStateless, [1]);
         stateManager.Store(XmssKeyPart.PrivateStateful, [2]);
         stateManager.Store(XmssKeyPart.Public, [3]);
 
-        stateManager.DeleteAll();
+        stateManager.Purge();
     }
 
     [TestMethod]
-    public void DeleteAll_PartsNotExist()
+    public void Purge_PartsNotExist()
     {
         using var stateManager = new XmssMemoryStateManager();
 
-        stateManager.DeleteAll();
+        stateManager.Purge();
     }
 }

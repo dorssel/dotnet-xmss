@@ -74,7 +74,7 @@ sealed class XmssFileStateManagerTests
         var stateManager = new XmssFileStateManager(directory.AbsolutePath);
         stateManager.Store(XmssKeyPart.PrivateStateful, [1]);
 
-        Assert.ThrowsException<ArgumentException>(() =>
+        Assert.ThrowsException<InvalidOperationException>(() =>
         {
             stateManager.StoreStatefulPart([1, 2], [3, 4]);
         });
@@ -88,7 +88,7 @@ sealed class XmssFileStateManagerTests
         var stateManager = new XmssFileStateManager(directory.AbsolutePath);
         stateManager.Store(XmssKeyPart.PrivateStateful, [1]);
 
-        Assert.ThrowsException<ArgumentException>(() =>
+        Assert.ThrowsException<InvalidOperationException>(() =>
         {
             stateManager.StoreStatefulPart([2], [3]);
         });
@@ -198,7 +198,7 @@ sealed class XmssFileStateManagerTests
     }
 
     [TestMethod]
-    public void DeleteAll()
+    public void Purge()
     {
         using var directory = new TemporaryDirectory(TestContext, true);
 
@@ -209,13 +209,13 @@ sealed class XmssFileStateManagerTests
 
         Assert.IsTrue(Directory.EnumerateFiles(directory.AbsolutePath).Any());
 
-        stateManager.DeleteAll();
+        stateManager.Purge();
 
         Assert.IsFalse(Directory.EnumerateFiles(directory.AbsolutePath).Any());
     }
 
     [TestMethod]
-    public void DeleteAll_FilesNotExist()
+    public void Purge_FilesNotExist()
     {
         using var directory = new TemporaryDirectory(TestContext, true);
 
@@ -223,11 +223,11 @@ sealed class XmssFileStateManagerTests
 
         Assert.IsFalse(Directory.EnumerateFiles(directory.AbsolutePath).Any());
 
-        stateManager.DeleteAll();
+        stateManager.Purge();
     }
 
     [TestMethod]
-    public void DeleteAll_DirectoryNotExists()
+    public void Purge_DirectoryNotExists()
     {
         using var directory = new TemporaryDirectory(TestContext, false);
 
@@ -240,7 +240,7 @@ sealed class XmssFileStateManagerTests
 
         Assert.ThrowsException<DirectoryNotFoundException>(() =>
         {
-            stateManager.DeleteAll();
+            stateManager.Purge();
         });
     }
 }

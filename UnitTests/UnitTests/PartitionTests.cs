@@ -17,7 +17,7 @@ sealed class PartitionTests
     {
         _ = testContext;
 
-        SharedXmss.GeneratePrivateKey(new MemoryStateManager(), XmssParameterSet.XMSS_SHA2_10_256, true);
+        SharedXmss.GeneratePrivateKey(new MockStateManager(), XmssParameterSet.XMSS_SHA2_10_256, true);
         await SharedXmss.CalculatePublicKeyAsync();
     }
 
@@ -31,11 +31,11 @@ sealed class PartitionTests
     public void SplitPrivateKey()
     {
         using var xmss = new Xmss();
-        var stateManager = new MemoryStateManager();
+        var stateManager = new MockStateManager();
         xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
         var oldRemaining = xmss.SignaturesRemaining;
 
-        var newPartition = new MemoryStateManager();
+        var newPartition = new MockStateManager();
 
         xmss.SplitPrivateKey(newPartition, 100);
 
@@ -49,7 +49,7 @@ sealed class PartitionTests
     [TestMethod]
     public void SplitPrivateKey_WithPublic()
     {
-        var newPartition = new MemoryStateManager();
+        var newPartition = new MockStateManager();
         var oldRemaining = SharedXmss.SignaturesRemaining;
 
         SharedXmss.SplitPrivateKey(newPartition, 100);
@@ -66,10 +66,10 @@ sealed class PartitionTests
     public void SplitPrivateKey_StatelessExists()
     {
         using var xmss = new Xmss();
-        var stateManager = new MemoryStateManager();
+        var stateManager = new MockStateManager();
         xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
 
-        var newPartition = new MemoryStateManager();
+        var newPartition = new MockStateManager();
         newPartition.Store(XmssKeyPart.PrivateStateless, stateManager.GetPartData(XmssKeyPart.PrivateStateless));
 
         Assert.ThrowsException<XmssStateManagerException>(() =>
@@ -82,10 +82,10 @@ sealed class PartitionTests
     public void SplitPrivateKey_StatefulExists()
     {
         using var xmss = new Xmss();
-        var stateManager = new MemoryStateManager();
+        var stateManager = new MockStateManager();
         xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
 
-        var newPartition = new MemoryStateManager();
+        var newPartition = new MockStateManager();
         newPartition.Store(XmssKeyPart.PrivateStateful, stateManager.GetPartData(XmssKeyPart.PrivateStateful));
 
         Assert.ThrowsException<XmssStateManagerException>(() =>
@@ -98,13 +98,13 @@ sealed class PartitionTests
     public void SplitPrivateKey_CleanupFails()
     {
         using var xmss = new Xmss();
-        var stateManager = new MemoryStateManager();
+        var stateManager = new MockStateManager();
         xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
 
-        var newPartition = new MemoryStateManager();
+        var newPartition = new MockStateManager();
         newPartition.Setup();       // Load stateful
         newPartition.Setup();       // Load stateless
-        newPartition.Setup(false);  // DeleteAll
+        newPartition.Setup(false);  // Purge
 
         Assert.ThrowsException<XmssStateManagerException>(() =>
         {
@@ -116,13 +116,13 @@ sealed class PartitionTests
     public void SplitPrivateKey_CopyStatelessFails()
     {
         using var xmss = new Xmss();
-        var stateManager = new MemoryStateManager();
+        var stateManager = new MockStateManager();
         xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
 
-        var newPartition = new MemoryStateManager();
+        var newPartition = new MockStateManager();
         newPartition.Setup();       // Load stateful
         newPartition.Setup();       // Load stateless
-        newPartition.Setup();       // DeleteAll
+        newPartition.Setup();       // Purge
         newPartition.Setup(false);  // Store stateless
 
         Assert.ThrowsException<XmssStateManagerException>(() =>
@@ -135,15 +135,15 @@ sealed class PartitionTests
     public void SplitPrivateKey_CopyStatelessAndRollbackFail()
     {
         using var xmss = new Xmss();
-        var stateManager = new MemoryStateManager();
+        var stateManager = new MockStateManager();
         xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
 
-        var newPartition = new MemoryStateManager();
+        var newPartition = new MockStateManager();
         newPartition.Setup();       // Load stateful
         newPartition.Setup();       // Load stateless
-        newPartition.Setup();       // DeleteAll
+        newPartition.Setup();       // Purge
         newPartition.Setup(false);  // Store stateless
-        newPartition.Setup(false);  // DeleteAll
+        newPartition.Setup(false);  // Purge
 
         Assert.ThrowsException<AggregateException>(() =>
         {
@@ -154,10 +154,10 @@ sealed class PartitionTests
     [TestMethod]
     public void SplitPrivateKey_CopyPublicFails()
     {
-        var newPartition = new MemoryStateManager();
+        var newPartition = new MockStateManager();
         newPartition.Setup();       // Load stateful
         newPartition.Setup();       // Load stateless
-        newPartition.Setup();       // DeleteAll
+        newPartition.Setup();       // Purge
         newPartition.Setup();       // Store stateless
         newPartition.Setup(false);  // Store public
 
@@ -170,13 +170,13 @@ sealed class PartitionTests
     [TestMethod]
     public void SplitPrivateKey_CopyPublicAndRollbackFail()
     {
-        var newPartition = new MemoryStateManager();
+        var newPartition = new MockStateManager();
         newPartition.Setup();       // Load stateful
         newPartition.Setup();       // Load stateless
-        newPartition.Setup();       // DeleteAll
+        newPartition.Setup();       // Purge
         newPartition.Setup();       // Store stateless
         newPartition.Setup(false);  // Store public
-        newPartition.Setup(false);  // DeleteAll
+        newPartition.Setup(false);  // Purge
 
         Assert.ThrowsException<AggregateException>(() =>
         {
@@ -188,10 +188,10 @@ sealed class PartitionTests
     public void SplitPrivateKey_SplitFails()
     {
         using var xmss = new Xmss();
-        var stateManager = new MemoryStateManager();
+        var stateManager = new MockStateManager();
         xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
 
-        var newPartition = new MemoryStateManager();
+        var newPartition = new MockStateManager();
 
         Assert.ThrowsException<XmssException>(() =>
         {
@@ -203,15 +203,15 @@ sealed class PartitionTests
     public void SplitPrivateKey_SplitAndRollbackFail()
     {
         using var xmss = new Xmss();
-        var stateManager = new MemoryStateManager();
+        var stateManager = new MockStateManager();
         xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
 
-        var newPartition = new MemoryStateManager();
+        var newPartition = new MockStateManager();
         newPartition.Setup();       // Load stateful
         newPartition.Setup();       // Load stateless
-        newPartition.Setup();       // DeleteAll
+        newPartition.Setup();       // Purge
         newPartition.Setup();       // Store stateless
-        newPartition.Setup(false);  // DeleteAll
+        newPartition.Setup(false);  // Purge
 
         Assert.ThrowsException<AggregateException>(() =>
         {
@@ -223,10 +223,10 @@ sealed class PartitionTests
     public void SplitPrivateKey_UpdateStatefulFails()
     {
         using var xmss = new Xmss();
-        var stateManager = new MemoryStateManager();
+        var stateManager = new MockStateManager();
         xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
 
-        var newPartition = new MemoryStateManager();
+        var newPartition = new MockStateManager();
 
         // corrupt stateful part
         Array.Clear(stateManager.GetPartData(XmssKeyPart.PrivateStateful)!);
@@ -242,15 +242,15 @@ sealed class PartitionTests
     public void SplitPrivateKey_UpdateStatefulAndRollbackFail()
     {
         using var xmss = new Xmss();
-        var stateManager = new MemoryStateManager();
+        var stateManager = new MockStateManager();
         xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
 
-        var newPartition = new MemoryStateManager();
+        var newPartition = new MockStateManager();
         newPartition.Setup();       // Load stateful
         newPartition.Setup();       // Load stateless
-        newPartition.Setup();       // DeleteAll
+        newPartition.Setup();       // Purge
         newPartition.Setup();       // Store stateless
-        newPartition.Setup(false);  // DeleteAll
+        newPartition.Setup(false);  // Purge
 
         // corrupt stateful part
         Array.Clear(stateManager.GetPartData(XmssKeyPart.PrivateStateful)!);
@@ -266,13 +266,13 @@ sealed class PartitionTests
     public void SplitPrivateKey_StoreStatefulFails()
     {
         using var xmss = new Xmss();
-        var stateManager = new MemoryStateManager();
+        var stateManager = new MockStateManager();
         xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
 
-        var newPartition = new MemoryStateManager();
+        var newPartition = new MockStateManager();
         newPartition.Setup();       // Load stateful
         newPartition.Setup();       // Load stateless
-        newPartition.Setup();       // DeleteAll
+        newPartition.Setup();       // Purge
         newPartition.Setup();       // Store stateless
         newPartition.Setup(false);  // Store stateful
 
@@ -286,16 +286,16 @@ sealed class PartitionTests
     public void SplitPrivateKey_StoreStatefulAndRollbackFail()
     {
         using var xmss = new Xmss();
-        var stateManager = new MemoryStateManager();
+        var stateManager = new MockStateManager();
         xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
 
-        var newPartition = new MemoryStateManager();
+        var newPartition = new MockStateManager();
         newPartition.Setup();       // Load stateful
         newPartition.Setup();       // Load stateless
-        newPartition.Setup();       // DeleteAll
+        newPartition.Setup();       // Purge
         newPartition.Setup();       // Store stateless
         newPartition.Setup(false);  // Store stateful
-        newPartition.Setup(false);  // DeleteAll
+        newPartition.Setup(false);  // Purge
 
         Assert.ThrowsException<AggregateException>(() =>
         {
@@ -306,14 +306,14 @@ sealed class PartitionTests
     [TestMethod]
     public void MergePartition()
     {
-        var partition1 = new MemoryStateManager();
-        var partition2 = new MemoryStateManager();
+        var partition1 = new MockStateManager();
+        var partition2 = new MockStateManager();
         int oldRemaining;
 
         {
             using var tmpXmss = new Xmss();
             tmpXmss.GeneratePrivateKey(partition1, XmssParameterSet.XMSS_SHA2_10_256, false);
-            var otherPartition = new MemoryStateManager();
+            var otherPartition = new MockStateManager();
             tmpXmss.SplitPrivateKey(partition2, 100);
             oldRemaining = tmpXmss.SignaturesRemaining;
         }
@@ -335,14 +335,14 @@ sealed class PartitionTests
     [TestMethod]
     public void MergePartition_DeleteFails()
     {
-        var partition1 = new MemoryStateManager();
-        var partition2 = new MemoryStateManager();
+        var partition1 = new MockStateManager();
+        var partition2 = new MockStateManager();
         int oldRemaining;
 
         {
             using var tmpXmss = new Xmss();
             tmpXmss.GeneratePrivateKey(partition1, XmssParameterSet.XMSS_SHA2_10_256, false);
-            var otherPartition = new MemoryStateManager();
+            var otherPartition = new MockStateManager();
             tmpXmss.SplitPrivateKey(partition2, 100);
             oldRemaining = tmpXmss.SignaturesRemaining;
         }
@@ -351,7 +351,7 @@ sealed class PartitionTests
         xmss.ImportPrivateKey(partition1);
 
         partition2.Setup();         // Load stateful
-        partition2.Setup(false);    // DeleteAll
+        partition2.Setup(false);    // Purge
 
         Assert.ThrowsException<XmssStateManagerException>(() =>
         {

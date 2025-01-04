@@ -64,7 +64,7 @@ sealed class LocalStorageStateManager(ISyncLocalStorageService localStorage, str
         LocalStorage.RemoveItem(GetKey(XmssKeyPart.Public));
     }
 
-    public void DeleteAll()
+    public void Purge()
     {
         LocalStorage.RemoveItems([
             GetKey(XmssKeyPart.PrivateStateless),
