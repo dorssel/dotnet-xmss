@@ -47,6 +47,18 @@ sealed class PartitionTests
     }
 
     [TestMethod]
+    public void SplitPrivateKey_Ephemeral()
+    {
+        using var xmss = new Xmss();
+        xmss.GeneratePrivateKey(null, XmssParameterSet.XMSS_SHA2_10_256, false);
+
+        Assert.ThrowsException<InvalidOperationException>(() =>
+        {
+            xmss.SplitPrivateKey(new MockStateManager(), 100);
+        });
+    }
+
+    [TestMethod]
     public void SplitPrivateKey_WithPublic()
     {
         var newPartition = new MockStateManager();
@@ -330,6 +342,24 @@ sealed class PartitionTests
                 otherXmss.ImportPrivateKey(partition2);
             });
         }
+    }
+
+    [TestMethod]
+    public void MergePartition_Ephemeral()
+    {
+        var stateManager = new MockStateManager();
+        {
+            using var tmpXmss = new Xmss();
+            tmpXmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
+        }
+
+        using var xmss = new Xmss();
+        xmss.GeneratePrivateKey(null, XmssParameterSet.XMSS_SHA2_10_256, false);
+
+        Assert.ThrowsException<InvalidOperationException>(() =>
+        {
+            xmss.MergePartition(stateManager);
+        });
     }
 
     [TestMethod]

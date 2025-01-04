@@ -30,6 +30,20 @@ sealed class GenerateTests
     }
 
     [TestMethod]
+    public void GeneratePrivateKey_Ephemeral()
+    {
+        using var xmss = new Xmss();
+
+        Assert.IsFalse(xmss.HasPrivateKey);
+        Assert.IsFalse(xmss.HasPublicKey);
+
+        xmss.GeneratePrivateKey(null, XmssParameterSet.XMSS_SHA2_10_256, false);
+
+        Assert.IsTrue(xmss.HasPrivateKey);
+        Assert.IsFalse(xmss.HasPublicKey);
+    }
+
+    [TestMethod]
     public void GeneratePrivateKey_AfterPrivateKey()
     {
         using var xmss = new Xmss();

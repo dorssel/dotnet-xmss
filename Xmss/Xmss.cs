@@ -96,7 +96,7 @@ public sealed class Xmss
     public XmssParameterSet ParameterSet { get; private set; } = XmssParameterSet.None;
 
     bool IsDisposed;
-    XmssPrivateKey? PrivateKey;
+    PrivateKey? PrivateKey;
     XmssPublicKey PublicKey;
 
     void ResetState()
@@ -167,7 +167,7 @@ public sealed class Xmss
     #endregion
 
     #region Private Key
-    static void VerifyNoPrivateState(StateManagerWrapper wrappedStateManager)
+    static void VerifyNoPrivateState(WrappedStateManager wrappedStateManager)
     {
         var partExists = false;
 
@@ -202,13 +202,11 @@ public sealed class Xmss
     /// <param name="stateManager">TODO</param>
     /// <param name="parameterSet">TODO</param>
     /// <param name="enableIndexObfuscation">TODO</param>
-    public void GeneratePrivateKey(IXmssStateManager stateManager, XmssParameterSet parameterSet, bool enableIndexObfuscation)
+    public void GeneratePrivateKey(IXmssStateManager? stateManager, XmssParameterSet parameterSet, bool enableIndexObfuscation)
     {
-        ArgumentNullException.ThrowIfNull(stateManager);
-
         ObjectDisposedException.ThrowIf(IsDisposed, this);
 
-        var wrappedStateManager = new StateManagerWrapper(stateManager);
+        var wrappedStateManager = new WrappedStateManager(stateManager);
 
         // Step 1: Verify that no (possibly valid) private parts exist for the new state.
 
@@ -282,7 +280,7 @@ public sealed class Xmss
         ArgumentNullException.ThrowIfNull(stateManager);
         ObjectDisposedException.ThrowIf(IsDisposed, this);
 
-        var wrappedStateManager = new StateManagerWrapper(stateManager);
+        var wrappedStateManager = new WrappedStateManager(stateManager);
 
         XmssError result;
 
@@ -360,8 +358,9 @@ public sealed class Xmss
 
         ObjectDisposedException.ThrowIf(IsDisposed, this);
         ThrowIfNoPrivateKey();
+        PrivateKey.WrappedStateManager.ThrowIfEphemeralKey();
 
-        var wrappedNewPartition = new StateManagerWrapper(newPartition);
+        var wrappedNewPartition = new WrappedStateManager(newPartition);
 
         // Step 1: Verify that no (possibly valid) private parts exist for the new state.
 
@@ -457,8 +456,9 @@ public sealed class Xmss
 
         ObjectDisposedException.ThrowIf(IsDisposed, this);
         ThrowIfNoPrivateKey();
+        PrivateKey.WrappedStateManager.ThrowIfEphemeralKey();
 
-        var wrappedConsumedPartition = new StateManagerWrapper(consumedPartition);
+        var wrappedConsumedPartition = new WrappedStateManager(consumedPartition);
 
         using var consumedKeyStatefulBlob = CriticalXmssPrivateKeyStatefulBlobHandle.Alloc();
         wrappedConsumedPartition.Load(XmssKeyPart.PrivateStateful, consumedKeyStatefulBlob.Data);
