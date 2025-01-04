@@ -64,8 +64,9 @@ public sealed class XmssMemoryStateManager()
             }
             if (!expected.SequenceEqual(oldData))
             {
-                throw new ArgumentException("Expected content mismatch.", nameof(expected));
+                throw new InvalidOperationException("Expected content mismatch.");
             }
+            CryptographicOperations.ZeroMemory(State[XmssKeyPart.PrivateStateful]);
             State[XmssKeyPart.PrivateStateful] = data.ToArray();
         }
     }
@@ -103,7 +104,7 @@ public sealed class XmssMemoryStateManager()
     }
 
     /// <inheritdoc/>
-    public void DeleteAll()
+    public void Purge()
     {
         lock (State)
         {
@@ -126,7 +127,7 @@ public sealed class XmssMemoryStateManager()
         {
             if (!IsDisposed)
             {
-                DeleteAll();
+                Purge();
                 IsDisposed = true;
             }
         }

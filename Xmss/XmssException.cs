@@ -60,7 +60,6 @@ public class XmssException
     }
 
     [StackTraceHidden]
-    [ExcludeFromCodeCoverage(Justification = "Not testable, unless actual faults are injected.")]
     internal static void ThrowFaultDetectedIf([DoesNotReturnIf(true)] bool condition)
     {
         if (condition)
@@ -70,7 +69,6 @@ public class XmssException
     }
 
     [StackTraceHidden]
-    [ExcludeFromCodeCoverage(Justification = "Not testable, unless actual faults are injected.")]
     internal static void ThrowFaultDetectedIf(Exception? exception)
     {
         if (exception is not null)

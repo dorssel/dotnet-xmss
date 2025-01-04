@@ -64,7 +64,7 @@ public sealed class XmssFileStateManager(string path)
         using var file = File.Open(GetPath(XmssKeyPart.PrivateStateful), FileMode.Open);
         if (file.Length != expected.Length)
         {
-            throw new ArgumentException("Expected size mismatch.", nameof(expected));
+            throw new InvalidOperationException("Expected size mismatch.");
         }
         var possiblyOversizedCurrent = ArrayPool<byte>.Shared.Rent(expected.Length);
         try
@@ -73,7 +73,7 @@ public sealed class XmssFileStateManager(string path)
             file.ReadExactly(current);
             if (!current.SequenceEqual(expected))
             {
-                throw new ArgumentException("Expected content mismatch.", nameof(expected));
+                throw new InvalidOperationException("Expected content mismatch.");
             }
         }
         finally
@@ -141,7 +141,7 @@ public sealed class XmssFileStateManager(string path)
     /// <summary>
     /// TODO
     /// </summary>
-    public void DeleteAll()
+    public void Purge()
     {
         SecureDelete(GetPath(XmssKeyPart.PrivateStateless));
         SecureDelete(GetPath(XmssKeyPart.PrivateStateful));

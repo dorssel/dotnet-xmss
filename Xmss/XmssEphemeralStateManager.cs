@@ -32,7 +32,7 @@ public sealed class XmssEphemeralStateManager()
     }
 
     /// <inheritdoc/>
-    public void DeleteAll()
+    public void Purge()
     {
     }
 }

@@ -95,7 +95,7 @@ else
     void DestroyKey()
     {
         Xmss.Dispose();
-        new LocalStorageStateManager(LocalStorage, KeyName).DeleteAll();
+        new LocalStorageStateManager(LocalStorage, KeyName).Purge();
         MessageToSign = string.Empty;
         Signature = Array.Empty<byte>();
         Xmss = new Xmss();
@@ -103,7 +103,7 @@ else
 
     void CreateKey()
     {
-        new LocalStorageStateManager(LocalStorage, KeyName).DeleteAll();
+        new LocalStorageStateManager(LocalStorage, KeyName).Purge();
         Xmss.GeneratePrivateKey(new LocalStorageStateManager(LocalStorage, KeyName), XmssParameterSet.XMSS_SHA2_10_256, false);
     }
 

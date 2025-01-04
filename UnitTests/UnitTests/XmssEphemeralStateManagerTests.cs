@@ -65,22 +65,22 @@ sealed class XmssEphemeralStateManagerTests
     }
 
     [TestMethod]
-    public void DeleteAll()
+    public void Purge()
     {
         var stateManager = new XmssEphemeralStateManager();
         stateManager.Store(XmssKeyPart.PrivateStateless, [1]);
         stateManager.Store(XmssKeyPart.PrivateStateful, [2]);
         stateManager.Store(XmssKeyPart.Public, [3]);
 
-        stateManager.DeleteAll();
+        stateManager.Purge();
     }
 
     [TestMethod]
-    public void DeleteAll_NotExist()
+    public void Purge_NotExist()
     {
         var stateManager = new XmssEphemeralStateManager();
 
-        stateManager.DeleteAll();
+        stateManager.Purge();
     }
 
     [TestMethod]

@@ -19,7 +19,7 @@ sealed class ImportTests
     [DataRow(XmssParameterSet.XMSS_SHAKE256_20_256)]
     public void ImportPrivateKey(XmssParameterSet parameterSet)
     {
-        var stateManager = new MemoryStateManager();
+        var stateManager = new MockStateManager();
 
         {
             using var tmpXmss = new Xmss();
@@ -41,8 +41,8 @@ sealed class ImportTests
     [TestMethod]
     public void ImportPrivateKey_AfterPrivateKey()
     {
-        var stateManager1 = new MemoryStateManager();
-        var stateManager2 = new MemoryStateManager();
+        var stateManager1 = new MockStateManager();
+        var stateManager2 = new MockStateManager();
 
         {
             using var tmpXmss = new Xmss();
@@ -75,7 +75,7 @@ sealed class ImportTests
     public void ImportPrivateKey_Invalid()
     {
         using var xmss = new Xmss();
-        var stateManager = new MemoryStateManager();
+        var stateManager = new MockStateManager();
         xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
 
         // corrupt blob such that not even the parameter set is valid
@@ -144,7 +144,7 @@ sealed class ImportTests
     public void ImportRfcPublicKey_AfterPrivateKey()
     {
         using var xmss = new Xmss();
-        xmss.GeneratePrivateKey(new MemoryStateManager(), XmssParameterSet.XMSS_SHA2_10_256, false);
+        xmss.GeneratePrivateKey(new MockStateManager(), XmssParameterSet.XMSS_SHA2_10_256, false);
 
         Assert.IsTrue(xmss.HasPrivateKey);
         Assert.IsFalse(xmss.HasPublicKey);
