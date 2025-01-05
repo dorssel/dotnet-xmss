@@ -9,14 +9,15 @@ namespace Dorssel.Security.Cryptography;
 #pragma warning disable CA1027 // Mark enums with FlagsAttribute (false positive)
 /// <summary>
 /// The XMSS parameter sets that are supported by this library.
-///
+/// </summary>
+/// <remarks>
 /// These are the supported subset of OIDs for XMSS parameter sets as defined in:
 /// <list type="bullet">
 /// <item>for SHA-256: <see href="https://datatracker.ietf.org/doc/html/rfc8391#section-5.3">RFC 8391, Section 5.3</see>
 ///     and <see href="https://doi.org/10.6028/NIST.SP.800-208">NIST SP 800-208</see>, Section 5.1.</item>
 /// <item>for SHAKE256/256: <see href="https://doi.org/10.6028/NIST.SP.800-208">NIST SP 800-208</see>, Section 5.3.</item>
 /// </list>
-/// </summary>
+/// </remarks>
 public enum XmssParameterSet
 #pragma warning restore CA1027 // Mark enums with FlagsAttribute
 {

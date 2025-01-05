@@ -5,7 +5,10 @@ SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
 SPDX-License-Identifier: MIT
 -->
 <Project>
-  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'browser-wasm'">
+  <ItemGroup Condition=" '$(RuntimeIdentifier)' == 'browser-wasm' And '$(WasmEnableThreads)' == 'true'">
+    <NativeFileReference Include="$(MSBuildThisFileDirectory)..\runtimes\browser-wasm\nativeassets\xmss-pthread.a" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(RuntimeIdentifier)' == 'browser-wasm' And '$(WasmEnableThreads)' != 'true'">
     <NativeFileReference Include="$(MSBuildThisFileDirectory)..\runtimes\browser-wasm\nativeassets\xmss.a" />
   </ItemGroup>
 </Project>

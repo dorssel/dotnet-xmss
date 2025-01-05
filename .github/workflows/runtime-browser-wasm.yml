@@ -43,8 +43,20 @@ jobs:
           -DXMSS_C99_COMPATIBLE=OFF
           -DCMAKE_EXE_LINKER_FLAGS="-s NODERAWFS=1"
 
+      - name: Configure (pthread)
+        run: >
+          emcmake cmake
+          -S xmss-library
+          -B build-pthread
+          -DXMSS_C99_COMPATIBLE=OFF
+          -DCMAKE_C_FLAGS="-pthread"
+          -DCMAKE_EXE_LINKER_FLAGS="-s NODERAWFS=1"
+
       - name: Build
         run: cmake --build build
+
+      - name: Build (pthread)
+        run: cmake --build build-pthread
 
       - name: Test
         working-directory: build
@@ -52,10 +64,17 @@ jobs:
           NODE_OPTIONS: --no-experimental-fetch
         run: ctest
 
-      - name: Copy artifact
+      - name: Test (pthread)
+        working-directory: build-pthread
+        env:
+          NODE_OPTIONS: --no-experimental-fetch
+        run: ctest
+
+      - name: Copy artifacts
         run: |
           mkdir -p "Xmss/runtimes/${{ env.RUNTIME }}/nativeassets"
           cp build/src/libxmss.a "Xmss/runtimes/${{ env.RUNTIME }}/nativeassets/xmss.a"
+          cp build-pthread/src/libxmss.a "Xmss/runtimes/${{ env.RUNTIME }}/nativeassets/xmss-pthread.a"
 
       - name: Save runtime cache
         id: save-runtime-cache
