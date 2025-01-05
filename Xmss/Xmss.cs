@@ -72,8 +72,15 @@ public sealed class Xmss
     static bool TriedRegisterOnce;
 
     /// <summary>
-    /// TODO
+    /// Registers the <see cref="Xmss"/> implementation with <see cref="CryptoConfig"/>, such that it can be created
+    /// by name or <see cref="Oid"/>.
     /// </summary>
+    /// <seealso cref="Xmss.IdAlgXmssHashsig"/>
+    /// <seealso cref="CryptoConfig.CreateFromName(string)"/>
+    /// <seealso cref="CryptoConfig.MapNameToOID(string)"/>
+    /// <remarks>
+    /// <see cref="CryptoConfig"/> is not supported for WASM.
+    /// </remarks>
     [UnsupportedOSPlatform("browser")]
     public static void RegisterWithCryptoConfig()
     {
@@ -91,7 +98,7 @@ public sealed class Xmss
 
     #region State
     /// <summary>
-    /// TODO
+    /// The XMSS parameter set for the current key, or <see cref="XmssParameterSet.None"/> if there is no current key.
     /// </summary>
     public XmssParameterSet ParameterSet { get; private set; } = XmssParameterSet.None;
 

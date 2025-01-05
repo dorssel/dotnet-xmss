@@ -11,6 +11,10 @@ SPDX-License-Identifier: MIT
     <PublishProfile>Properties\PublishProfiles\FolderProfile.pubxml</PublishProfile>
     <PublishDir>bin\publish\</PublishDir>
     <CompressionEnabled>false</CompressionEnabled>
+    <!-- Not yet supported by stand-alone Blazor -->
+    <!--
+    <WasmEnableThreads>true</WasmEnableThreads>
+    -->
   </PropertyGroup>
 
   <ItemGroup>
