@@ -8,8 +8,12 @@ using System.Security.Cryptography;
 namespace Dorssel.Security.Cryptography;
 
 /// <summary>
-/// TODO
+/// Manages the state of an XMSS key in process memory.
 /// </summary>
+/// <remarks>
+/// The maximum lifetime of the key is bound to the lifetime of the current process.
+/// <para>This class implements <see cref="IDisposable"/> to ensure the memory is securely erased before being freed.</para>
+/// </remarks>
 public sealed class XmssMemoryStateManager()
     : IXmssStateManager, IDisposable
 {
@@ -103,7 +107,10 @@ public sealed class XmssMemoryStateManager()
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc path="/summary"/>
+    /// <remarks>
+    /// This method overwrites memory containing private data with zeros before freeing the memory.
+    /// </remarks>
     public void Purge()
     {
         lock (State)
@@ -121,6 +128,9 @@ public sealed class XmssMemoryStateManager()
     bool IsDisposed;
 
     /// <inheritdoc/>
+    /// <remarks>
+    /// This method calls <see cref="Purge"/> to ensure that any private data is purged before the memory is freed.
+    /// </remarks>
     public void Dispose()
     {
         lock (State)

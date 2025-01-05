@@ -7,9 +7,20 @@ using System.Buffers;
 namespace Dorssel.Security.Cryptography;
 
 /// <summary>
-/// TODO
+/// Manages the state of an XMSS key as files in a given folder.
 /// </summary>
-/// <param name="path">TODO</param>
+/// <remarks>
+/// The folder given by <paramref name="path"/> must already exist; it will not be created.
+/// <para>
+/// This class will manage the following three files within the folder:
+/// <list type="bullet">
+/// <item><c>xmss_private_stateless</c></item>
+/// <item><c>xmss_private_stateful</c></item>
+/// <item><c>xmss_public</c></item>
+/// </list>
+/// </para>
+/// </remarks>
+/// <param name="path">The path to the folder holding the state files.</param>
 public sealed class XmssFileStateManager(string path)
     : IXmssStateManager
 {
@@ -37,11 +48,7 @@ public sealed class XmssFileStateManager(string path)
         return TryGetPath(part, out var partPath) ? partPath : throw new ArgumentOutOfRangeException(nameof(part));
     }
 
-    /// <summary>
-    /// TODO
-    /// </summary>
-    /// <param name="part">TODO</param>
-    /// <param name="data">TODO</param>
+    /// <inheritdoc/>
     public void Store(XmssKeyPart part, ReadOnlySpan<byte> data)
     {
         using var file = File.Open(GetPath(part), FileMode.CreateNew);
@@ -49,12 +56,7 @@ public sealed class XmssFileStateManager(string path)
         file.Flush();
     }
 
-    /// <summary>
-    /// TODO
-    /// </summary>
-    /// <param name="expected">TODO</param>
-    /// <param name="data">TODO</param>
-    /// <exception cref="ArgumentException">TODO</exception>
+    /// <inheritdoc/>
     public void StoreStatefulPart(ReadOnlySpan<byte> expected, ReadOnlySpan<byte> data)
     {
         if (data.Length != expected.Length)
@@ -85,12 +87,7 @@ public sealed class XmssFileStateManager(string path)
         file.Flush();
     }
 
-    /// <summary>
-    /// TODO
-    /// </summary>
-    /// <param name="part">TODO</param>
-    /// <param name="destination">TODO</param>
-    /// <exception cref="ArgumentException">TODO</exception>
+    /// <inheritdoc/>
     public void Load(XmssKeyPart part, Span<byte> destination)
     {
         using var file = File.OpenRead(GetPath(part));
@@ -101,9 +98,7 @@ public sealed class XmssFileStateManager(string path)
         file.ReadExactly(destination);
     }
 
-    /// <summary>
-    /// TODO
-    /// </summary>
+    /// <inheritdoc/>
     public void DeletePublicPart()
     {
         File.Delete(GetPath(XmssKeyPart.Public));
@@ -138,9 +133,10 @@ public sealed class XmssFileStateManager(string path)
         File.Delete(path);
     }
 
-    /// <summary>
-    /// TODO
-    /// </summary>
+    /// <inheritdoc path="/summary"/>
+    /// <remarks>
+    /// This method overwrites files containing private data with zeros before deleting the file.
+    /// </remarks>
     public void Purge()
     {
         SecureDelete(GetPath(XmssKeyPart.PrivateStateless));
