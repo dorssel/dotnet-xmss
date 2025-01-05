@@ -22,7 +22,7 @@
 else
 {
     <p>Signatures remaining: @Xmss.SignaturesRemaining</p>
-    <p><FluentButton @onclick="DestroyKey">Destroy</FluentButton></p>
+    <p><FluentButton @onclick="DestroyKey" Disabled="IsCalculating">Destroy</FluentButton></p>
 
     <h2>Public Key</h2>
 
@@ -109,6 +109,7 @@ else
 
     async Task CalculatePublicKey()
     {
+        ProgressPercentage = 0;
         IsCalculating = true;
 
         CancellationTokenSource.Dispose();
