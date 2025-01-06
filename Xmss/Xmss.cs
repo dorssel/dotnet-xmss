@@ -72,8 +72,7 @@ public sealed class Xmss
     static bool TriedRegisterOnce;
 
     /// <summary>
-    /// Registers the <see cref="Xmss"/> implementation with <see cref="CryptoConfig"/>, such that it can be created
-    /// by name or <see cref="Oid"/>.
+    /// Registers the <see cref="Xmss"/> class with <see cref="CryptoConfig"/>, such that its <see cref="Oid"/> is known and it can be created by name.
     /// </summary>
     /// <seealso cref="Xmss.IdAlgXmssHashsig"/>
     /// <seealso cref="CryptoConfig.CreateFromName(string)"/>
@@ -530,6 +529,7 @@ public sealed class Xmss
         var index = 0;
         var completed = 0;
         var lastReported = 0;
+        var lastDelay = Stopwatch.GetTimestamp();
         using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         Exception? taskException = null;
         while (!cancellationTokenSource.IsCancellationRequested && completed < totalTaskCount)
@@ -581,10 +581,17 @@ public sealed class Xmss
             [ExcludeFromCodeCoverage(Justification = "Not testable; WASM only.")]
             Task OptionalDelayTask()
             {
-                // WASM is single-threaded; give the UI a chance
-                return RuntimeInformation.ProcessArchitecture == Architecture.Wasm && Environment.ProcessorCount == 1
-                    ? Task.Delay(TimeSpan.FromMilliseconds(1), cancellationToken)
-                    : Task.CompletedTask;
+                if (RuntimeInformation.ProcessArchitecture == Architecture.Wasm && Environment.ProcessorCount == 1
+                    && Stopwatch.GetElapsedTime(lastDelay) > TimeSpan.FromMilliseconds(50))
+                {
+                    // On single threaded WASM we need to keep the UI responsive.
+                    lastDelay = Stopwatch.GetTimestamp();
+                    return Task.Delay(TimeSpan.FromMilliseconds(1), cancellationToken);
+                }
+                else
+                {
+                    return Task.CompletedTask;
+                }
             }
 
             await OptionalDelayTask().ConfigureAwait(false);
