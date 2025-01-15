@@ -21,9 +21,12 @@ updates:
     schedule:
       interval: 'daily'
     groups:
-      mstest:
+      MSTest:
         patterns:
           - 'MSTest.*'
-      fluentui:
+      AspNetCore:
+        patterns:
+          - 'Microsoft.AspNetCore.Components*'
+      FluentUI:
         patterns:
           - 'Microsoft.FluentUI.AspNetCore.Components*'
