@@ -66,7 +66,7 @@ public sealed class Xmss
     /// </remarks>
     /// <seealso href="https://www.iana.org/assignments/smi-numbers/smi-numbers.xml#smi-numbers-1.3.6.1.5.5.7.6" />
     /// <seealso href="https://www.ietf.org/archive/id/draft-ietf-lamps-x509-shbs-13.html#name-xmss-algorithm-identifier" />
-    public static Oid IdAlgXmssHashsig { get; }  = new("1.3.6.1.5.5.7.6.34", "xmss");
+    public static Oid IdAlgXmssHashsig { get; } = new("1.3.6.1.5.5.7.6.34", "xmss");
 
     static readonly object RegistrationLock = new();
     static bool TriedRegisterOnce;
@@ -74,7 +74,7 @@ public sealed class Xmss
     /// <summary>
     /// Registers the <see cref="Xmss"/> class with <see cref="CryptoConfig"/>, such that its <see cref="Oid"/> is known and it can be created by name.
     /// </summary>
-    /// <seealso cref="Xmss.IdAlgXmssHashsig"/>
+    /// <seealso cref="IdAlgXmssHashsig"/>
     /// <seealso cref="CryptoConfig.CreateFromName(string)"/>
     /// <seealso cref="CryptoConfig.MapNameToOID(string)"/>
     /// <remarks>
