@@ -29,8 +29,39 @@ on:
 permissions: read-all
 
 jobs:
+  lookup-runtime-caches:
+    runs-on: ubuntu-latest
+
+    outputs:
+      browser-wasm: ${{ steps.lookup-browser-wasm.outputs.cache-hit }}
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+
+      - name: Lookup browser-wasm
+        id: lookup-browser-wasm
+        uses: ./.github/actions/lookup-runtime-cache
+        with:
+          runtime: browser-wasm
+
+  runtime-browser-wasm:
+    needs: lookup-runtime-caches
+    if: ${{ !needs.lookup-runtime-caches.outputs.browser-wasm }}
+    uses: ./.github/workflows/runtime-browser-wasm.yml
+    permissions:
+      contents: read
+      actions: write
+
   analyze:
     name: Analyze
+
+    needs:
+      - runtime-browser-wasm
+
+    if: always()
+
     runs-on: ubuntu-latest
 
     permissions:
