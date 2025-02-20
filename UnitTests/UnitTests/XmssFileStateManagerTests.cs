@@ -47,7 +47,7 @@ sealed class XmssFileStateManagerTests
         var stateManager = new XmssFileStateManager(directory.AbsolutePath);
         stateManager.Store(XmssKeyPart.PrivateStateful, [1]);
 
-        Assert.ThrowsException<ArgumentException>(() =>
+        Assert.ThrowsExactly<ArgumentException>(() =>
         {
             stateManager.StoreStatefulPart([1], [2, 3]);
         });
@@ -60,7 +60,7 @@ sealed class XmssFileStateManagerTests
 
         var stateManager = new XmssFileStateManager(directory.AbsolutePath);
 
-        Assert.ThrowsException<FileNotFoundException>(() =>
+        Assert.ThrowsExactly<FileNotFoundException>(() =>
         {
             stateManager.StoreStatefulPart([1], [2]);
         });
@@ -74,7 +74,7 @@ sealed class XmssFileStateManagerTests
         var stateManager = new XmssFileStateManager(directory.AbsolutePath);
         stateManager.Store(XmssKeyPart.PrivateStateful, [1]);
 
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
         {
             stateManager.StoreStatefulPart([1, 2], [3, 4]);
         });
@@ -88,7 +88,7 @@ sealed class XmssFileStateManagerTests
         var stateManager = new XmssFileStateManager(directory.AbsolutePath);
         stateManager.Store(XmssKeyPart.PrivateStateful, [1]);
 
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
         {
             stateManager.StoreStatefulPart([2], [3]);
         });
@@ -119,7 +119,7 @@ sealed class XmssFileStateManagerTests
         stateManager.Store(XmssKeyPart.Public, data);
 
         var read = new byte[data.Length - 1];
-        Assert.ThrowsException<ArgumentException>(() =>
+        Assert.ThrowsExactly<ArgumentException>(() =>
         {
             stateManager.Load(XmssKeyPart.Public, read);
         });
@@ -132,7 +132,7 @@ sealed class XmssFileStateManagerTests
 
         var stateManager = new XmssFileStateManager(directory.AbsolutePath);
 
-        Assert.ThrowsException<FileNotFoundException>(() =>
+        Assert.ThrowsExactly<FileNotFoundException>(() =>
         {
             stateManager.Load(XmssKeyPart.Public, new byte[1]);
         });
@@ -146,7 +146,7 @@ sealed class XmssFileStateManagerTests
 
         var stateManager = new XmssFileStateManager(directory.AbsolutePath);
 
-        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
         {
             stateManager.Load(Enum.GetValues<XmssKeyPart>().Max() + 1, new byte[1]);
         });
@@ -186,12 +186,12 @@ sealed class XmssFileStateManagerTests
 
         var stateManager = new XmssFileStateManager(directory.AbsolutePath);
 
-        Assert.ThrowsException<DirectoryNotFoundException>(() =>
+        Assert.ThrowsExactly<DirectoryNotFoundException>(() =>
         {
             _ = Directory.EnumerateFiles(directory.AbsolutePath).Any();
         });
 
-        Assert.ThrowsException<DirectoryNotFoundException>(() =>
+        Assert.ThrowsExactly<DirectoryNotFoundException>(() =>
         {
             stateManager.DeletePublicPart();
         });
@@ -233,12 +233,12 @@ sealed class XmssFileStateManagerTests
 
         var stateManager = new XmssFileStateManager(directory.AbsolutePath);
 
-        Assert.ThrowsException<DirectoryNotFoundException>(() =>
+        Assert.ThrowsExactly<DirectoryNotFoundException>(() =>
         {
             _ = Directory.EnumerateFiles(directory.AbsolutePath).Any();
         });
 
-        Assert.ThrowsException<DirectoryNotFoundException>(() =>
+        Assert.ThrowsExactly<DirectoryNotFoundException>(() =>
         {
             stateManager.Purge();
         });

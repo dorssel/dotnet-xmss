@@ -52,7 +52,7 @@ sealed class PartitionTests
         using var xmss = new Xmss();
         xmss.GeneratePrivateKey(null, XmssParameterSet.XMSS_SHA2_10_256, false);
 
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
         {
             xmss.SplitPrivateKey(new MockStateManager(), 100);
         });
@@ -84,7 +84,7 @@ sealed class PartitionTests
         var newPartition = new MockStateManager();
         newPartition.Store(XmssKeyPart.PrivateStateless, stateManager.GetPartData(XmssKeyPart.PrivateStateless));
 
-        Assert.ThrowsException<XmssStateManagerException>(() =>
+        Assert.ThrowsExactly<XmssStateManagerException>(() =>
         {
             xmss.SplitPrivateKey(newPartition, 100);
         });
@@ -100,7 +100,7 @@ sealed class PartitionTests
         var newPartition = new MockStateManager();
         newPartition.Store(XmssKeyPart.PrivateStateful, stateManager.GetPartData(XmssKeyPart.PrivateStateful));
 
-        Assert.ThrowsException<XmssStateManagerException>(() =>
+        Assert.ThrowsExactly<XmssStateManagerException>(() =>
         {
             xmss.SplitPrivateKey(newPartition, 100);
         });
@@ -118,7 +118,7 @@ sealed class PartitionTests
         newPartition.Setup();       // Load stateless
         newPartition.Setup(false);  // Purge
 
-        Assert.ThrowsException<XmssStateManagerException>(() =>
+        Assert.ThrowsExactly<XmssStateManagerException>(() =>
         {
             xmss.SplitPrivateKey(newPartition, 100);
         });
@@ -137,7 +137,7 @@ sealed class PartitionTests
         newPartition.Setup();       // Purge
         newPartition.Setup(false);  // Store stateless
 
-        Assert.ThrowsException<XmssStateManagerException>(() =>
+        Assert.ThrowsExactly<XmssStateManagerException>(() =>
         {
             xmss.SplitPrivateKey(newPartition, 100);
         });
@@ -157,7 +157,7 @@ sealed class PartitionTests
         newPartition.Setup(false);  // Store stateless
         newPartition.Setup(false);  // Purge
 
-        Assert.ThrowsException<AggregateException>(() =>
+        Assert.ThrowsExactly<AggregateException>(() =>
         {
             xmss.SplitPrivateKey(newPartition, 100);
         });
@@ -173,7 +173,7 @@ sealed class PartitionTests
         newPartition.Setup();       // Store stateless
         newPartition.Setup(false);  // Store public
 
-        Assert.ThrowsException<XmssStateManagerException>(() =>
+        Assert.ThrowsExactly<XmssStateManagerException>(() =>
         {
             SharedXmss.SplitPrivateKey(newPartition, 100);
         });
@@ -190,7 +190,7 @@ sealed class PartitionTests
         newPartition.Setup(false);  // Store public
         newPartition.Setup(false);  // Purge
 
-        Assert.ThrowsException<AggregateException>(() =>
+        Assert.ThrowsExactly<AggregateException>(() =>
         {
             SharedXmss.SplitPrivateKey(newPartition, 100);
         });
@@ -205,7 +205,7 @@ sealed class PartitionTests
 
         var newPartition = new MockStateManager();
 
-        Assert.ThrowsException<XmssException>(() =>
+        Assert.ThrowsExactly<XmssException>(() =>
         {
             xmss.SplitPrivateKey(newPartition, 9999);
         });
@@ -225,7 +225,7 @@ sealed class PartitionTests
         newPartition.Setup();       // Store stateless
         newPartition.Setup(false);  // Purge
 
-        Assert.ThrowsException<AggregateException>(() =>
+        Assert.ThrowsExactly<AggregateException>(() =>
         {
             xmss.SplitPrivateKey(newPartition, 9999);
         });
@@ -243,7 +243,7 @@ sealed class PartitionTests
         // corrupt stateful part
         Array.Clear(stateManager.GetPartData(XmssKeyPart.PrivateStateful)!);
 
-        Assert.ThrowsException<XmssStateManagerException>(() =>
+        Assert.ThrowsExactly<XmssStateManagerException>(() =>
         {
             xmss.SplitPrivateKey(newPartition, 100);
         });
@@ -267,7 +267,7 @@ sealed class PartitionTests
         // corrupt stateful part
         Array.Clear(stateManager.GetPartData(XmssKeyPart.PrivateStateful)!);
 
-        Assert.ThrowsException<AggregateException>(() =>
+        Assert.ThrowsExactly<AggregateException>(() =>
         {
             xmss.SplitPrivateKey(newPartition, 100);
         });
@@ -288,7 +288,7 @@ sealed class PartitionTests
         newPartition.Setup();       // Store stateless
         newPartition.Setup(false);  // Store stateful
 
-        Assert.ThrowsException<XmssStateManagerException>(() =>
+        Assert.ThrowsExactly<XmssStateManagerException>(() =>
         {
             xmss.SplitPrivateKey(newPartition, 100);
         });
@@ -309,7 +309,7 @@ sealed class PartitionTests
         newPartition.Setup(false);  // Store stateful
         newPartition.Setup(false);  // Purge
 
-        Assert.ThrowsException<AggregateException>(() =>
+        Assert.ThrowsExactly<AggregateException>(() =>
         {
             xmss.SplitPrivateKey(newPartition, 100);
         });
@@ -337,7 +337,7 @@ sealed class PartitionTests
         Assert.AreEqual(oldRemaining + 100, xmss.SignaturesRemaining);
         {
             using var otherXmss = new Xmss();
-            Assert.ThrowsException<XmssStateManagerException>(() =>
+            Assert.ThrowsExactly<XmssStateManagerException>(() =>
             {
                 otherXmss.ImportPrivateKey(partition2);
             });
@@ -356,7 +356,7 @@ sealed class PartitionTests
         using var xmss = new Xmss();
         xmss.GeneratePrivateKey(null, XmssParameterSet.XMSS_SHA2_10_256, false);
 
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
         {
             xmss.MergePartition(stateManager);
         });
@@ -383,7 +383,7 @@ sealed class PartitionTests
         partition2.Setup();         // Load stateful
         partition2.Setup(false);    // Purge
 
-        Assert.ThrowsException<XmssStateManagerException>(() =>
+        Assert.ThrowsExactly<XmssStateManagerException>(() =>
         {
             xmss.MergePartition(partition2);
         });

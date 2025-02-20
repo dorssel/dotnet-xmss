@@ -12,7 +12,7 @@ sealed unsafe class ErrorStringMarshallerTests
     [TestMethod]
     public void ConvertToUnmanagedThrows()
     {
-        Assert.ThrowsException<NotImplementedException>(() =>
+        Assert.ThrowsExactly<NotImplementedException>(() =>
         {
             ErrorStringMarshaller.ConvertToUnmanaged(string.Empty);
         });

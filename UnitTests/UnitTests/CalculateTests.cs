@@ -95,7 +95,7 @@ sealed class CalculateTests
             Assert.IsTrue(xmss.HasPrivateKey);
             Assert.IsTrue(xmss.HasPublicKey);
 
-            await Assert.ThrowsExceptionAsync<InvalidOperationException>(async () =>
+            await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () =>
             {
                 await xmss.CalculatePublicKeyAsync();
             });
@@ -121,7 +121,7 @@ sealed class CalculateTests
 
             stateManager.Setup(false);  // DeletePublicPart
 
-            await Assert.ThrowsExceptionAsync<XmssStateManagerException>(async () =>
+            await Assert.ThrowsExactlyAsync<XmssStateManagerException>(async () =>
             {
                 await xmss.CalculatePublicKeyAsync();
             });

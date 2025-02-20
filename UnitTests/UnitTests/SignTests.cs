@@ -38,7 +38,7 @@ sealed class SignTests
     {
         using var xmss = new Xmss();
 
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
         {
             _ = xmss.Sign([42]);
         });
@@ -62,7 +62,7 @@ sealed class SignTests
         // undersized
         var signature = new byte[1024];
 
-        Assert.ThrowsException<ArgumentException>(() =>
+        Assert.ThrowsExactly<ArgumentException>(() =>
         {
             _ = Xmss.Sign([42], signature);
         });
@@ -94,7 +94,7 @@ sealed class SignTests
         // undersized
         var signature = new byte[1024];
 
-        Assert.ThrowsException<ArgumentException>(() =>
+        Assert.ThrowsExactly<ArgumentException>(() =>
         {
             byte message = 42;
             _ = Xmss.Sign(&message, 1, signature);
@@ -104,7 +104,7 @@ sealed class SignTests
     [TestMethod]
     public unsafe void SignLarge_Null()
     {
-        Assert.ThrowsException<ArgumentNullException>(() =>
+        Assert.ThrowsExactly<ArgumentNullException>(() =>
         {
             _ = Xmss.Sign(null, 1);
         });
@@ -151,7 +151,7 @@ sealed class SignTests
 
         stateManager.Setup(false);  // Store stateful
 
-        Assert.ThrowsException<XmssStateManagerException>(() =>
+        Assert.ThrowsExactly<XmssStateManagerException>(() =>
         {
             xmss.RequestFutureSignatures(1);
         });

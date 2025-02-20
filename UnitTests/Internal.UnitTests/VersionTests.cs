@@ -49,7 +49,7 @@ sealed unsafe class VersionTests
     [TestMethod]
     public void ThrowIfVersionsNotEqual_Throws()
     {
-        Assert.ThrowsException<DllNotFoundException>(() =>
+        Assert.ThrowsExactly<DllNotFoundException>(() =>
         {
             Xmss.ThrowIfVersionsNotEqual(Defines.XMSS_LIBRARY_VERSION, uint.MaxValue);
         });
