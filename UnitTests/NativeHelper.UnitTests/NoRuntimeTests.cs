@@ -31,7 +31,7 @@ sealed class NoRuntimesTests
     [TestMethod]
     public void LoadFails()
     {
-        Assert.ThrowsException<DllNotFoundException>(() =>
+        Assert.ThrowsExactly<DllNotFoundException>(() =>
         {
             _ = NativeMethods.xmss_library_get_version();
         });

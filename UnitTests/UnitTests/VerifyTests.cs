@@ -40,7 +40,7 @@ sealed class VerifyTests
     {
         using var xmss = new Xmss();
 
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
         {
             _ = xmss.Verify(Message, Signature);
         });

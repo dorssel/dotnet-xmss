@@ -48,7 +48,7 @@ sealed class XmssCertificateExtensionsTests
         var now = DateTimeOffset.Now;
         using var rsaCertificate = request.Create(new("CN=TestIssuer"), X509SignatureGenerator.CreateForRSA(rsa, RSASignaturePadding.Pss), now, now, [1]);
 
-        Assert.ThrowsException<CryptographicException>(() =>
+        Assert.ThrowsExactly<CryptographicException>(() =>
         {
             using var xmss = rsaCertificate.GetXmssPublicKey();
         });

@@ -41,7 +41,7 @@ sealed unsafe class CriticalXmssHandleTests
 
         other.Dispose();
 
-        Assert.ThrowsException<ObjectDisposedException>(() =>
+        Assert.ThrowsExactly<ObjectDisposedException>(() =>
         {
             blob.SwapWith(other);
         });
@@ -55,7 +55,7 @@ sealed unsafe class CriticalXmssHandleTests
 
         other.Dispose();
 
-        Assert.ThrowsException<ObjectDisposedException>(() =>
+        Assert.ThrowsExactly<ObjectDisposedException>(() =>
         {
             blob.SwapWith(other);
         });

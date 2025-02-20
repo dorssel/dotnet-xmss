@@ -75,7 +75,7 @@ sealed class GenerateTests
         stateManager.Setup();       // Purge
         stateManager.Setup(false);  // Store stateless
 
-        Assert.ThrowsException<XmssStateManagerException>(() =>
+        Assert.ThrowsExactly<XmssStateManagerException>(() =>
         {
             xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
         });
@@ -94,7 +94,7 @@ sealed class GenerateTests
         stateManager.Setup(false);  // Store stateless
         stateManager.Setup(false);  // Purge
 
-        Assert.ThrowsException<AggregateException>(() =>
+        Assert.ThrowsExactly<AggregateException>(() =>
         {
             xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
         });

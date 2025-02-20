@@ -37,7 +37,7 @@ sealed class XmssExceptionTests
     [TestMethod]
     public void ThrowIfNotOkay_Error()
     {
-        Assert.ThrowsException<XmssException>(() =>
+        Assert.ThrowsExactly<XmssException>(() =>
         {
             XmssException.ThrowIfNotOkay(XmssError.XMSS_ERR_FAULT_DETECTED);
         });
@@ -58,7 +58,7 @@ sealed class XmssExceptionTests
     [TestMethod]
     public void ThrowFaultDetectedIf_True()
     {
-        Assert.ThrowsException<XmssException>(() =>
+        Assert.ThrowsExactly<XmssException>(() =>
         {
             XmssException.ThrowFaultDetectedIf(true);
         });
@@ -75,7 +75,7 @@ sealed class XmssExceptionTests
     {
         var inner = new InvalidOperationException();
 
-        var exception = Assert.ThrowsException<XmssException>(() =>
+        var exception = Assert.ThrowsExactly<XmssException>(() =>
         {
             XmssException.ThrowFaultDetectedIf(inner);
         });

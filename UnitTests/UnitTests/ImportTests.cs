@@ -82,7 +82,7 @@ sealed class ImportTests
         Array.Clear(stateManager.GetPartData(XmssKeyPart.PrivateStateless)!);
         Array.Clear(stateManager.GetPartData(XmssKeyPart.PrivateStateful)!);
 
-        Assert.ThrowsException<XmssException>(() =>
+        Assert.ThrowsExactly<XmssException>(() =>
         {
             xmss.ImportPrivateKey(stateManager);
         });
@@ -108,7 +108,7 @@ sealed class ImportTests
     {
         using var xmss = new Xmss();
 
-        Assert.ThrowsException<CryptographicException>(() =>
+        Assert.ThrowsExactly<CryptographicException>(() =>
         {
             xmss.ImportRfcPublicKey([1], out _);
         });
@@ -121,7 +121,7 @@ sealed class ImportTests
 
         var wrong = new byte[ExampleCertificate.RfcPublicKey.Length];
 
-        Assert.ThrowsException<CryptographicException>(() =>
+        Assert.ThrowsExactly<CryptographicException>(() =>
         {
             xmss.ImportRfcPublicKey(wrong, out _);
         });
@@ -134,7 +134,7 @@ sealed class ImportTests
 
         var tooShort = ExampleCertificate.RfcPublicKey[..^1];
 
-        Assert.ThrowsException<CryptographicException>(() =>
+        Assert.ThrowsExactly<CryptographicException>(() =>
         {
             xmss.ImportRfcPublicKey(tooShort.Span, out _);
         });
@@ -183,7 +183,7 @@ sealed class ImportTests
     {
         using var xmss = new Xmss();
 
-        Assert.ThrowsException<CryptographicException>(() =>
+        Assert.ThrowsExactly<CryptographicException>(() =>
         {
             xmss.ImportAsnPublicKey([42], out var bytesRead);
         });
@@ -225,7 +225,7 @@ sealed class ImportTests
         Assert.IsFalse(xmss.HasPrivateKey);
         Assert.IsFalse(xmss.HasPublicKey);
 
-        Assert.ThrowsException<CryptographicException>(() =>
+        Assert.ThrowsExactly<CryptographicException>(() =>
         {
             xmss.ImportSubjectPublicKeyInfo(info, out var bytesRead);
         });
@@ -316,7 +316,7 @@ sealed class ImportTests
 
         using var xmss = new Xmss();
 
-        Assert.ThrowsException<CryptographicException>(() =>
+        Assert.ThrowsExactly<CryptographicException>(() =>
         {
             xmss.ImportFromPem(infoPemWithExtraneousData);
         });
@@ -341,7 +341,7 @@ sealed class ImportTests
     {
         using var xmss = new Xmss();
 
-        Assert.ThrowsException<ArgumentException>(() =>
+        Assert.ThrowsExactly<ArgumentException>(() =>
         {
             xmss.ImportFromPem("This is invalid PEM.");
         });
@@ -354,7 +354,7 @@ sealed class ImportTests
 
         var unsupported = PemEncoding.WriteString("UNSUPPORTED", [1, 2, 3]);
 
-        Assert.ThrowsException<ArgumentException>(() =>
+        Assert.ThrowsExactly<ArgumentException>(() =>
         {
             xmss.ImportFromPem(unsupported);
         });
@@ -365,7 +365,7 @@ sealed class ImportTests
     {
         using var xmss = new Xmss();
 
-        Assert.ThrowsException<ArgumentException>(() =>
+        Assert.ThrowsExactly<ArgumentException>(() =>
         {
             xmss.ImportFromPem(ExampleCertificate.Pem + Environment.NewLine + ExampleCertificate.Pem);
         });

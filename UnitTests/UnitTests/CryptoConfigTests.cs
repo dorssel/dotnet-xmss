@@ -76,7 +76,7 @@ sealed class CryptoConfigTests
     {
         using var xmss = new Xmss();
 
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
         {
             _ = xmss.SignatureAlgorithm;
         });
