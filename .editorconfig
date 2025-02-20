@@ -176,8 +176,8 @@ charset = utf-8-bom
 indent_size = unset
 
 # Maintained by Visual Studio
-[*.sln]
-indent_style = tab
+[*.slnx]
+indent_size = 2
 
 # Maintained by Visual Studio
 [*.{pubxml,wixproj}]
