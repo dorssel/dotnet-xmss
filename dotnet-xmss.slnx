@@ -17,7 +17,6 @@ SPDX-License-Identifier: MIT
     <File Path=".gitignore" />
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
-    <File Path="Directory.Solution.targets" />
     <File Path="GitVersion.yml" />
     <File Path="global.json" />
     <File Path="libc/libc.c" />
