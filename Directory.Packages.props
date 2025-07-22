@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
     <PackageVersion Include="Blazored.LocalStorage" Version="4.5.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.7" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.7" />
-    <PackageVersion Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.12.0" />
-    <PackageVersion Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.12.0" />
+    <PackageVersion Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.12.1" />
+    <PackageVersion Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.12.1" />
   </ItemGroup>
 </Project>
