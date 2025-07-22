@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 -->
 <Project>
 
-  <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props"/>
+  <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props" />
 
   <PropertyGroup>
     <TargetFramework>$(MainTargetFramework)</TargetFramework>
