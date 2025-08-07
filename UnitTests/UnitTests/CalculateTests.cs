@@ -22,7 +22,7 @@ sealed class CalculateTests
         Assert.IsTrue(xmss.HasPrivateKey);
         Assert.IsFalse(xmss.HasPublicKey);
 
-        await xmss.CalculatePublicKeyAsync();
+        await xmss.CalculatePublicKeyAsync(null, CancellationToken.None);
 
         Assert.IsTrue(xmss.HasPrivateKey);
         Assert.IsTrue(xmss.HasPublicKey);
@@ -47,7 +47,7 @@ sealed class CalculateTests
             Assert.IsTrue(xmss.HasPrivateKey);
             Assert.IsFalse(xmss.HasPublicKey);
 
-            await xmss.CalculatePublicKeyAsync();
+            await xmss.CalculatePublicKeyAsync(null, CancellationToken.None);
 
             Assert.IsTrue(xmss.HasPrivateKey);
             Assert.IsTrue(xmss.HasPublicKey);
@@ -87,9 +87,9 @@ sealed class CalculateTests
             var lastPercentage = 0.0;
             await xmss.CalculatePublicKeyAsync((percentage) =>
             {
-                Assert.IsTrue(percentage > lastPercentage);
+                Assert.IsGreaterThan(lastPercentage, percentage);
                 lastPercentage = percentage;
-            });
+            }, CancellationToken.None);
             Assert.AreEqual(100.0, lastPercentage);
 
             Assert.IsTrue(xmss.HasPrivateKey);
@@ -97,7 +97,7 @@ sealed class CalculateTests
 
             await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () =>
             {
-                await xmss.CalculatePublicKeyAsync();
+                await xmss.CalculatePublicKeyAsync(null, CancellationToken.None);
             });
         }
     }
@@ -123,7 +123,7 @@ sealed class CalculateTests
 
             await Assert.ThrowsExactlyAsync<XmssStateManagerException>(async () =>
             {
-                await xmss.CalculatePublicKeyAsync();
+                await xmss.CalculatePublicKeyAsync(null, CancellationToken.None);
             });
 
             Assert.IsTrue(xmss.HasPrivateKey);
