@@ -18,7 +18,7 @@ sealed class SignTests
         _ = testContext;
 
         Xmss.GeneratePrivateKey(new MockStateManager(), XmssParameterSet.XMSS_SHA2_10_256, true);
-        await Xmss.CalculatePublicKeyAsync();
+        await Xmss.CalculatePublicKeyAsync(null, CancellationToken.None);
     }
 
     [ClassCleanup]
@@ -52,8 +52,8 @@ sealed class SignTests
 
         var bytesWritten = Xmss.Sign([42], signature);
 
-        Assert.IsTrue(bytesWritten > 0);
-        Assert.IsTrue(bytesWritten < signature.Length);
+        Assert.IsGreaterThan(0, bytesWritten);
+        Assert.IsLessThan(signature.Length, bytesWritten);
     }
 
     [TestMethod]
@@ -84,8 +84,8 @@ sealed class SignTests
         byte message = 42;
         var bytesWritten = Xmss.Sign(&message, 1, signature);
 
-        Assert.IsTrue(bytesWritten > 0);
-        Assert.IsTrue(bytesWritten < signature.Length);
+        Assert.IsGreaterThan(0, bytesWritten);
+        Assert.IsLessThan(signature.Length, bytesWritten);
     }
 
     [TestMethod]
@@ -147,7 +147,7 @@ sealed class SignTests
         var stateManager = new MockStateManager();
         using var xmss = new Xmss();
         xmss.GeneratePrivateKey(stateManager, XmssParameterSet.XMSS_SHA2_10_256, false);
-        await xmss.CalculatePublicKeyAsync();
+        await xmss.CalculatePublicKeyAsync(null, CancellationToken.None);
 
         stateManager.Setup(false);  // Store stateful
 
