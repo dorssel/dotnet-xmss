@@ -1,5 +1,6 @@
 Codecov
 Dorssel
+dotnet
 hashsig
 marshaller
 navmenu
