@@ -21,9 +21,6 @@
     ],
     "resource": [
       {
-        "files": [".nojekyll"]
-      },
-      {
         "files": ["**"],
         "src": "../Examples/WebAssembly/bin/publish/wwwroot",
         "dest": "wasm-example"

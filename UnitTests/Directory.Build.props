@@ -19,7 +19,7 @@ SPDX-License-Identifier: MIT
     <NoWarn>$(NoWarn),IDE0053,IDE0058,IDE0200</NoWarn>
 
     <!-- Bump MSTest.Sdk "transitive" dependencies (they are actually direct dependencies) -->
-    <MicrosoftNETTestSdkVersion>17.14.1</MicrosoftNETTestSdkVersion>
+    <MicrosoftNETTestSdkVersion>18.0.0</MicrosoftNETTestSdkVersion>
   </PropertyGroup>
 
   <ItemGroup>
