@@ -94,11 +94,16 @@ sealed class SignTests
         // undersized
         var signature = new byte[1024];
 
-        Assert.ThrowsExactly<ArgumentException>(() =>
+        void test()
         {
+            // setup
             byte message = 42;
+
+            // test
             _ = Xmss.Sign(&message, 1, signature);
-        });
+        }
+
+        Assert.ThrowsExactly<ArgumentException>(test);
     }
 
     [TestMethod]
