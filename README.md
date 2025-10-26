@@ -13,9 +13,6 @@ SPDX-License-Identifier: MIT
 [![Codecov](https://codecov.io/gh/dorssel/dotnet-xmss/branch/main/graph/badge.svg?token=L0QI0AZRJI)](https://codecov.io/gh/dorssel/dotnet-xmss)
 [![NuGet](https://img.shields.io/nuget/v/Dorssel.Security.Cryptography.Xmss?logo=nuget)](https://www.nuget.org/packages/Dorssel.Security.Cryptography.Xmss)
 
-> [!NOTE]
-> This implementation leverages the [Fox Crypto XMSS Library](https://github.com/FoxCryptoNL/xmss).
->
-> The previous implementation is no longer maintained, but still available as an [archive branch](https://github.com/dorssel/dotnet-xmss/tree/master).
+This implementation leverages the [Sentyron XMSS Library](https://github.com/Sentyron/xmss).
 
-TODO
+See the Examples directory for usage samples. Also see the [API documentation](https://dorssel.github.io/dotnet-xmss/).
