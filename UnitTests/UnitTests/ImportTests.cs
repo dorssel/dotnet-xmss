@@ -2,8 +2,10 @@
 //
 // SPDX-License-Identifier: MIT
 
+using System.Formats.Asn1;
 using System.Security.Cryptography;
 using Dorssel.Security.Cryptography;
+using static Dorssel.Security.Cryptography.X509Certificates.XmssCertificateExtensions;
 
 namespace UnitTests;
 
@@ -141,6 +143,17 @@ sealed class ImportTests
     }
 
     [TestMethod]
+    public void ImportRfcPublicKey_Oversized()
+    {
+        using var xmss = new Xmss();
+
+        var oversized = new ReadOnlySpan<byte>([..ExampleCertificate.RfcPublicKey.Span, 0]);
+
+        xmss.ImportRfcPublicKey(oversized, out var bytesRead);
+        Assert.AreEqual(ExampleCertificate.RfcPublicKey.Length, bytesRead);
+    }
+
+    [TestMethod]
     public void ImportRfcPublicKey_AfterPrivateKey()
     {
         using var xmss = new Xmss();
@@ -186,6 +199,55 @@ sealed class ImportTests
         Assert.ThrowsExactly<CryptographicException>(() =>
         {
             xmss.ImportAsnPublicKey([42], out var bytesRead);
+        });
+    }
+
+    [TestMethod]
+    public void ImportAsnPublicKey_OversizedAsn()
+    {
+        byte[] asn;
+        {
+            using var tmpXmss = new Xmss();
+            tmpXmss.ImportFromPem(ExampleCertificate.Pem);
+            asn = tmpXmss.ExportAsnPublicKey();
+        }
+
+        using var xmss = new Xmss();
+
+        Assert.IsFalse(xmss.HasPrivateKey);
+        Assert.IsFalse(xmss.HasPublicKey);
+
+        xmss.ImportAsnPublicKey([..asn, 0], out var bytesRead);
+
+        Assert.AreEqual(asn.Length, bytesRead);
+        Assert.IsFalse(xmss.HasPrivateKey);
+        Assert.IsTrue(xmss.HasPublicKey);
+    }
+
+    [TestMethod]
+    public void ImportAsnPublicKey_OversizedKey()
+    {
+        byte[] asn;
+        {
+
+            using var tmpXmss = new Xmss();
+            tmpXmss.ImportFromPem(ExampleCertificate.Pem);
+            asn = tmpXmss.ExportAsnPublicKey();
+        }
+        var correctKey = AsnDecoder.ReadOctetString(asn, AsnEncodingRules.BER, out var bytesConsumed);
+
+        var asnWriter = new AsnWriter(AsnEncodingRules.DER);
+        asnWriter.WriteOctetString([.. correctKey, 42]);
+        var asnWithOversizedKey = asnWriter.Encode();
+
+        using var xmss = new Xmss();
+
+        Assert.IsFalse(xmss.HasPrivateKey);
+        Assert.IsFalse(xmss.HasPublicKey);
+
+        Assert.ThrowsExactly<CryptographicException>(() =>
+        {
+            xmss.ImportAsnPublicKey(asnWithOversizedKey, out var bytesRead);
         });
     }
 
@@ -280,6 +342,26 @@ sealed class ImportTests
 
         Assert.IsFalse(xmss.HasPrivateKey);
         Assert.IsTrue(xmss.HasPublicKey);
+    }
+
+    [TestMethod]
+    public void ImportFromPem_XmssAsn_OversizedAsn()
+    {
+        using var xmss = ExampleCertificate.Certificate2.GetXmssPublicKey()!;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        var asnPem = xmss.ExportAsnPublicKeyPem();
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        var fields = PemEncoding.Find(asnPem);
+        var correctData = Convert.FromBase64String(asnPem[fields.Base64Data]);
+
+        var infoPemWithExtraneousData = PemEncoding.WriteString(asnPem[fields.Label], [.. correctData, 42]);
+
+        Assert.ThrowsExactly<CryptographicException>(() =>
+        {
+            xmss.ImportFromPem(infoPemWithExtraneousData);
+        });
     }
 
     [TestMethod]

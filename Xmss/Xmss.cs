@@ -812,7 +812,7 @@ public sealed class Xmss
                 var buffer = possiblyOversizedBuffer.AsSpan(0, 15 * 1088);
                 fixed (byte* signaturePtr = signature)
                 fixed (byte* bufferPtr = buffer)
-                fixed (XmssPublicKey* publicKeyPtr = &PublicKey)
+                fixed (XmssPublicKey* publicKeyPin = &PublicKey)
                 {
                     var result = UnsafeNativeMethods.xmss_verification_init(out var context, PublicKey, *(XmssSignature*)signaturePtr, (nuint)signature.Length);
                     if (result == XmssError.XMSS_ERR_INVALID_SIGNATURE)
@@ -860,7 +860,7 @@ public sealed class Xmss
         {
             fixed (byte* signaturePtr = signature)
             fixed (byte* dataPtr = data)
-            fixed (XmssPublicKey* publicKeyPtr = &PublicKey)
+            fixed (XmssPublicKey* publicKeyPin = &PublicKey)
             {
                 var result = UnsafeNativeMethods.xmss_verification_init(out var context, PublicKey, *(XmssSignature*)signaturePtr, (nuint)signature.Length);
                 if (result == XmssError.XMSS_ERR_INVALID_SIGNATURE)
@@ -957,14 +957,7 @@ public sealed class Xmss
             bytesWritten = 0;
             return false;
         }
-        unsafe
-        {
-            fixed (XmssPublicKey* publicKeyPtr = &PublicKey)
-            fixed (byte* destinationPtr = destination)
-            {
-                Buffer.MemoryCopy(publicKeyPtr, destinationPtr, destination.Length, Defines.XMSS_PUBLIC_KEY_SIZE);
-            }
-        }
+        MemoryMarshal.Write(destination, PublicKey);
         bytesWritten = Defines.XMSS_PUBLIC_KEY_SIZE;
         return true;
     }
@@ -981,15 +974,7 @@ public sealed class Xmss
         ThrowIfNoPublicKey();
 
         var asnWriter = new AsnWriter(AsnEncodingRules.DER);
-        {
-            unsafe
-            {
-                fixed (XmssPublicKey* publicKeyPtr = &PublicKey)
-                {
-                    asnWriter.WriteOctetString(new(publicKeyPtr, sizeof(XmssPublicKey)));
-                }
-            }
-        }
+        asnWriter.WriteOctetString(MemoryMarshal.Cast<XmssPublicKey, byte>(new(ref PublicKey)));
         return asnWriter.TryEncode(destination, out bytesWritten);
     }
 
@@ -1027,13 +1012,7 @@ public sealed class Xmss
                 asnWriter.WriteObjectIdentifier(IdAlgXmssHashsig.Value!);
                 // PARAMS ARE absent
             }
-            unsafe
-            {
-                fixed (XmssPublicKey* publicKeyPtr = &PublicKey)
-                {
-                    asnWriter.WriteBitString(new(publicKeyPtr, sizeof(XmssPublicKey)));
-                }
-            }
+            asnWriter.WriteBitString(MemoryMarshal.Cast<XmssPublicKey, byte>(new(ref PublicKey)));
         }
         return asnWriter.TryEncode(destination, out bytesWritten);
     }
@@ -1061,17 +1040,15 @@ public sealed class Xmss
         {
             throw new CryptographicException($"Unsupported parameter set ({parameterSetOID}).");
         }
-        if (source.Length != Defines.XMSS_PUBLIC_KEY_SIZE)
+        if (source.Length < Defines.XMSS_PUBLIC_KEY_SIZE)
+        {
+            throw new CryptographicException("Key value too short.");
+        }
+        if (exact && (source.Length != Defines.XMSS_PUBLIC_KEY_SIZE))
         {
             throw new CryptographicException("Key value wrong size.");
         }
-        unsafe
-        {
-            fixed (XmssPublicKey* xmssPublicKeyPtr = &publicKey)
-            {
-                source[..sizeof(XmssPublicKey)].CopyTo(new Span<byte>(xmssPublicKeyPtr, Defines.XMSS_PUBLIC_KEY_SIZE));
-            }
-        }
+        XmssException.ThrowFaultDetectedIf(!MemoryMarshal.TryRead(source, out publicKey));
         bytesRead = Defines.XMSS_PUBLIC_KEY_SIZE;
         parameterSet = (XmssParameterSet)parameterSetOID;
     }
@@ -1085,13 +1062,17 @@ public sealed class Xmss
         try
         {
             xmssPublicKeyData = AsnDecoder.ReadOctetString(source, AsnEncodingRules.BER, out bytesConsumed);
+            if (exact && (source.Length != bytesConsumed))
+            {
+                throw new CryptographicException("ASN.1 wrong size.");
+            }
         }
         catch (AsnContentException ex)
         {
             throw new CryptographicException("Invalid ASN.1 format.", ex);
         }
 
-        DecodeXmssPublicKey(xmssPublicKeyData, out publicKey, out parameterSet, out _, exact);
+        DecodeXmssPublicKey(xmssPublicKeyData, out publicKey, out parameterSet, out _, true);
         bytesRead = bytesConsumed;
     }
 
