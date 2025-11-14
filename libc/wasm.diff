@@ -1,0 +1,15 @@
+SPDX-FileCopyrightText: 2025 Frans van Dorsselaer
+
+SPDX-License-Identifier: MIT
+
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -67,7 +67,7 @@ endif()
+
+ # Our actual library target amalgamates all sources into one; see comment in libxmss.c for rationale.
+ add_library(xmss
+-    libxmss.c
++    xmss.c
+     ${XMSS_HASH_OVERRIDE_SOURCES}
+     ${ADDITIONAL_SOURCES}
+ )

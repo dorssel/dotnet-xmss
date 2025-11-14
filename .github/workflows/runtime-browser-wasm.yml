@@ -30,6 +30,11 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Patch for WASM
+        run: |
+          cp libc/xmss.c xmss-library/src/
+          patch --directory=xmss-library --strip=1 < libc/wasm.diff
+
       - name: Prepare packages
         run: |
           sudo apt-get update
@@ -42,6 +47,7 @@ jobs:
           -B build
           -DXMSS_C99_COMPATIBLE=OFF
           -DCMAKE_EXE_LINKER_FLAGS="-s NODERAWFS=1"
+          -DCMAKE_STATIC_LIBRARY_PREFIX_C=""
 
       - name: Configure (pthread)
         run: >
@@ -51,6 +57,7 @@ jobs:
           -DXMSS_C99_COMPATIBLE=OFF
           -DCMAKE_C_FLAGS="-pthread"
           -DCMAKE_EXE_LINKER_FLAGS="-s NODERAWFS=1"
+          -DCMAKE_STATIC_LIBRARY_PREFIX_C=""
 
       - name: Build
         run: cmake --build build
@@ -73,8 +80,8 @@ jobs:
       - name: Copy artifacts
         run: |
           mkdir -p "Xmss/runtimes/${{ env.RUNTIME }}/nativeassets"
-          cp build/src/libxmss.a "Xmss/runtimes/${{ env.RUNTIME }}/nativeassets/xmss.a"
-          cp build-pthread/src/libxmss.a "Xmss/runtimes/${{ env.RUNTIME }}/nativeassets/xmss-pthread.a"
+          cp build/src/xmss.a "Xmss/runtimes/${{ env.RUNTIME }}/nativeassets/xmss.a"
+          cp build-pthread/src/xmss.a "Xmss/runtimes/${{ env.RUNTIME }}/nativeassets/xmss-pthread.a"
 
       - name: Save runtime cache
         id: save-runtime-cache

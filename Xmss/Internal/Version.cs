@@ -40,7 +40,6 @@ static partial class Defines
 static partial class SafeNativeMethods
 {
     [LibraryImport("xmss")]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 
     internal static partial uint xmss_library_get_version();
 }

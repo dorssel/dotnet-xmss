@@ -9,5 +9,4 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Security", "CA5393:Do not use unsafe DllImportSearchPath value", Justification = "Required to load native runtime library.")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Matches native library names.", Scope = "NamespaceAndDescendants", Target = "~N:Dorssel.Security.Cryptography.Internal")]
