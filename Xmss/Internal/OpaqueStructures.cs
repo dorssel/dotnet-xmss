@@ -19,7 +19,6 @@ static partial class Defines
 static partial class UnsafeNativeMethods
 {
     [LibraryImport("xmss")]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
     internal static unsafe partial void xmss_free_signing_context(XmssSigningContext* signing_context);
 }
 
@@ -74,7 +73,6 @@ static partial class Defines
 static partial class UnsafeNativeMethods
 {
     [LibraryImport("xmss")]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
     internal static unsafe partial void xmss_free_key_context(XmssKeyContext* key_context);
 }
 
@@ -95,6 +93,5 @@ static partial class Defines
 static partial class UnsafeNativeMethods
 {
     [LibraryImport("xmss")]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
     internal static unsafe partial void xmss_free_key_generation_context(XmssKeyGenerationContext* key_generation_context);
 }

@@ -79,6 +79,7 @@ csharp_style_implicit_object_creation_when_type_is_apparent = true:suggestion
 csharp_style_inlined_variable_declaration = true:suggestion
 csharp_style_namespace_declarations = file_scoped:suggestion
 csharp_style_prefer_extended_property_pattern = true:suggestion
+csharp_style_prefer_implicitly_typed_lambda_expression = true:suggestion
 csharp_style_prefer_index_operator = true:suggestion
 csharp_style_prefer_local_over_anonymous_function = true:suggestion
 csharp_style_prefer_method_group_conversion = true:suggestion
@@ -89,6 +90,7 @@ csharp_style_prefer_primary_constructors = true:suggestion
 csharp_style_prefer_range_operator = true:suggestion
 csharp_style_prefer_readonly_struct = true:suggestion
 csharp_style_prefer_readonly_struct_member = true:suggestion
+csharp_style_prefer_simple_property_accessors = true:suggestion
 csharp_style_prefer_switch_expression = true:suggestion
 csharp_style_prefer_top_level_statements = true:suggestion
 csharp_style_prefer_tuple_swap = true:suggestion
@@ -195,6 +197,9 @@ indent_size = 2
 
 [*.{json,yaml,yml}]
 indent_size = 2
+
+[*.{diff,patch}]
+indent_size = unset
 
 [*.sh]
 charset = utf-8
