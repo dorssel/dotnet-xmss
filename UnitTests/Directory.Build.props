@@ -24,12 +24,16 @@ SPDX-License-Identifier: MIT
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="JunitXml.TestLogger" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- We use internal test classes. -->
     <AssemblyAttribute Include="Microsoft.VisualStudio.TestTools.UnitTesting.DiscoverInternalsAttribute" />
     <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.SuppressMessageAttribute">
       <_Parameter1>Performance</_Parameter1>
       <_Parameter2>CA1812:Internal class is never instantiated</_Parameter2>
     </AssemblyAttribute>
-    </ItemGroup>
+  </ItemGroup>
 
 </Project>
