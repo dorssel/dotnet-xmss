@@ -20,6 +20,7 @@ SPDX-License-Identifier: MIT
     <File Path="GitVersion.yml" />
     <File Path="global.json" />
     <File Path="libc/libc.c" />
+    <File Path="nuget.config" />
     <File Path="README.md" />
   </Folder>
   <Folder Name="/UnitTests/">
