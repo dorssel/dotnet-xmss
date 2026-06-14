@@ -6,4 +6,4 @@
 
 [submodule "xmss-library"]
 	path = xmss-library
-	url = https://github.com/FoxCryptoNL/xmss-library.git
+	url = https://github.com/sentyron/xmss-library.git
