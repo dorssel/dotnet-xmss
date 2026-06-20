@@ -67,7 +67,6 @@ SPDX-License-Identifier: MIT
   <PropertyGroup Label="Dependabot" Condition="'$(DEPENDABOT)' == 'true'">
     <RestoreLockedMode>false</RestoreLockedMode>
     <GitVersion_AllowShallowEnabled>true</GitVersion_AllowShallowEnabled>
-    <MSBuildEnableWorkloadResolver>false</MSBuildEnableWorkloadResolver>
   </PropertyGroup>
 
   <ItemGroup>
