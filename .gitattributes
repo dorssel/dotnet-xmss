@@ -10,8 +10,6 @@
 .gitmodules      text eol=lf
 .editorconfig    text
 
-.github/workflows/runtime-*.yml   text eol=lf
-
 *.txt       text
 *.md        text
 *.license   text
@@ -32,7 +30,10 @@ libc/*.c   text eol=lf
 *.razor   text
 *.html    text
 *.css     text
-.js       text
+*.js      text
+
+packages.lock.json                  text linguist-generated
+.github/workflows/runtime-*.yml     text eol=lf
 
 # These are part of the nuget package
 LICENSE.txt   text eol=crlf
