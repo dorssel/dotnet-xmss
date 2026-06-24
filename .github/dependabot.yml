@@ -12,21 +12,25 @@
 
 version: 2
 updates:
-  - package-ecosystem: 'github-actions'
+  - package-ecosystem: github-actions
     directories:
-      - '/'
-      - '/.github/actions/*'
+      - /
+      - /.github/actions/*
     schedule:
-      interval: 'daily'
-  - package-ecosystem: 'dotnet-sdk'
-    directory: '/'
+      interval: daily
+    groups:
+      all-actions:
+        patterns:
+          - '*'
+  - package-ecosystem: dotnet-sdk
+    directory: /
     schedule:
-      interval: 'weekly'
-      day: 'wednesday'
-  - package-ecosystem: 'nuget'
-    directory: '/'
+      interval: weekly
+      day: wednesday
+  - package-ecosystem: nuget
+    directory: /
     schedule:
-      interval: 'daily'
+      interval: daily
     ignore:
       # These are bundeled (transitive) by MSTest.Sdk
       - dependency-name: Microsoft.NET.Test.Sdk
@@ -35,7 +39,7 @@ updates:
     groups:
       AspNetCore:
         patterns:
-          - 'Microsoft.AspNetCore.Components*'
+          - Microsoft.AspNetCore.Components*
       FluentUI:
         patterns:
-          - 'Microsoft.FluentUI.AspNetCore.Components*'
+          - Microsoft.FluentUI.AspNetCore.Components*
