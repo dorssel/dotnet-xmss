@@ -103,7 +103,7 @@ sealed class XmssMemoryStateManagerTests
         var read = new byte[data.Length];
         stateManager.Load(XmssKeyPart.Public, read);
 
-        CollectionAssert.AreEqual(data, read);
+        Assert.AreSequenceEqual(data, read);
     }
 
     [TestMethod]

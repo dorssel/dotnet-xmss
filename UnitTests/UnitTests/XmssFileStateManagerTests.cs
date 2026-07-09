@@ -106,7 +106,7 @@ sealed class XmssFileStateManagerTests
         var read = new byte[data.Length];
         stateManager.Load(XmssKeyPart.Public, read);
 
-        CollectionAssert.AreEqual(data, read);
+        Assert.AreSequenceEqual(data, read);
     }
 
     [TestMethod]
@@ -160,11 +160,11 @@ sealed class XmssFileStateManagerTests
         var stateManager = new XmssFileStateManager(directory.AbsolutePath);
         stateManager.Store(XmssKeyPart.Public, [1]);
 
-        Assert.IsTrue(Directory.EnumerateFiles(directory.AbsolutePath).Any());
+        Assert.IsNotEmpty(Directory.EnumerateFiles(directory.AbsolutePath));
 
         stateManager.DeletePublicPart();
 
-        Assert.IsFalse(Directory.EnumerateFiles(directory.AbsolutePath).Any());
+        Assert.IsEmpty(Directory.EnumerateFiles(directory.AbsolutePath));
     }
 
     [TestMethod]
@@ -174,7 +174,7 @@ sealed class XmssFileStateManagerTests
 
         var stateManager = new XmssFileStateManager(directory.AbsolutePath);
 
-        Assert.IsFalse(Directory.EnumerateFiles(directory.AbsolutePath).Any());
+        Assert.IsEmpty(Directory.EnumerateFiles(directory.AbsolutePath));
 
         stateManager.DeletePublicPart();
     }
@@ -207,11 +207,11 @@ sealed class XmssFileStateManagerTests
         stateManager.Store(XmssKeyPart.PrivateStateful, [2]);
         stateManager.Store(XmssKeyPart.Public, [3]);
 
-        Assert.IsTrue(Directory.EnumerateFiles(directory.AbsolutePath).Any());
+        Assert.IsNotEmpty(Directory.EnumerateFiles(directory.AbsolutePath));
 
         stateManager.Purge();
 
-        Assert.IsFalse(Directory.EnumerateFiles(directory.AbsolutePath).Any());
+        Assert.IsEmpty(Directory.EnumerateFiles(directory.AbsolutePath));
     }
 
     [TestMethod]
@@ -221,7 +221,7 @@ sealed class XmssFileStateManagerTests
 
         var stateManager = new XmssFileStateManager(directory.AbsolutePath);
 
-        Assert.IsFalse(Directory.EnumerateFiles(directory.AbsolutePath).Any());
+        Assert.IsEmpty(Directory.EnumerateFiles(directory.AbsolutePath));
 
         stateManager.Purge();
     }
