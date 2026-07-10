@@ -16,7 +16,7 @@ sealed class ExportTests
 
         var rfc = xmss.ExportRfcPublicKey();
 
-        CollectionAssert.AreEqual(ExampleCertificate.Certificate2.PublicKey.EncodedKeyValue.RawData, rfc);
+        Assert.AreSequenceEqual(ExampleCertificate.Certificate2.PublicKey.EncodedKeyValue.RawData, rfc);
     }
 
     [TestMethod]
