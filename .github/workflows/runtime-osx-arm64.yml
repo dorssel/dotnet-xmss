@@ -11,7 +11,7 @@ name: Runtime osx-arm64
 
 on:
   workflow_dispatch:
-  workflow_call:
+  workflow_call: {}
 
 env:
   RUNTIME: osx-arm64
