@@ -5,10 +5,11 @@
 # default: normalize EOL
 * text=auto
 
-.gitattributes   text
-.gitignore       text
-.gitmodules      text eol=lf
-.editorconfig    text
+.gitattributes  text
+.gitignore      text
+.gitmodules     text eol=lf
+.editorconfig   text
+CODEOWNERS      text
 
 *.txt       text
 *.md        text
