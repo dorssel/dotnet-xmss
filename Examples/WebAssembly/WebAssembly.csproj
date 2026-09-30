@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
     <IsPublishable>true</IsPublishable>
     <PublishProfile>Properties\PublishProfiles\FolderProfile.pubxml</PublishProfile>
     <PublishDir>bin\publish\</PublishDir>
+    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
     <CompressionEnabled>false</CompressionEnabled>
     <!-- Not yet supported by stand-alone Blazor -->
     <!--

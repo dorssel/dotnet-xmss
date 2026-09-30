@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <!--
+    SPDX-FileCopyrightText: Microsoft Corporation
     SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
 
     SPDX-License-Identifier: MIT
@@ -12,10 +13,12 @@
     <meta name="keywords" content="WASM,XMSS" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>XMSS Demo</title>
+    <link rel="preload" id="webassembly" />
     <link href="_content/Microsoft.FluentUI.AspNetCore.Components/css/reboot.css" rel="stylesheet" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <link href="WebAssembly.styles.css" rel="stylesheet" />
+    <script type="importmap"></script>
 </head>
 
 <body>
@@ -32,7 +35,7 @@
         <a href="." class="reload">Reload</a>
         <span class="dismiss">🗙</span>
     </div>
-    <script src="_framework/blazor.webassembly.js"></script>
+    <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
 </body>
 
 </html>
