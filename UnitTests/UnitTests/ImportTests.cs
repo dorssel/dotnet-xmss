@@ -147,7 +147,7 @@ sealed class ImportTests
     {
         using var xmss = new Xmss();
 
-        var oversized = new ReadOnlySpan<byte>([..ExampleCertificate.RfcPublicKey.Span, 0]);
+        var oversized = new ReadOnlySpan<byte>([.. ExampleCertificate.RfcPublicKey.Span, 0]);
 
         xmss.ImportRfcPublicKey(oversized, out var bytesRead);
         Assert.AreEqual(ExampleCertificate.RfcPublicKey.Length, bytesRead);
@@ -217,7 +217,7 @@ sealed class ImportTests
         Assert.IsFalse(xmss.HasPrivateKey);
         Assert.IsFalse(xmss.HasPublicKey);
 
-        xmss.ImportAsnPublicKey([..asn, 0], out var bytesRead);
+        xmss.ImportAsnPublicKey([.. asn, 0], out var bytesRead);
 
         Assert.AreEqual(asn.Length, bytesRead);
         Assert.IsFalse(xmss.HasPrivateKey);

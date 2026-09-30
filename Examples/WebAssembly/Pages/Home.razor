@@ -35,7 +35,7 @@ else
         else
         {
             <p>Generating ...</p>
-            <p><FluentProgress Width="300px" Min="0" Max="100" Value="@ProgressPercentage"></FluentProgress></p>
+            <p><FluentProgressBar Width="300px" Min="0" Max="100" Value="@ProgressPercentage"></FluentProgressBar></p>
             <p><FluentButton Disabled="CancellationTokenSource.IsCancellationRequested" @onclick="CancellationTokenSource.Cancel">Cancel</FluentButton></p>
         }
     }
@@ -45,7 +45,7 @@ else
 
         <h2>Signing</h2>
         <p>Message:</p>
-        <p><FluentTextField Immediate="true" @bind-Value=MessageToSign /></p>
+        <p><FluentTextInput Immediate="true" @bind-Value=MessageToSign /></p>
 
         @if (Signature.Length == 0)
         {

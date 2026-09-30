@@ -1,10 +1,10 @@
 ﻿@*
-    SPDX-FileCopyrightText: 2024 Frans van Dorsselaer
+    SPDX-FileCopyrightText: Microsoft Corporation
 
     SPDX-License-Identifier: MIT
 *@
 
-<Router AppAssembly="@typeof(App).Assembly">
+<Router AppAssembly="@typeof(App).Assembly" NotFoundPage="typeof(Pages.NotFound)">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
     </Found>
