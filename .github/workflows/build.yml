@@ -192,7 +192,7 @@ jobs:
         # This one is *slow*, so only when commiting to main (and deploying GitHub Pages)
         if: github.event_name != 'pull_request'
         run: |
-          dotnet publish --configuration Release --no-restore --binaryLogger:wasm.binlog
+          dotnet publish --configuration Release --no-restore -p:BuildProjectReferences=false --binaryLogger:wasm.binlog
 
       - name: Build Documentation
         run: |
