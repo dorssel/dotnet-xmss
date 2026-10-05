@@ -9,6 +9,98 @@ namespace UnitTests;
 [TestClass]
 sealed class CalculateTests
 {
+    /// <summary>
+    /// We only test XMSS_SHA2_10_256, because full calculation is very time consuming.
+    /// </summary>
+    [TestMethod]
+    public async Task CalculatePublicKeyAsync_SingleThreadedWasm_Full()
+    {
+        using var xmss = new Xmss(true);
+
+        Assert.IsFalse(xmss.HasPrivateKey);
+        Assert.IsFalse(xmss.HasPublicKey);
+
+        xmss.GeneratePrivateKey(null, XmssParameterSet.XMSS_SHA2_10_256, false);
+
+        Assert.IsTrue(xmss.HasPrivateKey);
+        Assert.IsFalse(xmss.HasPublicKey);
+
+        await xmss.CalculatePublicKeyAsync((p) => { }, CancellationToken.None);
+
+        Assert.IsTrue(xmss.HasPublicKey);
+    }
+
+    /// <summary>
+    /// We only test XMSS_SHA2_10_256, because full calculation is very time consuming.
+    /// </summary>
+    [DataRow(0)]
+    [DataRow(1)]
+    [DataRow(1022)]
+    [DataRow(1023)]
+    [TestMethod]
+    public async Task CalculatePublicKeyAsync_FailPart(int failingPartIndex)
+    {
+        using var xmss = new Xmss(true, failingPartIndex);
+
+        Assert.IsFalse(xmss.HasPrivateKey);
+        Assert.IsFalse(xmss.HasPublicKey);
+
+        xmss.GeneratePrivateKey(null, XmssParameterSet.XMSS_SHA2_10_256, false);
+
+        Assert.IsTrue(xmss.HasPrivateKey);
+        Assert.IsFalse(xmss.HasPublicKey);
+
+        await Assert.ThrowsAsync<XmssException>(async () =>
+        {
+            await xmss.CalculatePublicKeyAsync((p) => { }, CancellationToken.None);
+        });
+
+        Assert.IsFalse(xmss.HasPublicKey);
+    }
+
+    static IEnumerable<(XmssParameterSet, bool)> GetCalculationTestData()
+    {
+        foreach (var parameterSet in Enum.GetValues<XmssParameterSet>())
+        {
+            if (parameterSet == XmssParameterSet.None)
+            {
+                continue;
+            }
+            yield return (parameterSet, false);
+            yield return (parameterSet, true);
+        }
+    }
+
+    /// <summary>
+    /// Here we test all parameters, both for single-threaded WASM (simulated) as well as multi-threaded.
+    /// We cancel before the full operation completes, though, because full calculation is very time consuming.
+    /// </summary>
+    [DynamicData(nameof(GetCalculationTestData))]
+    [TestMethod]
+    public async Task CalculatePublicKeyAsync_Cancel(XmssParameterSet parameterSet, bool testSingleThreadedWasm)
+    {
+        using var xmss = new Xmss(testSingleThreadedWasm);
+
+        Assert.IsFalse(xmss.HasPrivateKey);
+        Assert.IsFalse(xmss.HasPublicKey);
+
+        xmss.GeneratePrivateKey(null, parameterSet, true);
+
+        Assert.IsTrue(xmss.HasPrivateKey);
+        Assert.IsFalse(xmss.HasPublicKey);
+
+        using var cancellationTokenSource = new CancellationTokenSource();
+        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+        {
+            await xmss.CalculatePublicKeyAsync((p) =>
+            {
+                cancellationTokenSource.Cancel();
+            }, cancellationTokenSource.Token);
+        });
+
+        Assert.IsFalse(xmss.HasPublicKey);
+    }
+
     [TestMethod]
     public async Task CalculatePublicKeyAsync_Ephemeral_AndSign()
     {

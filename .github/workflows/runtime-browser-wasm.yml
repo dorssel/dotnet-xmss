@@ -82,9 +82,9 @@ jobs:
 
       - name: Copy artifacts
         run: |
-          mkdir -p "Xmss/runtimes/${{ env.RUNTIME }}/nativeassets"
+          mkdir -p "Xmss/runtimes/${{ env.RUNTIME }}/nativeassets/pthread"
           cp build/src/xmss.a "Xmss/runtimes/${{ env.RUNTIME }}/nativeassets/xmss.a"
-          cp build-pthread/src/xmss.a "Xmss/runtimes/${{ env.RUNTIME }}/nativeassets/xmss-pthread.a"
+          cp build-pthread/src/xmss.a "Xmss/runtimes/${{ env.RUNTIME }}/nativeassets/pthread/xmss.a"
 
       - name: Save runtime cache
         id: save-runtime-cache

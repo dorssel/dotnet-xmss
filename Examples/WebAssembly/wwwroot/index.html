@@ -13,6 +13,9 @@
     <meta name="keywords" content="WASM,XMSS" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>XMSS Demo</title>
+    <!-- This must execute as early as possible. -->
+    <!-- htmlhint-disable-next-line head-script-disabled -->
+    <script src="coi-serviceworker.min.js"></script>
     <link rel="preload" id="webassembly" />
     <link href="_content/Microsoft.FluentUI.AspNetCore.Components/css/reboot.css" rel="stylesheet" />
     <link rel="stylesheet" href="css/app.css" />

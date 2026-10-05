@@ -12,11 +12,13 @@ SPDX-License-Identifier: MIT
     <PublishDir>bin\publish\</PublishDir>
     <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
     <CompressionEnabled>false</CompressionEnabled>
-    <!-- Not yet supported by stand-alone Blazor -->
-    <!--
-    <WasmEnableThreads>true</WasmEnableThreads>
-    -->
+    <WasmEnableThreads Condition="'$(Configuration)' == 'Release'">true</WasmEnableThreads>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="libman.json" />
+    <None Include="libman.json" />
+  </ItemGroup>
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />
@@ -33,6 +35,11 @@ SPDX-License-Identifier: MIT
     <!--
     <PackageReference Include="Dorssel.Security.Cryptography.Xmss" />
     -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- `dotnet restore` by default only restores the Debug configuration. -->
+    <PackageDownload Include="Microsoft.NETCore.App.Runtime.Mono.multithread.browser-wasm" Version="[10.0.12]" />
   </ItemGroup>
 
   <ItemGroup>
