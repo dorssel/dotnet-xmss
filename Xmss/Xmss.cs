@@ -41,9 +41,19 @@ public sealed class Xmss
     /// Initializes a new instance of the <see cref="Xmss"/> class.
     /// </summary>
     public Xmss()
+        : this(false)
+    {
+    }
+
+    /// <summary>
+    /// For testing single-threaded WASM-logic without actual single-threaded WASM.
+    /// </summary>
+    internal Xmss(bool testSingleThreadedWasm, int testFailPartitionIndex = -1)
     {
         LegalKeySizesValue = [new(256, 256, 0)];
         KeySizeValue = 256;
+        TestSingleThreadedWasm = testSingleThreadedWasm;
+        TestFailPartitionIndex = testFailPartitionIndex;
     }
 
     /// <summary>
@@ -231,7 +241,7 @@ public sealed class Xmss
         using var privateKeyStatelessBlob = new CriticalXmssPrivateKeyStatelessBlobHandle();
         using var privateKeyStatefulBlob = new CriticalXmssPrivateKeyStatefulBlobHandle();
 
-        unsafe
+        unsafe // DevSkim: ignore DS172412
         {
             result = UnsafeNativeMethods.xmss_context_initialize(ref signingContext.AsPointerRef(), (XmssParameterSetOID)parameterSet,
                 &UnmanagedFunctions.Realloc, &UnmanagedFunctions.Free, &UnmanagedFunctions.Zeroize);
@@ -300,7 +310,7 @@ public sealed class Xmss
             using var keyContext = new CriticalXmssKeyContextHandle();
             using var signingContext = new CriticalXmssSigningContextHandle();
 
-            unsafe
+            unsafe // DevSkim: ignore DS172412
             {
                 result = UnsafeNativeMethods.xmss_context_initialize(ref signingContext.AsPointerRef(), oid,
                     &UnmanagedFunctions.Realloc, &UnmanagedFunctions.Free, &UnmanagedFunctions.Zeroize);
@@ -326,7 +336,7 @@ public sealed class Xmss
                             ParameterSet);
                         wrappedStateManager.Load(XmssKeyPart.Public, publicKeyInternalBlob.Data);
 
-                        unsafe
+                        unsafe // DevSkim: ignore DS172412
                         {
                             // The cache will be automatically freed with the key context; we don't need it.
                             XmssInternalCache* cache = null;
@@ -410,7 +420,7 @@ public sealed class Xmss
         using var newStatefulBlob = CriticalXmssPrivateKeyStatefulBlobHandle.Alloc();
         try
         {
-            unsafe
+            unsafe // DevSkim: ignore DS172412
             {
                 var result = UnsafeNativeMethods.xmss_partition_signature_space(ref newStatefulBlob.AsPointerRef(),
                     ref updatedStatefulBlob.AsPointerRef(), ref PrivateKey.KeyContext.AsRef(), (uint)newPartitionSize);
@@ -470,7 +480,7 @@ public sealed class Xmss
         wrappedConsumedPartition.Load(XmssKeyPart.PrivateStateful, consumedKeyStatefulBlob.Data);
 
         using var updatedStatefulBlob = CriticalXmssPrivateKeyStatefulBlobHandle.Alloc();
-        unsafe
+        unsafe // DevSkim: ignore DS172412
         {
             var result = UnsafeNativeMethods.xmss_merge_signature_space(ref updatedStatefulBlob.AsPointerRef(),
                 ref PrivateKey.KeyContext.AsRef(), consumedKeyStatefulBlob.AsRef());
@@ -495,6 +505,33 @@ public sealed class Xmss
 
     #region Public Key
     /// <summary>
+    /// Settable only by internal constructor.
+    /// If true, test the calculation logic for single-threaded WASM.
+    /// </summary>
+    readonly bool TestSingleThreadedWasm;
+
+    /// <summary>
+    /// Settable only by internal constructor.
+    /// If != -1, fail the calculation logic for the partition index to simulate faults.
+    /// </summary>
+    readonly int TestFailPartitionIndex;
+
+    [ExcludeFromCodeCoverage(Justification = "Not testable; WASM only.")]
+    bool IsSingleThreadedWasm()
+    {
+        if (TestSingleThreadedWasm)
+        {
+            return true;
+        }
+        if (RuntimeInformation.ProcessArchitecture != Architecture.Wasm)
+        {
+            return false;
+        }
+        ThreadPool.GetMaxThreads(out var workerThreads, out _);
+        return workerThreads <= 1;
+    }
+
+    /// <summary>
     /// TODO
     /// </summary>
     /// <param name="reportPercentage">TODO</param>
@@ -514,94 +551,117 @@ public sealed class Xmss
         XmssError result;
 
         using var keyGenerationContext = new CriticalXmssKeyGenerationContextHandle();
-        var totalTaskCount = 1 << Defines.XMSS_TREE_DEPTH(ParameterSet.AsOID());
-        unsafe
-        {
-            // The caches will be automatically freed with the generation context; we don't need them.
-            XmssInternalCache* cache = null;
-            XmssInternalCache* generationCache = null;
-            result = UnsafeNativeMethods.xmss_generate_public_key(ref keyGenerationContext.AsPointerRef(), ref cache, ref generationCache,
-                PrivateKey.KeyContext.AsRef(), XmssCacheType.XMSS_CACHE_TOP, 0, (uint)totalTaskCount);
-            XmssException.ThrowIfNotOkay(result);
-        }
-
         var tasks = new HashSet<Task>();
-        var index = 0;
-        var completed = 0;
-        var lastReported = 0;
-        var lastDelay = Stopwatch.GetTimestamp();
-        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        Exception? taskException = null;
-        while (!cancellationTokenSource.IsCancellationRequested && completed < totalTaskCount)
+        var taskExceptions = new List<Exception>();
+        try
         {
-            while (tasks.Count < Environment.ProcessorCount && index < totalTaskCount)
+            // To be cancelable, we use the smallest chunk size (one WOTS+ key per part).
+            // This also keeps the single-threaded WASM UI responsive.
+            var totalTaskCount = 1 << Defines.XMSS_TREE_DEPTH(ParameterSet.AsOID());
+            unsafe // DevSkim: ignore DS172412
             {
-                var nextTaskIndex = index;
-                _ = tasks.Add(Task.Run(() =>
-                {
-                    result = UnsafeNativeMethods.xmss_calculate_public_key_part(ref keyGenerationContext.AsRef(), (uint)nextTaskIndex);
-                    XmssException.ThrowIfNotOkay(result);
-                }, cancellationTokenSource.Token));
-                ++index;
-            }
-            _ = await Task.WhenAny([.. tasks]).ConfigureAwait(false);
-            _ = tasks.RemoveWhere((task) =>
-            {
-                if (!task.IsCompleted)
-                {
-                    // not done yet
-                    return false;
-                }
-
-                [ExcludeFromCodeCoverage(Justification = "Not testable, unless actual faults are injected.")]
-                void HandleTaskCompletion()
-                {
-                    if (task.Exception is null)
-                    {
-                        // success
-                        ++completed;
-                    }
-                    else
-                    {
-                        // failed, remember the first failure and cancel others
-                        taskException ??= task.Exception;
-                        cancellationTokenSource.Cancel();
-                    }
-                }
-
-                HandleTaskCompletion();
-                return true;
-            });
-            if (completed > lastReported)
-            {
-                reportPercentage?.Invoke(99.9 * completed / totalTaskCount);
-                lastReported = completed;
+                // The caches will be automatically freed with the generation context; we don't need them.
+                XmssInternalCache* cache = null;
+                XmssInternalCache* generationCache = null;
+                result = UnsafeNativeMethods.xmss_generate_public_key(ref keyGenerationContext.AsPointerRef(), ref cache,
+                    ref generationCache, PrivateKey.KeyContext.AsRef(), XmssCacheType.XMSS_CACHE_TOP, 0, (uint)totalTaskCount);
+                XmssException.ThrowIfNotOkay(result);
             }
 
-            [ExcludeFromCodeCoverage(Justification = "Not testable; WASM only.")]
-            Task OptionalDelayTask()
+            var index = 0;
+            var completed = 0;
+            var lastReportedCompleted = 0;
+            var lastReportedPercentage = 0.0;
+            var lastDelay = Stopwatch.GetTimestamp();
+            using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            while (!cancellationTokenSource.IsCancellationRequested && completed < totalTaskCount)
             {
-                if (RuntimeInformation.ProcessArchitecture == Architecture.Wasm && Environment.ProcessorCount == 1
-                    && Stopwatch.GetElapsedTime(lastDelay) > TimeSpan.FromMilliseconds(50))
+                while (tasks.Count < Environment.ProcessorCount && index < totalTaskCount)
+                {
+                    var nextTaskIndex = index;
+                    _ = tasks.Add(Task.Run(() =>
+                    {
+                        if (nextTaskIndex == TestFailPartitionIndex)
+                        {
+                            throw new XmssException(XmssError.XMSS_ERR_FAULT_DETECTED);
+                        }
+                        var result = UnsafeNativeMethods.xmss_calculate_public_key_part(ref keyGenerationContext.AsRef(), (uint)nextTaskIndex);
+                        XmssException.ThrowIfNotOkay(result);
+                    }, cancellationTokenSource.Token));
+                    ++index;
+                }
+                _ = await Task.WhenAny([.. tasks]).ConfigureAwait(false);
+                _ = tasks.RemoveWhere((task) =>
+                {
+                    if (!task.IsCompleted)
+                    {
+                        // not done yet
+                        return false;
+                    }
+
+                    [ExcludeFromCodeCoverage(Justification = "Not testable, unless actual faults are injected.")]
+                    void HandleTaskCompletion()
+                    {
+                        if (task.IsCompletedSuccessfully)
+                        {
+                            // success
+                            ++completed;
+                        }
+                        else if (task.Exception is not null)
+                        {
+                            // failure
+                            taskExceptions.Add(task.Exception);
+                            cancellationTokenSource.Cancel();
+                        }
+                    }
+
+                    HandleTaskCompletion();
+                    return true;
+                });
+                if (completed > lastReportedCompleted)
+                {
+                    var percentage = 99.9 * completed / totalTaskCount;
+                    if (percentage > lastReportedPercentage)
+                    {
+                        reportPercentage?.Invoke(percentage);
+                        lastReportedCompleted = completed;
+                        lastReportedPercentage = percentage;
+                    }
+                }
+
+                if (IsSingleThreadedWasm() && Stopwatch.GetElapsedTime(lastDelay) > TimeSpan.FromMilliseconds(50))
                 {
                     // On single threaded WASM we need to keep the UI responsive.
                     lastDelay = Stopwatch.GetTimestamp();
-                    return Task.Delay(TimeSpan.FromMilliseconds(1), cancellationToken);
-                }
-                else
-                {
-                    return Task.CompletedTask;
+                    await Task.Delay(TimeSpan.FromMilliseconds(1), cancellationToken).ConfigureAwait(false);
                 }
             }
-
-            await OptionalDelayTask().ConfigureAwait(false);
         }
-        await Task.WhenAll(tasks).ConfigureAwait(false);
+        finally
+        {
+            // We must ensure that all tasks have stopped running before we dispose keyGenerationContext.
+            try
+            {
+                await Task.WhenAll(tasks).ConfigureAwait(false);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                taskExceptions.Add(ex);
+            }
+        }
+
         cancellationToken.ThrowIfCancellationRequested();
-        XmssException.ThrowFaultDetectedIf(taskException);
+
+        var firstTaskException = new AggregateException(taskExceptions).Flatten().InnerExceptions.FirstOrDefault(ex => ex is not OperationCanceledException);
+        if (firstTaskException is not null)
+        {
+            throw firstTaskException;
+        }
 
         using var publicKeyInternalBlob = new CriticalXmssPublicKeyInternalBlobHandle();
-        unsafe
+        unsafe // DevSkim: ignore DS172412
         {
             result = UnsafeNativeMethods.xmss_finish_calculate_public_key(ref publicKeyInternalBlob.AsPointerRef(),
                 ref keyGenerationContext.AsPointerRef(), ref PrivateKey.KeyContext.AsRef());
@@ -650,7 +710,7 @@ public sealed class Xmss
         ThrowIfNoPrivateKey();
 
         using var privateKeyStatefulBlob = new CriticalXmssPrivateKeyStatefulBlobHandle();
-        unsafe
+        unsafe // DevSkim: ignore DS172412
         {
             var result = UnsafeNativeMethods.xmss_request_future_signatures(ref privateKeyStatefulBlob.AsPointerRef(),
                 ref PrivateKey.KeyContext.AsRef(), (uint)count);
@@ -690,7 +750,7 @@ public sealed class Xmss
     /// <param name="data">TODO</param>
     /// <param name="dataLength">TODO</param>
     /// <returns>TODO</returns>
-    public unsafe byte[] Sign(void* data, nuint dataLength)
+    public unsafe byte[] Sign(void* data, nuint dataLength) // DevSkim: ignore DS172412
     {
         var signature = new byte[Defines.XMSS_SIGNATURE_SIZE(ParameterSet.AsOID())];
         var bytesWritten = Sign(data, dataLength, signature);
@@ -719,7 +779,7 @@ public sealed class Xmss
     /// <param name="destination">TODO</param>
     /// <returns>TODO</returns>
     /// <exception cref="ArgumentException">TODO</exception>
-    public unsafe int Sign(void* data, nuint dataLength, Span<byte> destination)
+    public unsafe int Sign(void* data, nuint dataLength, Span<byte> destination) // DevSkim: ignore DS172412
     {
         return TrySign(data, dataLength, destination, out var bytesWritten) ? bytesWritten
             : throw new ArgumentException("Destination is too short.");
@@ -735,7 +795,7 @@ public sealed class Xmss
     /// <returns><see langword="true"/> if <paramref name="destination"/> is big enough to receive the signature; otherwise, <see langword="false"/>.</returns>
     public bool TrySign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten)
     {
-        unsafe
+        unsafe // DevSkim: ignore DS172412
         {
             fixed (byte* dataPtr = data)
             {
@@ -752,7 +812,7 @@ public sealed class Xmss
     /// <param name="destination">TODO</param>
     /// <param name="bytesWritten">TODO</param>
     /// <returns>TODO</returns>
-    public unsafe bool TrySign(void* data, nuint dataLength, Span<byte> destination, out int bytesWritten)
+    public unsafe bool TrySign(void* data, nuint dataLength, Span<byte> destination, out int bytesWritten) // DevSkim: ignore DS172412
     {
         if (data is null)
         {
@@ -807,7 +867,7 @@ public sealed class Xmss
         var possiblyOversizedBuffer = ArrayPool<byte>.Shared.Rent(15 * 1088);
         try
         {
-            unsafe
+            unsafe // DevSkim: ignore DS172412
             {
                 var buffer = possiblyOversizedBuffer.AsSpan(0, 15 * 1088);
                 fixed (byte* signaturePtr = signature)
@@ -856,7 +916,7 @@ public sealed class Xmss
         ObjectDisposedException.ThrowIf(IsDisposed, this);
         ThrowIfNoPublicKey();
 
-        unsafe
+        unsafe // DevSkim: ignore DS172412
         {
             fixed (byte* signaturePtr = signature)
             fixed (byte* dataPtr = data)

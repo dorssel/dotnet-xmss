@@ -49,16 +49,16 @@ static class Program
                 var oldPercentage = 0;
                 try
                 {
-                    await xmss.CalculatePublicKeyAsync(progress =>
+                    await xmss.CalculatePublicKeyAsync(percentage =>
                     {
-                        if (oldPercentage < (int)progress)
+                        if (oldPercentage < (int)percentage)
                         {
-                            oldPercentage = (int)progress;
-                            Console.Write($"\r{(int)progress,3}%");
+                            oldPercentage = (int)percentage;
+                            Console.Write($"\r{(int)percentage,3}%");
                         }
                     }, cancellationTokenSource.Token).ConfigureAwait(false);
                 }
-                catch (AggregateException ex) when (ex.GetBaseException() is OperationCanceledException)
+                catch (OperationCanceledException)
                 {
                     Console.WriteLine();
                     Console.WriteLine("Canceled");

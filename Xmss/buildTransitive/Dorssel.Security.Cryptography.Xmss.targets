@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 -->
 <Project>
   <ItemGroup Condition=" '$(RuntimeIdentifier)' == 'browser-wasm' And '$(WasmEnableThreads)' == 'true'">
-    <NativeFileReference Include="$(MSBuildThisFileDirectory)..\runtimes\browser-wasm\nativeassets\xmss-pthread.a" />
+    <NativeFileReference Include="$(MSBuildThisFileDirectory)..\runtimes\browser-wasm\nativeassets\pthread\xmss.a" />
   </ItemGroup>
   <ItemGroup Condition=" '$(RuntimeIdentifier)' == 'browser-wasm' And '$(WasmEnableThreads)' != 'true'">
     <NativeFileReference Include="$(MSBuildThisFileDirectory)..\runtimes\browser-wasm\nativeassets\xmss.a" />

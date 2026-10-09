@@ -118,18 +118,21 @@ else
         {
             await Xmss.CalculatePublicKeyAsync((percentage) =>
             {
-                int newPercentage = (int)percentage;
-                if (ProgressPercentage < newPercentage)
-                {
-                    ProgressPercentage = newPercentage;
-                    StateHasChanged();
-                }
+                // fire-and-forget to update the progress bar on the UI thread
+                _ = InvokeAsync(() => {
+                    var integerPercentage = (int)percentage;
+                    if (ProgressPercentage < integerPercentage)
+                    {
+                        ProgressPercentage = integerPercentage;
+                        StateHasChanged();
+                    }
+                });
             }, CancellationTokenSource.Token);
         }
         finally
         {
             IsCalculating = false;
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
     }
 
