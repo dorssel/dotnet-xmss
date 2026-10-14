@@ -16,5 +16,7 @@ SPDX-License-Identifier: MIT
     <PackageVersion Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="5.0.0" />
     <!-- unit tests -->
     <PackageVersion Include="JunitXml.TestLogger" Version="8.0.0" />
+    <!-- fuzzing tests -->
+    <PackageVersion Include="FsCheck" Version="3.3.4" />
   </ItemGroup>
 </Project>

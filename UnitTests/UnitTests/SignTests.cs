@@ -45,6 +45,14 @@ sealed class SignTests
     }
 
     [TestMethod]
+    public void Sign_EmptySpan()
+    {
+        var signature = Xmss.Sign(default);
+
+        Assert.IsTrue(Xmss.Verify([], signature));
+    }
+
+    [TestMethod]
     public void Sign_Destination()
     {
         // oversized
