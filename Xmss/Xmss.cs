@@ -814,7 +814,7 @@ public sealed class Xmss
     /// <returns>TODO</returns>
     public unsafe bool TrySign(void* data, nuint dataLength, Span<byte> destination, out int bytesWritten) // DevSkim: ignore DS172412
     {
-        if (data is null)
+        if (data is null && dataLength != 0)
         {
             throw new ArgumentNullException(nameof(data));
         }

@@ -27,6 +27,7 @@ SPDX-License-Identifier: MIT
   </Folder>
   <Folder Name="/UnitTests/">
     <File Path="UnitTests/Directory.Build.props" />
+    <Project Path="UnitTests/FuzzingTests/FuzzingTests.csproj" />
     <Project Path="UnitTests/Internal.UnitTests/Internal.UnitTests.csproj" />
     <Project Path="UnitTests/NativeHelper.UnitTests/NativeHelper.UnitTests.csproj" />
     <Project Path="UnitTests/UnitTests/UnitTests.csproj" />
