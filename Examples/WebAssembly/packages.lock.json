@@ -11,12 +11,6 @@
           "Microsoft.AspNetCore.Components.Web": "8.0.0"
         }
       },
-      "GitVersion.MsBuild": {
-        "type": "Direct",
-        "requested": "[6.8.2, )",
-        "resolved": "6.8.2",
-        "contentHash": "eTd8jUiogUXpVssFyDWWdMrPr5Cdc57tWaQ3Cv/eMIhnumOHZhDkc/wcy8hYU8aH7NS4VT2w/pHjVITDSTXMGw=="
-      },
       "Microsoft.AspNetCore.App.Internal.Assets": {
         "type": "Direct",
         "requested": "[10.0.14, )",
@@ -72,6 +66,12 @@
         "requested": "[10.0.14, )",
         "resolved": "10.0.14",
         "contentHash": "kmmGbV2b97RTuBCVUUKB0wkaEuYn13O6TuCjqqe8+hrDxBkN1/yFTggSz7eqt70PsQbebsrHgUnirGzXsr0lzg=="
+      },
+      "Nerdbank.GitVersioning": {
+        "type": "Direct",
+        "requested": "[3.10.94, )",
+        "resolved": "3.10.94",
+        "contentHash": "sn6gFIx6bwFj3Me0XGmek3gLZi/MZC8C4tRLwslXGeBcXcVxvFpZyDrQA93G8TiYgxTS7J7triKB7hj5wXzSxA=="
       },
       "Microsoft.AspNetCore.Authorization": {
         "type": "Transitive",
