@@ -4,9 +4,9 @@
     "net8.0": {
       "Microsoft.NET.ILLink.Tasks": {
         "type": "Direct",
-        "requested": "[8.0.33, )",
-        "resolved": "8.0.33",
-        "contentHash": "dG9SM/0/zOTIE1UvSrveD1iDyEJjThqPqSnreExgqQWSoGWvze0esDi0faRk3C44IO1kqCeEX6AeCxWmBOppfw=="
+        "requested": "[8.0.34, )",
+        "resolved": "8.0.34",
+        "contentHash": "AoMGwI/388svzARQ2NYC25vFOQGcf13FgQWv61TwPAdPUMOejXpQxBQHrQpXfqM7vqxxj1E3SAkX/OkE2cuChw=="
       },
       "Nerdbank.GitVersioning": {
         "type": "Direct",
