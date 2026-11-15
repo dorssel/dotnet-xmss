@@ -9,7 +9,7 @@ name: NuGet
 
 on:
   release:
-    types: [published]
+    types: [released]
   workflow_dispatch:
     inputs:
       # checkov:skip=CKV_GHA_7: Required input for publishing an existing release to NuGet.
