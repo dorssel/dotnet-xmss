@@ -12,7 +12,10 @@ SPDX-License-Identifier: MIT
     <PublishDir>bin\publish\</PublishDir>
     <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
     <CompressionEnabled>false</CompressionEnabled>
+    <!--
+    Disabled, because blazor WASM multithreading is not yet supported in .NET 11 (regression, .NET 10 worked fine).
     <WasmEnableThreads Condition="'$(Configuration)' == 'Release'">true</WasmEnableThreads>
+    -->
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,8 +41,13 @@ SPDX-License-Identifier: MIT
   </ItemGroup>
 
   <ItemGroup>
-    <!-- `dotnet restore` by default only restores the Debug configuration. -->
-    <PackageDownload Include="Microsoft.NETCore.App.Runtime.Mono.multithread.browser-wasm" Version="[11.0.0]" />
+    <!--
+    `dotnet restore` by default only restores the Debug configuration.
+    On the other hand, `dotnet publish` restores the Release configuration, which already downloads this package.
+    We want to pre-cache this package for a normal `dotnet restore` as well, so CI builds can use the standard restore -> build -> publish pattern.
+    -->
+    <PackageDownload Condition="'$(WasmEnableThreads)' != 'true'"
+      Include="Microsoft.NETCore.App.Runtime.Mono.multithread.browser-wasm" Version="[$(BundledNETCoreAppPackageVersion)]" />
   </ItemGroup>
 
   <ItemGroup>
